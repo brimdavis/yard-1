@@ -1,0 +1,41 @@
+
+FPGA Development Environment:
+
+ PC, WinXP
+
+   Currently, development has been done using Windows XP,
+ but the only platform specific programs are the batch
+ files used for simulation and verification.
+
+
+
+FPGA Software:
+
+ The required FPGA tools are free (as in free beer)
+
+ Xilinx Webpack: 
+
+  - Xilinx WebPack  9.2 SP3      
+  
+  www.xilinx.com
+
+
+
+VHDL simulator:
+
+  Currently using GHDL for the testbench simulator
+
+  GHDL 0.29.1+ patched to resolve stack crashes and windows path issues
+
+  ( add download link )
+
+
+
+Other Software needed:
+
+
+Perl 5.6.1 or greater             
+
+   The cross assembler and verification tools are written in Perl.
+
+   http://www.activestate.com/activeperl/downloads
