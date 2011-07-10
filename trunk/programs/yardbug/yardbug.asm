@@ -1,0 +1,600 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; YARDBUG serial debugger 0.02
+;
+; (C) COPYRIGHT 2001, 2011  B. Davis
+;
+; Code released under the terms of the "new BSD" license
+; see %YARD_HOME%/license/new_bsd.txt
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;  RS232 data format: 19200,N,8,1
+;  ( RS232 format is set in evb.vhd, not controlled by S/W yet )
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+;commands:
+;
+;   D  ADDR COUNT        Dump memory
+;
+;   G  ADDR              Go
+;
+;   M  ADDR BYTE {BYTE}  Modify byte(s)
+;
+;   ?                    help
+;
+;  e.g.:
+;    D 0 100        ; dump 256 bytes starting at zero
+;    G 0            ; jump to address 0
+;    M 600 00       ; byte at $600 = 0
+;    M 601 ff ee    ; byte at $601 = $ff, $602 = $ee
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Quirks:
+;
+;   - parses input on the fly, no line editing:
+;
+;      - no way to escape out of command in progress
+;
+;      - no way to backspace 
+;        ( uses last 8/2 hex chars. entered for long/byte input, 
+;         so you can type some zeroes followed by the proper
+;         value to correct an error)
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;
+;
+; program start
+;
+;   $0 for embedded boot "ROM"
+;
+; after code squish for ROM space, debugger must live in the first 
+; 256 bytes of memory for the compact command table dispatch to work
+;
+    org     $0
+
+start:
+    nop     ; put a NOP first while debugging new reset vector code
+
+
+; UART & I/O addresses
+    mov     r8, #$8000_0000 ; r8 = I/O port address
+    mov     r9, #$4000_0000 ; uart decode address
+
+
+; print the help message
+    bsr     cmd_help
+
+;
+; main loop
+;
+parse_loop:
+    bsr     send_crlf
+
+    mov     r0, #'@     ; @ or ? for prompt fits into short immediate encoding
+    bsr     send_char
+
+; get a character & echo it
+    bsr     get_char_echo
+
+;
+; convert any alpha char. a-z to upper case A-Z
+;  ( this code also clobbers some punctuation chars )
+;
+    skip.bc r0, #6           ; D6 is set for all ASCII letters
+    and     r0, #$FFFF_FFDF  ; clear D5 : $60-7f -> $40-5f
+
+
+;
+; future - add backspace check here, bra back to get another command character
+;
+
+;
+; check character in r1 against the command list
+;   byte-wide pointer version of table search, 
+;   target routine must be in low 256 bytes of memory
+;
+    imm12   #CMD_TAB    ; r14 = address of command lookup table
+
+match_loop:
+    ld.ub   r11, (r14)  ; r11 = next table command byte
+
+    inc     r14         ; bump r14 to point at command address
+
+    skip.nz r11         ; bail out if at end of table
+    bra     parse_loop
+
+    skip.ne r0,r11      ; check for match
+    bra     got_it
+
+    inc     r14         ; on to next entry
+    bra     match_loop
+
+got_it:
+    ld.ub    r11, (r14)     ; r11 = command subroutine address
+
+    bsr     get_char_echo   ; get & echo one character after command letter
+
+    jsr     (r11)           ; call selected command 
+
+    bra parse_loop
+
+;
+; dump memory
+;
+cmd_dump:
+
+; get the start address into R12
+    bsr     ghex
+    mov     r12, r1
+
+; if user entry was terminated with a space, read byte count; else dump 16 bytes
+    mov     r13,#$0f
+    skip.z  r0      
+    bra     dump1
+
+; get the count into R13
+    bsr     ghex
+    mov     r13, r1
+
+; pre-decrement for loop exit code ( r1=0 => 1 iteration )
+    dec     r13
+
+; limit loop iterations to 4K 
+    and     r13, #$0000_0fff
+
+dump1:
+    bsr     send_crlf
+
+mem_loop:
+    mov     r0, r12     ; print address
+    bsr     phex32
+
+    mov     r11, #$0f   ; 15..0 => 16 bytes per line
+
+byte_loop:
+    bsr     space
+
+    ld.ub   r0, (r12)   ; read next byte
+    bsr     phex8
+
+    sub.snb r13,#1      ; decrement loop count, check for borrow
+    rts                 ; bail out if negative
+
+    inc     r12         ; increment pointer
+
+    sub.snb r11,#1      ; decrement line byte count, check for borrow
+    bra     dump1       ; start next line if negative
+
+    bra     byte_loop
+
+
+
+; 
+; dump1:
+;   bsr     send_crlf
+; 
+; mem_loop:
+;   mov     r0, r12     ; print address
+;   bsr     phex32
+; 
+;   mov     r11, #$10   ; 16 bytes per line
+; 
+; byte_loop:
+;   bsr     space
+; 
+;   ld.ub   r0, (r12)   ; read next byte
+;   bsr     phex8
+; 
+;   dec     r11         ; decrement byte count
+;   inc     r12         ; increment pointer
+; 
+;   skip.miz    r11
+;   bra     byte_loop
+; 
+;   bsr  send_crlf
+; 
+;   sub     r13, #$10
+;   skip.miz    r13
+;   bra     mem_loop
+; 
+;   rts
+;
+
+
+;
+; help 
+;
+cmd_help:
+    imm12   #STR_HELP
+    bra     pstr        ; bra instead of bsr & rts saves an instruction (ROM space)
+
+
+;
+; modify memory
+;
+cmd_modify:
+
+; get the address into R4
+    bsr     ghex
+    mov     r4, r1
+
+next_byte:
+
+; get the data byte
+    bsr     ghex
+
+; write it
+    st.b    r1, (r4)
+    inc     r4
+
+; check returned ghex terminator value to see if we're done 
+    skip.nz r0
+    bra     next_byte   ; zero -> space, so go get another byte
+
+    bra     send_crlf   ; bra instead of bsr & rts saves an instruction (ROM space)
+
+
+;
+; go
+;
+cmd_go:
+    bsr     ghex    ; r1 = target address 
+    jmp     (r1)    ; jump to user program 
+
+
+;
+; ghex:
+;   read hex value from user, 
+;   
+;   reads as many chars as are entered, shifting result up 4 bits for each, 
+;   until it sees a space or control character
+;   
+;   returns:
+;     r0 = terminating char. - $20  (e.g., r0 = 0 if terminator was a space )
+;     r1 = value of hex entry 
+;   
+ghex:
+
+; initialize working value in r1
+    mov r1,#0
+
+gloop:
+    bsr     get_char_echo
+
+; bail out on a space or other ctl. char
+    sub     r0, #$20
+    skip.plnz   r0
+    rts
+
+
+;
+; convert ASCII code  -> hex ( with liberties taken for illegal chars )
+;
+; with & without subtract of $20:
+;   $30:$39 ( '0':'9' )  now is $10:19
+;   $41:$46 ( 'A':'F' )  now is $21:26
+;   $61:$66 ( 'a':'f' )  now is $41:46
+;
+    skip.bs r0, #4  ; if D4 is set, assume it's a numeral 0-9
+    add     r0, #9  ; else convert 'a|A'-'f|F' -> $a-$f in LS nybble
+
+    and     r0, #$0f ; keep only the 4 LSB's
+
+; shift last value up 4 bits
+    lsl     r1
+    lsl     r1
+    lsl     r1
+    lsl     r1
+
+; or in new nybble
+    or      r1, r0
+
+    bra     gloop
+
+
+;
+; print 8/16/32 bit hex value in r0
+;
+phex8:
+    imm12   #8          ; # bits       
+    bra     phex
+
+;
+; phex16 not currently needed, commented out to save ROM space
+;
+;phex16:
+;    imm12   #16         
+;    bra     phex
+
+phex32:
+    imm12   #32         ; # bits
+
+phex:
+    mov     r4,r0       ; copy input value to R4
+
+    mov     r3,r14      ; copy length to R3 = bit counter
+
+    rsub    r14,#32     ; initial rotate of r0 by 32-N bits left to move desired field into MS nybble
+    bsr     rol_r4_imm  
+
+
+hloop:
+    imm12   #4          ; rotate MS nybble into the LS nybble
+    bsr     rol_r4_imm  
+
+    mov     r0, r4      ; copy to r0 and mask 
+    and     r0, #$0f
+
+; hex to ASCII conversion
+    sub     r0, #9
+    skip.plnz   r0
+    sub     r0, #7
+    add     r0, #$40
+
+    bsr     send_char   ; print character
+
+    sub     r3,#4       ; decrement bit count
+
+    skip.miz  r3
+    bra     hloop
+
+    rts
+
+;
+; rotate r4 imm positions left
+;
+rol_r4_imm
+    sub.snb r14,#1          ; decrement shift count
+    rts                     ; bail out if done
+
+    bra.d   rol_r4_imm      ; loop back (delayed)
+    rol     r4              ; rotate one bit left 
+
+;
+; print null terminated string 
+;
+;   r14 = address of string
+;
+;   uses r0
+;
+pstr:
+    ld.ub  r0,(r14)     ; get next byte of string
+
+    skip.nz r0          ; bail out if zero terminator
+    rts
+
+    bsr  send_char      ; send it
+
+    bra.d pstr          ; loop back (delayed)
+    add r14,#1          ; bump pointer to next character
+
+;
+;
+;
+send_crlf:
+     imm12   #STR_CRLF
+     bra     pstr        ; bra instead of bsr & rts saves an instruction (ROM space)
+          
+
+;       
+; send a character using HW UART
+;
+;   input data in r0
+;
+;   expects
+;     r8 = I/O port address
+;     r9 = UART port address
+;
+;   uses r10
+;
+
+; send a space, falls through to send_char
+space:
+    mov     r0, #$20        
+
+send_char:
+
+; loop until buffer has room
+tx_full:
+    ld.l  r10, (r8)
+
+    skip.bc r10, #7
+    bra     tx_full
+
+    st.l    r0, (r9)    ; write data to TX
+    rts
+
+;
+; version of get_char with echo of input character
+; also handles CRLF expansion
+;
+get_char_echo:
+    bsr get_char
+
+    mov     r10,#$0d    
+    skip.ne r10,r0      ; if CR echo both CR & LF
+    bra     send_crlf   ; note that send_crlf  returns r0=0 to the caller in place of CR
+
+                        ; else echo the original character
+    bra     send_char   ; bra instead of bsr & rts saves an instruction (ROM space)
+
+
+;       
+; receive a character using HW UART
+;
+;   returns char in r0
+;
+;   expects
+;     r8 = I/O port address
+;     r9 = UART port address
+;
+;   uses r10
+;
+get_char:
+
+; loop until there's something in the buffer
+rx_empty:
+    ld.l  r10, (r8)
+
+    skip.bs r10, #6
+    bra     rx_empty
+
+    ld.l    r0, (r9)    ; read data from RX
+    rts
+
+;
+; constant tables
+;
+
+
+;
+; commmand table
+;
+; notes:
+;
+;    commands in table should be uppercase letters (A-Z), or punctuation chars < ASCII code $60 
+;
+;    one-byte table addresses limit calls to routines located in first 256 locations of memory
+;
+CMD_TAB:
+    dc.s    "D"
+    dc.b    cmd_dump
+
+    dc.s    "G"
+    dc.b    cmd_go
+
+    dc.s    "M"
+    dc.b    cmd_modify
+
+    dc.s    "?"
+    dc.b    cmd_help
+
+    dc.b    0              ; end of table marker
+
+
+;
+; even shorter help message (save ROM space)
+;
+STR_HELP: 
+    dc.s    "YARDBUG 0.2, DGM?"
+
+STR_CRLF:
+    dc.b    $0d,$0a
+    dc.b    0
+
+; ;
+; ; shorter help message (save ROM space)
+; ;
+; STR_HELP: 
+;     dc.s    "YARDBUG 0.02"
+;     dc.b    $0d,$0a
+; 
+;     dc.s    "D a #|G a|M a b {b}|?"
+; 
+; STR_CRLF:
+;     dc.b    $0d,$0a
+;     dc.b    0
+; 
+
+; original (longer) help message
+; 
+; ;
+; ;
+; ;
+; STR_HELP: 
+;     dc.s "YARDBUG 0.02"
+;     dc.b    $0d,$0a
+;     dc.s    " D addr cnt"
+;     dc.b    $0d,$0a
+;     dc.s    " G addr"
+;     dc.b    $0d,$0a
+;     dc.s    " M addr byte {byte}"
+;     dc.b    $0d,$0a
+;     dc.s    " ?"
+; STR_CRLF: 
+;     dc.b    $0d,$0a
+;     dc.b    0
+; 
+
+
+  end
+
+
+
+
+
+
+;
+; original command table code replaced with byte-wide pointer version to save ROM space
+;
+; table search routine
+;   - full 32 bit target addresses
+;   - separate command and pointer tables
+;
+; ; copy command char to r7
+;     mov     r7,r1
+;
+; ;
+; ; check it against the command list
+; ;
+; ; r12 = address of command lookup table
+;     imm12   #CMD_TAB
+;     mov     r12, r14
+; 
+; ; r13 = address of command entry point table
+;     imm12   #CMD_LNK
+;     mov     r13, r14
+; 
+; match_loop:
+;     ld.ub   r11, (r12)
+; 
+; 
+;     skip.nz r11         ; bail out if at end of table
+;     bra     parse_loop
+; 
+;     skip.ne r7,r11      ; check for match
+;     bra     got_it
+; 
+;     add     r12, #1
+;     add     r13, #4
+; 
+;     bra     match_loop
+; 
+; got_it:
+;     ld.l    r11, (r13)
+; 
+;     jsr     (r11)
+;
+;     bra parse_loop
+
+
+; ;
+; ; commmand table
+; ;
+; ;  note: commands in table should be uppercase letters (A-Z) or
+; ;        punctuation chars < ASCII code $60 
+; ;
+; CMD_TAB:
+;     dc.s    "DGM?"
+;     dc.b    0               ; end of table marker
+; 
+;     align   4
+; 
+; CMD_LNK:
+;     dc.l    cmd_dump
+;     dc.l    cmd_go
+;     dc.l    cmd_modify
+;     dc.l    cmd_help
+; 
