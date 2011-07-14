@@ -2,13 +2,14 @@
  YARD-1 Licenses:
 
 
-    - The YARD-1 VHDL code is released under the "BSD new" license.
+    - Most of the YARD-1 VHDL code and support files are released 
+      under the "new BSD" license.
 
       See license/new_bsd.txt
 
 
 
-    - The main cross assembler file is based on other free Perl 
-      cross assemblers, and uses the original free licenses
+    - The main cross assembler file, <yas.pl>, is based on other free
+      Perl cross assemblers, and uses the original free license terms
 
       See the header of tools/yas.pl

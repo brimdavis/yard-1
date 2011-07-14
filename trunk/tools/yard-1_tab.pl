@@ -12,7 +12,7 @@
 #
 # Copyright (c) 2000-2011, B. Davis
 #
-# released under the "BSD new" license, see license/new_bsd.txt
+# released under the "new BSD" license, see license/new_bsd.txt
 #
 #-------------------------------------------------------------------------------
 
