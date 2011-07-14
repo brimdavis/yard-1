@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; YARDBUG serial debugger 0.02
+; YARDBUG serial debugger 0.2
 ;
 ; (C) COPYRIGHT 2001, 2011  B. Davis
 ;
@@ -80,7 +80,6 @@ start:
 ; main loop
 ;
 parse_loop:
-    bsr     send_crlf
 
     mov     r0, #'@     ; @ or ? for prompt fits into short immediate encoding
     bsr     send_char
@@ -128,6 +127,8 @@ got_it:
 
     jsr     (r11)           ; call selected command 
 
+;    bsr     send_crlf
+
     bra parse_loop
 
 ;
@@ -140,77 +141,44 @@ cmd_dump:
     mov     r12, r1
 
 ; if user entry was terminated with a space, read byte count; else dump 16 bytes
-    mov     r13,#$0f
-    skip.z  r0      
-    bra     dump1
 
-; get the count into R13
-    bsr     ghex
+    mov     r1,#16      ; load default count
+
+    skip.nz  r0         ; check return code of last ghex call ( r0=0 for a space )
+    bsr     ghex         
+
     mov     r13, r1
+    and     r13, #$0000_1fff    ; limit loop iterations to 8K - 1
 
-; pre-decrement for loop exit code ( r1=0 => 1 iteration )
-    dec     r13
+    clr     r11         ; set line byte counter to wrap
 
-; limit loop iterations to 4K 
-    and     r13, #$0000_0fff
+dump_loop:
+    sub.snb r13,#1      ; decrement byte count, check for borrow
+    bra     send_crlf   ; bail out if negative ( bra so send_crlf returns to main )
 
-dump1:
-    bsr     send_crlf
+    dec     r11
 
-mem_loop:
+    skip.z  r11
+    bra     print_byte  ; don't start new line until counter underflows
+
+    mov     r11,#16     ; load default count
+
+start_line:
     mov     r0, r12     ; print address
     bsr     phex32
 
-    mov     r11, #$0f   ; 15..0 => 16 bytes per line
+print_byte:
 
-byte_loop:
     bsr     space
 
-    ld.ub   r0, (r12)   ; read next byte
+    ld.ub   r0, (r12)   ; read next memory byte
     bsr     phex8
-
-    sub.snb r13,#1      ; decrement loop count, check for borrow
-    rts                 ; bail out if negative
 
     inc     r12         ; increment pointer
 
-    sub.snb r11,#1      ; decrement line byte count, check for borrow
-    bra     dump1       ; start next line if negative
-
-    bra     byte_loop
+    bra     dump_loop   
 
 
-
-; 
-; dump1:
-;   bsr     send_crlf
-; 
-; mem_loop:
-;   mov     r0, r12     ; print address
-;   bsr     phex32
-; 
-;   mov     r11, #$10   ; 16 bytes per line
-; 
-; byte_loop:
-;   bsr     space
-; 
-;   ld.ub   r0, (r12)   ; read next byte
-;   bsr     phex8
-; 
-;   dec     r11         ; decrement byte count
-;   inc     r12         ; increment pointer
-; 
-;   skip.miz    r11
-;   bra     byte_loop
-; 
-;   bsr  send_crlf
-; 
-;   sub     r13, #$10
-;   skip.miz    r13
-;   bra     mem_loop
-; 
-;   rts
-;
 
 
 ;
@@ -240,10 +208,10 @@ next_byte:
     inc     r4
 
 ; check returned ghex terminator value to see if we're done 
-    skip.nz r0
+    skip.nz  r0
     bra     next_byte   ; zero -> space, so go get another byte
 
-    bra     send_crlf   ; bra instead of bsr & rts saves an instruction (ROM space)
+    rts                 
 
 
 ;
@@ -418,14 +386,17 @@ tx_full:
 
 ;
 ; version of get_char with echo of input character
-; also handles CRLF expansion
+;
+;  also handles CRLF expansion
+;  note funky return value (0) for a CR
 ;
 get_char_echo:
     bsr get_char
 
     mov     r10,#$0d    
+
     skip.ne r10,r0      ; if CR echo both CR & LF
-    bra     send_crlf   ; note that send_crlf  returns r0=0 to the caller in place of CR
+    bra     send_crlf   ; note that send_crlf will return r0=0 to the caller in place of CR
 
                         ; else echo the original character
     bra     send_char   ; bra instead of bsr & rts saves an instruction (ROM space)
@@ -485,14 +456,25 @@ CMD_TAB:
 
 
 ;
-; even shorter help message (save ROM space)
+; shortest help message (save ROM space)
 ;
 STR_HELP: 
-    dc.s    "YARDBUG 0.2, DGM?"
+    dc.s    "YARDBUG,DGM?"
 
 STR_CRLF:
     dc.b    $0d,$0a
     dc.b    0
+;
+; even shorter help message (save ROM space)
+;
+;STR_HELP: 
+;    dc.s    "YARDBUG 0.2"
+;    dc.b    $0d,$0a
+;    dc.s    "DGM?"
+;
+;STR_CRLF:
+;    dc.b    $0d,$0a
+;    dc.b    0
 
 ; ;
 ; ; shorter help message (save ROM space)

@@ -1,7 +1,7 @@
 #! /usr/local/bin/perl5 
 
 #-------------------------------------------------------------------------------
-# YARD-1 Linker 0.0.2
+# YARD-1 Linker
 #-------------------------------------------------------------------------------
 
 
@@ -9,7 +9,7 @@
 #
 # Copyright (c) 2001,2007,2011, Brian Davis
 #
-# released under the "BSD new" license, see license/bsd_new.txt
+# released under the "new BSD" license, see license/new_bsd.txt
 #
 #-------------------------------------------------------------------------------
 
@@ -82,8 +82,9 @@
 #
 #-------------------------------------------------------------------------------
 
+my $VERSION = "0.0.2";
 
-printf("\nYARD-1 Linker Version 0.02\n");
+printf("\nYARD-1 Linker Version $VERSION\n");
 
 # should have one argument, the object file
 if ($#ARGV != 0) { die ("\nError: Expecting one (and only one) object file \n") };

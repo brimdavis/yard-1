@@ -18,36 +18,6 @@
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
-
-my $help_notes = <<END_NOTES;
-
-  General Notes:
-
-  - simple two-pass absolute assembler
-
-  - current implementation is missing many features
-     - no constant expression parser
-     - no macros
-
-  - not much error checking yet
-     - legal input lines assemble OK, illegal input lines may quietly fail
-
-  - intended to support initial processor debug and verification, and
-    small assembly projects, not to be the ultimate assembler
-
-  - assembler output files:
-      - <file>.lst = listing file
-      - <file>.obj = 'object' file
-      - <file>.vfy = verification file with address/reg/data info. from ".verify" pseudo-op
-      - <file>.jnk = file with output of debug printfs (if debug flag is enabled)
-
-END_NOTES
-
-#-------------------------------------------------------------------------------
-
-
-
-#-------------------------------------------------------------------------------
 #
 # Derived from S. Aravindhan's risc8_asm
 #
@@ -103,6 +73,35 @@ END_NOTES
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
+#-------------------------------------------------------------------------------
+
+
+#-------------------------------------------------------------------------------
+
+my $help_notes = <<END_NOTES;
+
+  General Notes:
+
+  - simple two-pass absolute assembler
+
+  - current implementation is missing many features
+     - no constant expression parser
+     - no macros
+
+  - not much error checking yet
+     - legal input lines assemble OK, illegal input lines may quietly fail
+
+  - presently sufficient to support initial processor debug and verification, 
+    and small assembly projects
+
+  - assembler output files:
+      - <file>.lst = listing file
+      - <file>.obj = object file
+      - <file>.vfy = verification file with address/reg/data info. from ".verify" pseudo-op
+      - <file>.jnk = file with output of debug printfs (if debug flag is enabled)
+
+END_NOTES
+
 #-------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------
