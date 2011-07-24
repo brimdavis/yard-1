@@ -56,33 +56,7 @@
 #-------------------------------------------------------------------------------
 
 
-#-------------------------------------------------------------------------------
-#
-# history:
-#
-# July 2011
-#   - changed instruction object format from binary to hex [ op16=xxxx ]
-#
-# Oct. 2007
-#   - hacked memory size for 16K BRAMs, should use command line flags
-#
-# Nov. 2001
-#   - moved VHDL constant array file (.vh1) generation here from yasm.pl
-#
-# Jul. 2001
-#   - added bit vector INIT's for simulation generics ( instead of writing VHDL xlate function )
-#
-# Mar. 2001
-#   - changed memory image and INIT code to use byte array instead of word array
-#
-# Feb. 2001
-#   - created
-#
-#
-#
-#-------------------------------------------------------------------------------
-
-my $VERSION = "0.0.2";
+my $VERSION = "0.0.2-alpha";
 
 printf("\nYARD-1 Linker Version $VERSION\n");
 
