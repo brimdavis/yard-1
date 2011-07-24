@@ -230,90 +230,6 @@ END_BUGS
 #-------------------------------------------------------------------------------
 
 
-#-------------------------------------------------------------------------------
-#
-# history:
-#
-#
-# Jan. 2011
-#   - "use strict" enabled
-#   - range checked constants ( dc.b, dc.w, dc.l ) so out of range values don't create
-#          illegal hex values in .obj file when the printf field width overflows
-#
-# Dec. 2010
-#   - started adding support for multiple source files 
-#
-# Jan. 2010
-#   - distinct address/data register name tables for fp,sp,imm,pc/rs
-#   - sync with current opcode table
-#   - switch remaining binary string lookups to use %B instead
-#
-# Feb. 2007
-#   - general overhaul continued
-#       - HOH dispatch tables
-#       - parser cleanup
-#       - new label code
-#       - added duplicate label check
-#
-# May. 2003
-#   - started general overhaul
-#   - incorporated various code from P65 assembler
-#
-# Feb. 2002
-#   - also print error messages & counts to list file
-#   - both opcode tables now created from single "opdefs" array
-#   - changed imm5_encode hash lookup to hex string
-#
-# Dec. 2001
-#   - check for branch target to odd address
-#   - check for emitted opcode at odd address
-#   - warn if dc.l, dc.w occur on unaligned addresses
-#   - fixed dc.b alignment hack
-#       both vhdl output files are now written from ylink
-#   - dc.s for strings 
-#
-# Jul. 2001
-#   - tweaked ".verify" code to emit last_address, include source line #
-#
-# Jun. 2001
-#   - assorted opcode changes
-#
-# Feb. 2001
-#   - moved INIT_XX memory image code to separate "linker" (ylink.pl)
-#   - added ".verify"
-#
-# Jan. 2001
-#   - added temp. code to generate INIT_XX for 1Kx16 RAM @0
-#       probably should be post-processor ( create .init or .coe or .s19 or ... )
-#   - dc.b,dc.w,dc.l  ( dc.b currently hacked to stay word aligned )
-#   - modify label code to handle 'equ' psuedo-op as part of symbol table
-#
-# Dec. 2000
-#   - print symbol table
-#   - generate list file
-#   - changed to use two source passes instead of intermediate file w/fixups
-#       - allows .lst & .vh1 files w/hex data to be generated on the fly during pass 2
-#   - fix to allow unsigned decimal constants > 2^31 
-#   - delayed branch
-#   - skip on bit
-#   - branch label processing
-#   - LEA, LD/ST: added decode for IMM12 offset mode 
-#   - LEA: generate "mov Ra,Rb" if offset is zero
-#
-# Nov. 2000  BMD
-#   - check if (NOT imm5) matches encoded constant, flip .not bit in instruction
-#   - changed numeric parser to use "$" for hex prefix, "%" for binary
-#
-# Oct. 2000  BMD
-#   - use # prefix for immediates instead of "op","opi" variants
-#   - added more opcodes
-#
-# Sep. 2000  BMD
-#   - initial changes for YARD-1 made to risc8_asm.pl 1.0
-#
-#-------------------------------------------------------------------------------
-
-
 #-------------------------------------------------------------
 # directives and flags
 #-------------------------------------------------------------
@@ -327,7 +243,7 @@ our $D1 = 1;
 # globals
 #-------------------------------------------------------------
 
-my $VERSION = "0.0.2";
+my $VERSION = "0.0.2-alpha";
 
 #
 # location counter
