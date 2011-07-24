@@ -72,7 +72,10 @@ $vho_file = $obj . '.vh2';
 $vhc_file = $obj . '.vh1';
 
 open (OBJ_F, "$obj_file")  or die ("Can't open $obj_file: $!\n");
+
 open (CMD_F, ">$cmd_file") or die ("Can't open $cmd_file: $!\n");
+binmode CMD_F; # needed to enable writing solitary LF to file without CRLF expansion on Windows
+
 open (VHO_F, ">$vho_file") or die ("Can't open $vho_file: $!\n");
 open (VHC_F, ">$vhc_file") or die ("Can't open $vhc_file: $!\n");
 
@@ -183,12 +186,12 @@ for($i=0 ; $i < $mem_size; $i++ )
         if ( ( $mem_data[$i] eq "XX" ) || ( $i >= ($c_start + 15) ) )
           {
            $c_start = -1;
-            printf CMD_F ("\n" );
+            printf CMD_F ("\x0A" ); # use explicit LF to avoid CR-LF echo induced RS232 buffer overrun
           }
       }
  } 
 
-printf CMD_F ("\n" );
+printf CMD_F ("\r\n" );
 
 
 
