@@ -141,16 +141,21 @@ cmd_dump:
     mov     r12, r1
 
 ; if user entry was terminated with a space, read byte count; else dump 16 bytes
-
     mov     r1,#16      ; load default count
 
     skip.nz  r0         ; check return code of last ghex call ( r0=0 for a space )
     bsr     ghex        ; get user byte count  
 
+    dec     r1          ; decrement byte count ( loop counter counts N-1..0 )
+
     mov     r13, r1             ; r13 = byte count
     and     r13, #$0000_1fff    ; limit loop iterations to 8K-1
 
-    bra     next_line
+next_line:
+    mov     r0, r12     ; print address
+    bsr     phex32
+
+    mov     r11,#16     ; load line byte counter
 
 dump_loop:
     bsr     space
@@ -160,24 +165,17 @@ dump_loop:
 
     inc     r12         ; increment memory pointer
 
-check_counts:
     sub.snb r13,#1      ; decrement byte count, check for borrow
     bra     send_crlf   ; bail out if negative ( bra so send_crlf returns to main )
 
     dec     r11         ; decrement line byte counter
 
-    skip.z r11
+    skip.z  r11
     bra     dump_loop   
 
     bsr     send_crlf   ; end of line
 
-next_line:
-    mov     r0, r12     ; print address
-    bsr     phex32
-
-    mov     r11,#15     ; load line byte counter, counts 15..0 for 16 bytes
-
-    bra     dump_loop
+    bra     next_line
 
 
 
