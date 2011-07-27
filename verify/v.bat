@@ -22,9 +22,9 @@ copy sim\ghdl_sim.out %1
 ::copy sim\isim_sim.out %1
 if errorlevel 1 exit /b 1
 
-call very %1\%~n1.vfy %1\ghdl_sim.out %1\%~n1.vrf
-::call very %1\%~n1.vfy %1\sym_sim.out %1\%~n1.vrf
-::call very %1\%~n1.vfy %1\isim_sim.out %1\%~n1.vrf
+call yver %1\%~n1.vfy %1\ghdl_sim.out %1\%~n1.vrf
+::call yver %1\%~n1.vfy %1\sym_sim.out %1\%~n1.vrf
+::call yver %1\%~n1.vfy %1\isim_sim.out %1\%~n1.vrf
 type %1\%~n1.vrf
 
 

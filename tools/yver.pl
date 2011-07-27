@@ -26,6 +26,8 @@
 #
 #-------------------------------------------------------------------------------
 
+my $VERSION = "0.0.2-alpha";
+
 
 #
 # should have three arguments: the verify file, the sim file, the output file
@@ -55,7 +57,7 @@ open (SIM_F,  "$sim_file") or die ("Can't open $sim_file: $!\n");
 open (VRF_F, ">$vrf_file") or die ("Can't open $vrf_file: $!\n");
 
 #
-printf VRF_F ("\nYARD-1 Verify Version 0.0.2\n\n");
+printf VRF_F ("\nYARD-1 Verify $VERSION\n\n");
 
 # $D1 turns debug prints on/off
 $D1 = 0;
