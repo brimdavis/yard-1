@@ -1,16 +1,19 @@
 ;
 ; addsub1.asm
 ;
+
+;
 ; (C) COPYRIGHT 2011  B. Davis
 ;
 ; Code released under the terms of the "new BSD" license
 ; see license/new_bsd.txt
+;
 
 ;
 ;   test add & subtract
 ;
 
-   org $0
+    org     $0
 
 ; nop first, reset vector isn't working quite right
     nop
@@ -19,18 +22,18 @@
 ;
 ; try some adds
 ;
-    mov r0,#$0
+    mov     r0,#$0
 
-    add r0,#1
+    add     r0,#1
     .verify r0,#$0000_0001
 
-    add r0,#$7fff_ffff
+    add     r0,#$7fff_ffff
     .verify r0,#$8000_0000
 
-    add r0,#1
+    add     r0,#1
     .verify r0,#$8000_0001
 
-    add r0,#$7fff_ffff
+    add     r0,#$7fff_ffff
     .verify r0,#$0000_0000
 
 ;
@@ -50,18 +53,18 @@
 ;
 ; try some subtracts
 ;
-    mov r0,#$0
+    mov     r0,#$0
 
-    sub r0,#1
+    sub     r0,#1
     .verify r0,#$ffff_ffff
 
-    sub r0,#$7fff_ffff
+    sub     r0,#$7fff_ffff
     .verify r0,#$8000_0000
 
-    sub r0,#1
+    sub     r0,#1
     .verify r0,#$7fff_ffff
 
-    sub r0,#$7fff_ffff
+    sub     r0,#$7fff_ffff
     .verify r0,#$0000_0000
 
 
@@ -80,18 +83,18 @@
 ;
 ; try some reverse subtracts
 ;
-    mov r0,#$1
+    mov     r0,#$1
 
     rsub    r0,#0
     .verify r0,#$ffff_ffff
 
 ;
-    mov r0,#$7fff_ffff
+    mov     r0,#$7fff_ffff
     rsub    r0,#$ffff_ffff
     .verify r0,#$8000_0000
 
 ;
-    mov r0,#$1
+    mov     r0,#$1
     rsub    r0,#$8000_0000
     .verify r0,#$7fff_ffff
 
@@ -115,7 +118,7 @@
 done:
         bra     done
 
-  end
+    end
 
 
 
