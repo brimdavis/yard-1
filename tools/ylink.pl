@@ -36,6 +36,7 @@
 #
 # 'to do' list:
 #
+#    - add header line check for object format version
 #
 #    - add command line args for:
 #       - memory image start/size 
@@ -114,7 +115,13 @@ $error = 0;
    {
      chop $line; 
 
-     if ($line =~ /@(.+)/) 
+     if ($line =~ /#(.+)/) 
+       { 
+        # comment line, ignore
+        # should check for proper header on first line of file
+       }
+
+     elsif ($line =~ /@(.+)/) 
        { 
          $address = oct ( "0x" . $1 );  
        }
@@ -140,7 +147,7 @@ $error = 0;
          $address = $address + 2;
        }
 
-     elsif($line =~ /long=(.{8})$/) 
+     elsif($line =~ /quad=(.{8})$/) 
        { 
          $dat_str = substr($1,0,2);
          $mem_data[ $address - $mem_start ]     = $dat_str;
@@ -327,7 +334,7 @@ print VHO_F $vho_file_header;
 
  for ( $i=0 ; $i < $init_blks; $i++ )  # INIT_00 through INIT_0F
    { 
-     for ( $j=0 ; $j < $init_blk_size; $j++ )  # 32 longs (32 bit) per INIT block
+     for ( $j=0 ; $j < $init_blk_size; $j++ )  # 32 quads (32 bit) per INIT block
        {
          # two hex chars. per word for each x8 BRAM; LSB value = last char in string
          $str_index = $init_str_size - ( $j*2 ) - 1;   
