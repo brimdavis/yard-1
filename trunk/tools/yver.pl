@@ -32,7 +32,7 @@ my $VERSION = "0.0.2-alpha";
 #
 # should have three arguments: the verify file, the sim file, the output file
 #
-if ($#ARGV != 2) { die ("\nUsage: verify yourfile{.vfy} yourfile{.out} yourfile{.vrf}\n") };
+if ($#ARGV != 2) { die ("\nUsage: yver yourfile{.vfy} yourfile{.out} yourfile{.vrf}\n") };
 
 #
 # fixup any missing file extensions

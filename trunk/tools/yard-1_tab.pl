@@ -768,7 +768,7 @@ sub ps_imm12
   (
 
     'ld'     =>  { type =>  'MEM32' , opc => '10000ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD"                   },
-    'ld.l'   =>  { type =>  'MEM32' , opc => '10000ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD, Long"             },
+    'ld.q'   =>  { type =>  'MEM32' , opc => '10000ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD, Quad"             },
 
     'ld.w'   =>  { type =>  'MEM16' , opc => '10001ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Wyde"             },
     'ld.sw'  =>  { type =>  'MEM16' , opc => '10001ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Signed Wyde"      },
@@ -779,7 +779,7 @@ sub ps_imm12
     'ld.ub'  =>  { type =>  'MEM8'  , opc => '10000ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Unsigned Byte"    },
 
     'st'     =>  { type =>  'MEM32' , opc => '10010ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore"                  },
-    'st.l'   =>  { type =>  'MEM32' , opc => '10010ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore, Long"            },
+    'st.q'   =>  { type =>  'MEM32' , opc => '10010ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore, Quad"            },
 
     'st.w'   =>  { type =>  'MEM16' , opc => '10010ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "STore, Wyde"            },
     'st.b'   =>  { type =>  'MEM8'  , opc => '10010ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "STore, Byte"            },
@@ -862,7 +862,7 @@ sub ps_mem
                   }
 
                 #
-                # check that offset is within valid range and long aligned
+                # check that offset is within valid range and quad aligned
                 #
                 ($status, $offset) = extract_word($1);
 
@@ -871,7 +871,7 @@ sub ps_mem
                     # BMD make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
                     if ( $offset > 63 ) 
                       {
-                        do_error("Stack offset must be long aligned constant <= 60");
+                        do_error("Stack offset must be quad aligned constant <= 60");
                         $offset = 0;
                       }
 
@@ -969,7 +969,7 @@ sub ps_ldi
     #BMD needs rework for +/- word alignment once offset logic shared with BRA
     #
 
-    # calculate offset from current PC (long aligned) to address
+    # calculate offset from current PC (quad aligned) to address
     ($status, $offset) = extract_word($operands[0]);
     $offset = $offset - ( (get_address() >> 2 ) << 2);
 
@@ -982,7 +982,7 @@ sub ps_ldi
             $offset = 0;
           }
 
-        # check for long aligned target address before truncating offset
+        # check for quad aligned target address before truncating offset
         if ( ( $offset % 4 ) > 0 )
           {
             do_error("Unaligned LDI source address");
