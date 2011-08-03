@@ -47,7 +47,7 @@
 ;      - no way to escape out of command in progress
 ;
 ;      - no way to backspace 
-;        ( uses last 8/2 hex chars. entered for long/byte input, 
+;        ( uses last 8/2 hex chars. entered for quad/byte input, 
 ;         so you can type some zeroes followed by the proper
 ;         value to correct an error)
 ;
@@ -59,8 +59,8 @@
 ;
 ;   $0 for embedded boot "ROM"
 ;
-; after code squish for ROM space, debugger must live in the first 
-; 256 bytes of memory for the compact command table dispatch to work
+;   after code squish for ROM space, debugger must live in the first 
+;   256 bytes of memory for the compact command table dispatch to work
 ;
     org     $0
 
@@ -295,7 +295,6 @@ gloop:
     skip.plnz   r0
     rts
 
-
 ;
 ; convert ASCII code  -> hex ( with liberties taken for illegal chars )
 ;
@@ -319,7 +318,6 @@ gloop:
     or      r1, r0
 
     bra     gloop
-
 
 ;
 ; print 8/16/32 bit hex value in r0
@@ -346,10 +344,8 @@ phex:
     rsub    r14,#32     ; initial rotate of r0 by 32-N bits left to move desired field into MS nybble
     bsr     rol_r4_imm  
 
-
 hloop:
-    imm12   #4          ; rotate MS nybble into the LS nybble
-    bsr     rol_r4_imm  
+    bsr     rol_r4_four ; rotate MS nybble into the LS nybble
 
     mov     r0, r4      ; copy to r0 and mask 
     and     r0, #$0f
@@ -370,8 +366,16 @@ hloop:
     rts
 
 ;
-; rotate r4 imm positions left
+; rol_r4_imm
+;   rotate r4 imm positions left
 ;
+; rol_r4_four
+;   alternate entry point, rotate r4 four positions left
+;
+;
+rol_r4_imm
+    imm12   #4
+
 rol_r4_imm
     sub.snb r14,#1          ; decrement shift count
     rts                     ; bail out if done
@@ -425,12 +429,12 @@ send_char:
 
 ; loop until buffer has room
 tx_full:
-    ld.l  r10, (r8)
+    ld.q  r10, (r8)
 
     skip.bc r10, #7
     bra     tx_full
 
-    st.l    r0, (r9)    ; write data to TX
+    st.q    r0, (r9)    ; write data to TX
     rts
 
 ;
@@ -466,12 +470,12 @@ get_char:
 
 ; loop until there's something in the buffer
 rx_empty:
-    ld.l  r10, (r8)
+    ld.q  r10, (r8)
 
     skip.bs r10, #6
     bra     rx_empty
 
-    ld.l    r0, (r9)    ; read data from RX
+    ld.q    r0, (r9)    ; read data from RX
     rts
 
 ;
@@ -604,7 +608,7 @@ STR_CRLF:
 ;     bra     match_loop
 ; 
 ; got_it:
-;     ld.l    r11, (r13)
+;     ld.q    r11, (r13)
 ; 
 ;     jsr     (r11)
 ;
