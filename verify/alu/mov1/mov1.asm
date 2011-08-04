@@ -23,7 +23,7 @@
 ;        could hand code .dcw opcodes as a workaround to test all encodings
 ;
 
-   org $0
+    org $0
 
 ; nop first, reset vector isn't working quite right
     nop

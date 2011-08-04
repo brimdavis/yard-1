@@ -8,6 +8,7 @@ FPGA Development Environment:
  files used for simulation and verification.
 
 
+================================================================
 
 FPGA Software:
 
@@ -15,21 +16,36 @@ FPGA Software:
 
  Xilinx Webpack: 
 
-  - Xilinx WebPack  9.2 SP3      
+  - Xilinx WebPack 9.2 with SP4
   
-  www.xilinx.com
+    need the following files for installation:
+      WebPACK_SFD_92i.zip      9.2i Webpack single file download 
+      9_2_04i_win.exe          Service Pack 4
 
+    http://www.xilinx.com/support/download/index.htm
 
+      - click "archive" on the left version list
+
+      - expand the "+9.2", look for "ISE Foundation WebPACK - 9.2i Full Product Installation"
+
+      - expand the "+9.2 SP4", look for "ISE Foundation - 9.2i Service Pack 4"
+
+================================================================
 
 VHDL simulator:
 
   Currently using GHDL for the testbench simulator
 
-  GHDL 0.29.1+ patched to resolve stack crashes and windows path issues
+  Either of the following GHDL versions ( intermediate versions tend to crash on WinXP ):
 
-  ( add download link )
+    GHDL 0.25
+    http://ghdl.free.fr/ghdl-installer-0.25.exe
+
+    GHDL 0.29.1+ patched to resolve stack crashes and windows path issues
+    ( add download link )
 
 
+================================================================
 
 Other Software needed:
 
