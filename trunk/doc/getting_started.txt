@@ -1,0 +1,102 @@
+
+Installation:
+
+ - unzip the project .zip file to a directory such as c:\projects\yard
+
+     preferably a path without spaces, as some of the FPGA tools take issue with spacey paths
+
+ - all tools are run from a command shell ( see next section )
+
+ - example install:
+
+    > md c:\projects
+    > cd c:\projects
+    > unzip PATH_TO_DOWNLOADED_FILE\yard-1_v-0-0-2-alpha.zip
+    > dir yard
+
+
+
+Command Shell path setup:
+
+  - open a command prompt
+
+  - cd to your chosen install directory  
+
+  - execute the <yen.bat> file found therein to set up paths and environment variables
+
+      > cd c:\projects\yard
+      > yen
+
+
+Assembling and Linking a program :
+
+  [ command shell path setup ]
+
+  > cd programs\hello
+  > yas hello.asm
+  > ylink hello.obj
+
+
+  At this point, the linker will have created several output files; vhdl source
+ files <hello.vh1>, <hello.vh2> for simulation or synthesis, and a <hello.cmd> 
+ file for download to YARDBUG.
+
+
+
+Downloading a program to YARDBUG :
+
+  - open hyperterminal or equivalent
+
+  - 19200,n,8,1 RS232 connection to evaluation board
+
+  - download or otherwise start up FPGA board
+
+  - should see YARDBUG banner and '@' prompt 
+
+  - send ASCII file <hello.cmd>
+
+  - G 600
+
+
+YARDBUG commands :
+
+   D  ADDR COUNT        Dump memory
+
+   G  ADDR              Go
+
+   M  ADDR BYTE {BYTE}  Modify byte(s)
+
+   ?                    help
+
+  e.g.:
+    D 0 100        ; dump 256 bytes starting at zero
+    G 0            ; jump to address 0
+    M 600 00       ; byte at $600 = 0
+    M 601 ff ee    ; byte at $601 = $ff, $602 = $ee
+
+
+
+Running verification simulations :
+
+  [ requires GHDL ]
+  [ command shell path setup ]
+
+  - cd into to the verify subdirectory
+
+      > cd verify           
+
+  - run a single test :
+
+      > v alu\addsub1
+
+  - run all tests:
+
+      > vall
+
+  - summarize test results:
+
+      > vsummary
+
+  - search for failed tests:
+
+      > vfailed

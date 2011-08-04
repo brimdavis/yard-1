@@ -15,7 +15,7 @@
 ; try out logicals
 ;
 
-   org $0
+    org $0
 
 ; nop first, reset vector isn't working quite right
     nop
