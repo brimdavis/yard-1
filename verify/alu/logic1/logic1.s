@@ -1,5 +1,5 @@
 ;
-; logic1.asm
+; <logic1.s>
 ;
 
 ;

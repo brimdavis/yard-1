@@ -1,7 +1,7 @@
 ::
 :: verify script, needs path to subdirectory containing test
 ::
-call yas    %1\%~n1.asm   || exit /b 1
+call yas    %1\%~n1.s     || exit /b 1
 
 call ylink  %1\%~n1.obj   || exit /b 1
 
