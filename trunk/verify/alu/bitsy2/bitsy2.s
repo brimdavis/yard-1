@@ -1,5 +1,5 @@
 ;
-; bitsy2.asm
+; <bitsy2.s>
 ;
 
 ;

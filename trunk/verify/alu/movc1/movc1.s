@@ -1,5 +1,5 @@
 ;
-; movc1.asm
+; <movc1.s>
 ;
 
 ;

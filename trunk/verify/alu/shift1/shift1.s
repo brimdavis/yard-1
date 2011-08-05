@@ -1,5 +1,5 @@
 ;
-; shift1.asm
+; <shift1.s>
 ;
 
 ;

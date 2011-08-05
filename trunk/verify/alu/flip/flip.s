@@ -1,5 +1,5 @@
 ;
-; flip.asm
+; <flip.s>
 ;
 
 ;
