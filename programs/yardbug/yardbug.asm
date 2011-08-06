@@ -291,8 +291,8 @@ gloop:
     bsr     get_char_echo
 
 ; bail out on a space or other ctl. char
-    sub     r0, #$20
-    skip.plnz   r0
+    sub       r0, #$20
+    skip.gtz  r0
     rts
 
 ;
@@ -352,7 +352,7 @@ hloop:
 
 ; hex to ASCII conversion
     sub     r0, #9
-    skip.plnz   r0
+    skip.gtz   r0
     sub     r0, #7
     add     r0, #$40
 
@@ -360,7 +360,7 @@ hloop:
 
     sub     r3,#4       ; decrement bit count
 
-    skip.miz  r3
+    skip.lez  r3
     bra     hloop
 
     rts
@@ -373,7 +373,7 @@ hloop:
 ;   alternate entry point, rotate r4 four positions left
 ;
 ;
-rol_r4_imm
+rol_r4_four
     imm12   #4
 
 rol_r4_imm
