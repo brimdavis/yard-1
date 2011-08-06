@@ -1178,57 +1178,60 @@ sub ps_jir
 %ops_skip = 
   (
     # SKIP
-    'skip'      =>  { type =>  'SKIP_0'    , opc => '1101010000000000' , ps => \&ps_skip , name => "SKIP"                       },  #skip.eq r0,r0
-    'skip.a'    =>  { type =>  'SKIP_0'    , opc => '1101010000000000' , ps => \&ps_skip , name => "SKIP Always"                },  #skip.eq r0,r0
-    'skip.n'    =>  { type =>  'SKIP_0'    , opc => '1101110000000000' , ps => \&ps_skip , name => "SKIP Never"                 },  #skip.ne r0,r0
+    'skip'      =>  { type =>  'SKIP_0'    , opc => '1101010000000000' , ps => \&ps_skip , name => "SKIP"                         },  #skip.eq r0,r0
+    'skip.a'    =>  { type =>  'SKIP_0'    , opc => '1101010000000000' , ps => \&ps_skip , name => "SKIP Always"                  },  #skip.eq r0,r0
+    'skip.n'    =>  { type =>  'SKIP_0'    , opc => '1101110000000000' , ps => \&ps_skip , name => "SKIP Never"                   },  #skip.ne r0,r0
 
     #  SKIP Ra   
-    'skip.z'    =>  { type =>  'SKIP_R'    , opc => '110101010000aaaa' , ps => \&ps_skip , name => "SKIP Zero"                  },
-    'skip.nz'   =>  { type =>  'SKIP_R'    , opc => '110111010000aaaa' , ps => \&ps_skip , name => "SKIP NonZero"               },
+    'skip.z'    =>  { type =>  'SKIP_R'    , opc => '110101010000aaaa' , ps => \&ps_skip , name => "SKIP Zero"                    },
+    'skip.nz'   =>  { type =>  'SKIP_R'    , opc => '110111010000aaaa' , ps => \&ps_skip , name => "SKIP NonZero"                 },
 
-    'skip.awz'  =>  { type =>  'SKIP_R'    , opc => '110101010001aaaa' , ps => \&ps_skip , name => "SKIP Any Wyde Zero"         },
-    'skip.nwz'  =>  { type =>  'SKIP_R'    , opc => '110111010001aaaa' , ps => \&ps_skip , name => "SKIP No Wyde Zero"          },
+    'skip.awz'  =>  { type =>  'SKIP_R'    , opc => '110101010001aaaa' , ps => \&ps_skip , name => "SKIP Any Wyde Zero"           },
+    'skip.nwz'  =>  { type =>  'SKIP_R'    , opc => '110111010001aaaa' , ps => \&ps_skip , name => "SKIP No Wyde Zero"            },
 
-    'skip.abz'  =>  { type =>  'SKIP_R'    , opc => '110101010010aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Zero"         },
-    'skip.nbz'  =>  { type =>  'SKIP_R'    , opc => '110111010010aaaa' , ps => \&ps_skip , name => "SKIP No Byte Zero"          },
+    'skip.abz'  =>  { type =>  'SKIP_R'    , opc => '110101010010aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Zero"           },
+    'skip.nbz'  =>  { type =>  'SKIP_R'    , opc => '110111010010aaaa' , ps => \&ps_skip , name => "SKIP No Byte Zero"            },
+                                                                                                                                 
+    'skip.po'   =>  { type =>  'SKIP_R'    , opc => '110101010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Odd"              },
+    'skip.pe'   =>  { type =>  'SKIP_R'    , opc => '110111010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Even"             },
 
-    'skip.po'   =>  { type =>  'SKIP_R'    , opc => '110101010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Odd"            },
-    'skip.pe'   =>  { type =>  'SKIP_R'    , opc => '110111010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Even"           },
+    'skip.lez'  =>  { type =>  'SKIP_R'    , opc => '110101010100aaaa' , ps => \&ps_skip , name => "SKIP Less than or Equal Zero" },
+    'skip.gtz'  =>  { type =>  'SKIP_R'    , opc => '110111010100aaaa' , ps => \&ps_skip , name => "SKIP Greater than Zero"       },
 
-    'skip.miz'  =>  { type =>  'SKIP_R'    , opc => '110101010100aaaa' , ps => \&ps_skip , name => "SKIP Minus or Zero"         },
-    'skip.plnz' =>  { type =>  'SKIP_R'    , opc => '110111010100aaaa' , ps => \&ps_skip , name => "SKIP Plus and NonZero"      },
+#   'skip.miz'  =>  { type =>  'SKIP_R'    , opc => '110101010100aaaa' , ps => \&ps_skip , name => "SKIP Minus or Zero"           },
+#   'skip.plnz' =>  { type =>  'SKIP_R'    , opc => '110111010100aaaa' , ps => \&ps_skip , name => "SKIP Plus and NonZero"        },
 
-    'skip.awm'  =>  { type =>  'SKIP_R'    , opc => '110101010101aaaa' , ps => \&ps_skip , name => "SKIP Any Wyde Minus"        },
-    'skip.nwm'  =>  { type =>  'SKIP_R'    , opc => '110111010101aaaa' , ps => \&ps_skip , name => "SKIP No Wyde Minus"         },
+    'skip.awm'  =>  { type =>  'SKIP_R'    , opc => '110101010101aaaa' , ps => \&ps_skip , name => "SKIP Any Wyde Minus"          },
+    'skip.nwm'  =>  { type =>  'SKIP_R'    , opc => '110111010101aaaa' , ps => \&ps_skip , name => "SKIP No Wyde Minus"           },
 
-    'skip.abm'  =>  { type =>  'SKIP_R'    , opc => '110101010110aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Minus"        },
-    'skip.nbm'  =>  { type =>  'SKIP_R'    , opc => '110111010110aaaa' , ps => \&ps_skip , name => "SKIP No Byte Minus"         },
+    'skip.abm'  =>  { type =>  'SKIP_R'    , opc => '110101010110aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Minus"          },
+    'skip.nbm'  =>  { type =>  'SKIP_R'    , opc => '110111010110aaaa' , ps => \&ps_skip , name => "SKIP No Byte Minus"           },
 
-    'skip.ft'   =>  { type =>  'SKIP_FLAG' , opc => '110101010111aaaa' , ps => \&ps_skip , name => "SKIP Flag True"             },
-    'skip.ff'   =>  { type =>  'SKIP_FLAG' , opc => '110111010111aaaa' , ps => \&ps_skip , name => "SKIP Flag False"            },
+    'skip.ft'   =>  { type =>  'SKIP_FLAG' , opc => '110101010111aaaa' , ps => \&ps_skip , name => "SKIP Flag True"               },
+    'skip.ff'   =>  { type =>  'SKIP_FLAG' , opc => '110111010111aaaa' , ps => \&ps_skip , name => "SKIP Flag False"              },
 
-    'skip.mi'   =>  { type =>  'SKIP_R'    , opc => '110101111111aaaa' , ps => \&ps_skip , name => "SKIP Minus"                 },  # skip.bs Ra, #31
-    'skip.pl'   =>  { type =>  'SKIP_R'    , opc => '110111111111aaaa' , ps => \&ps_skip , name => "SKIP Plus"                  },  # skip.bc Ra, #31
+    'skip.mi'   =>  { type =>  'SKIP_R'    , opc => '110101111111aaaa' , ps => \&ps_skip , name => "SKIP Minus"                   },  # skip.bs Ra, #31
+    'skip.pl'   =>  { type =>  'SKIP_R'    , opc => '110111111111aaaa' , ps => \&ps_skip , name => "SKIP Plus"                    },  # skip.bc Ra, #31
 
     # SKIP Ra Rb
-    'skip.lo'   =>  { type =>  'SKIP_R_R'  , opc => '11010000bbbbaaaa' , ps => \&ps_skip , name => "SKIP Lower"                 },
-    'skip.hs'   =>  { type =>  'SKIP_R_R'  , opc => '11011000bbbbaaaa' , ps => \&ps_skip , name => "SKIP Higher or Same"        },
+    'skip.lo'   =>  { type =>  'SKIP_R_R'  , opc => '11010000bbbbaaaa' , ps => \&ps_skip , name => "SKIP Lower"                   },
+    'skip.hs'   =>  { type =>  'SKIP_R_R'  , opc => '11011000bbbbaaaa' , ps => \&ps_skip , name => "SKIP Higher or Same"          },
 
-    'skip.ls'   =>  { type =>  'SKIP_R_R'  , opc => '11010001bbbbaaaa' , ps => \&ps_skip , name => "SKIP Lower or Same"         },
-    'skip.hi'   =>  { type =>  'SKIP_R_R'  , opc => '11011001bbbbaaaa' , ps => \&ps_skip , name => "SKIP Higher"                },
+    'skip.ls'   =>  { type =>  'SKIP_R_R'  , opc => '11010001bbbbaaaa' , ps => \&ps_skip , name => "SKIP Lower or Same"           },
+    'skip.hi'   =>  { type =>  'SKIP_R_R'  , opc => '11011001bbbbaaaa' , ps => \&ps_skip , name => "SKIP Higher"                  },
 
-    'skip.lt'   =>  { type =>  'SKIP_R_R'  , opc => '11010010bbbbaaaa' , ps => \&ps_skip , name => "SKIP Less Than"             },
-    'skip.ge'   =>  { type =>  'SKIP_R_R'  , opc => '11011010bbbbaaaa' , ps => \&ps_skip , name => "SKIP Greater than or Equal" },
+    'skip.lt'   =>  { type =>  'SKIP_R_R'  , opc => '11010010bbbbaaaa' , ps => \&ps_skip , name => "SKIP Less Than"               },
+    'skip.ge'   =>  { type =>  'SKIP_R_R'  , opc => '11011010bbbbaaaa' , ps => \&ps_skip , name => "SKIP Greater than or Equal"   },
 
-    'skip.le'   =>  { type =>  'SKIP_R_R'  , opc => '11010011bbbbaaaa' , ps => \&ps_skip , name => "SKIP Less than or Equal"    },
-    'skip.gt'   =>  { type =>  'SKIP_R_R'  , opc => '11011011bbbbaaaa' , ps => \&ps_skip , name => "SKIP Greater Than"          },
+    'skip.le'   =>  { type =>  'SKIP_R_R'  , opc => '11010011bbbbaaaa' , ps => \&ps_skip , name => "SKIP Less than or Equal"      },
+    'skip.gt'   =>  { type =>  'SKIP_R_R'  , opc => '11011011bbbbaaaa' , ps => \&ps_skip , name => "SKIP Greater Than"            },
 
-    'skip.eq'   =>  { type =>  'SKIP_R_R'  , opc => '11010100bbbbaaaa' , ps => \&ps_skip , name => "SKIP Equal"                 },
-    'skip.ne'   =>  { type =>  'SKIP_R_R'  , opc => '11011100bbbbaaaa' , ps => \&ps_skip , name => "SKIP Not Equal"             },
+    'skip.eq'   =>  { type =>  'SKIP_R_R'  , opc => '11010100bbbbaaaa' , ps => \&ps_skip , name => "SKIP Equal"                   },
+    'skip.ne'   =>  { type =>  'SKIP_R_R'  , opc => '11011100bbbbaaaa' , ps => \&ps_skip , name => "SKIP Not Equal"               },
 
     #  SKIP Ra IMM5
-    'skip.bs'   =>  { type =>  'SKIP_R_I'  , opc => '1101011bbbbbaaaa' , ps => \&ps_skip , name => "SKIP Bit Set"               },
-    'skip.bc'   =>  { type =>  'SKIP_R_I'  , opc => '1101111bbbbbaaaa' , ps => \&ps_skip , name => "SKIP Bit Clear"             }
+    'skip.bs'   =>  { type =>  'SKIP_R_I'  , opc => '1101011bbbbbaaaa' , ps => \&ps_skip , name => "SKIP Bit Set"                 },
+    'skip.bc'   =>  { type =>  'SKIP_R_I'  , opc => '1101111bbbbbaaaa' , ps => \&ps_skip , name => "SKIP Bit Clear"               }
   );
 
 # add to HOH opcode table
