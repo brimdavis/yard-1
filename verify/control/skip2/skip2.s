@@ -13,10 +13,11 @@
 ; YARD-1 test program
 ;
 ; test group B skips 
-;    signed/unsigned reg >=< reg
+;    
+;   skip.lo, skip.hs, skip.ls, skip.hi    unsigned reg >=< reg
 ;
 
-   org $000
+    org $0
 
 ; nop first, reset vector isn't working quite right
     nop
@@ -405,11 +406,11 @@
 ;
 ;
 done:
-        bra  done
-        nop
+    bra  done
+    nop
 
 
-  end
+    end
 
 
 

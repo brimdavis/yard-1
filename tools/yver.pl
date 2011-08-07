@@ -214,7 +214,7 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
  close VFY_F;
  close SIM_F;
 
- printf VRF_F ("\nTotal Errors = %d\n", $errors);
+ printf VRF_F ("\nTotal Errors = %d\n\n", $errors);
 
  exit( $error_cnt > 0 );
 
