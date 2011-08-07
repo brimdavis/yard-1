@@ -1192,8 +1192,8 @@ sub ps_jir
     'skip.abz'  =>  { type =>  'SKIP_R'    , opc => '110101010010aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Zero"           },
     'skip.nbz'  =>  { type =>  'SKIP_R'    , opc => '110111010010aaaa' , ps => \&ps_skip , name => "SKIP No Byte Zero"            },
                                                                                                                                  
-    'skip.po'   =>  { type =>  'SKIP_R'    , opc => '110101010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Odd"              },
-    'skip.pe'   =>  { type =>  'SKIP_R'    , opc => '110111010011aaaa' , ps => \&ps_skip , name => "SKIP Parity Even"             },
+#   'skip.xx'   =>  { type =>  'SKIP_R'    , opc => '110101010011aaaa' , ps => \&ps_skip , name => "SKIP  xx"                     },
+#   'skip.nxx'  =>  { type =>  'SKIP_R'    , opc => '110111010011aaaa' , ps => \&ps_skip , name => "SKIP nxx"                     },
 
     'skip.lez'  =>  { type =>  'SKIP_R'    , opc => '110101010100aaaa' , ps => \&ps_skip , name => "SKIP Less than or Equal Zero" },
     'skip.gtz'  =>  { type =>  'SKIP_R'    , opc => '110111010100aaaa' , ps => \&ps_skip , name => "SKIP Greater than Zero"       },
@@ -1207,8 +1207,8 @@ sub ps_jir
     'skip.abm'  =>  { type =>  'SKIP_R'    , opc => '110101010110aaaa' , ps => \&ps_skip , name => "SKIP Any Byte Minus"          },
     'skip.nbm'  =>  { type =>  'SKIP_R'    , opc => '110111010110aaaa' , ps => \&ps_skip , name => "SKIP No Byte Minus"           },
 
-    'skip.ft'   =>  { type =>  'SKIP_FLAG' , opc => '110101010111aaaa' , ps => \&ps_skip , name => "SKIP Flag True"               },
-    'skip.ff'   =>  { type =>  'SKIP_FLAG' , opc => '110111010111aaaa' , ps => \&ps_skip , name => "SKIP Flag False"              },
+    'skip.fs'   =>  { type =>  'SKIP_FLAG' , opc => '110101010111aaaa' , ps => \&ps_skip , name => "SKIP Flag Set"                },
+    'skip.fc'   =>  { type =>  'SKIP_FLAG' , opc => '110111010111aaaa' , ps => \&ps_skip , name => "SKIP Flag Clear"              },
 
     'skip.mi'   =>  { type =>  'SKIP_R'    , opc => '110101111111aaaa' , ps => \&ps_skip , name => "SKIP Minus"                   },  # skip.bs Ra, #31
     'skip.pl'   =>  { type =>  'SKIP_R'    , opc => '110111111111aaaa' , ps => \&ps_skip , name => "SKIP Plus"                    },  # skip.bc Ra, #31

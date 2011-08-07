@@ -22,6 +22,7 @@ call v control\skip2
 call v control\skip3
 call v control\skip4
 call v control\skip5
+call v control\skip6
 
 call v memory\imm12
 call v memory\ldi
