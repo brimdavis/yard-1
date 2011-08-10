@@ -20,7 +20,4 @@ set YARD_PERL=perl
 ::
 :: select the default simulation target here
 ::
-
-::set YARD_SIM_TARGET=%YARD_HOME%\hdl\systems\sim_bram_4k
-
 set YARD_SIM_TARGET=%YARD_HOME%\hdl\systems\sim_rtl
