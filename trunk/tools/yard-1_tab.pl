@@ -1030,7 +1030,7 @@ sub ps_ldi
     'lbra'   =>  { type =>  'LBRI' , opc => '1110100rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch"}, 
     'lbra.d' =>  { type =>  'LBRI' , opc => '1110101rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch, Delayed" }, 
     'lbsr'   =>  { type =>  'LBRI' , opc => '1110110rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine" }, 
-    'lbsr.d' =>  { type =>  'LBRI' , opc => '1110110rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine, Delayed" }
+    'lbsr.d' =>  { type =>  'LBRI' , opc => '1110111rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine, Delayed" }
   );
 
 
