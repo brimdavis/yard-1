@@ -427,14 +427,14 @@ space:
 
 send_char:
 
-; loop until buffer has room
-tx_full:
-    ld.q  r10, (r8)
+; loop until transmitter ready flag = 1
+tx_wait:
+    ld      r10, (r8)
 
-    skip.bc r10, #7
-    bra     tx_full
+    skip.bs r10, #7
+    bra     tx_wait
 
-    st.q    r0, (r9)    ; write data to TX
+    st      r0, (r9)    ; write data to TX
     rts
 
 ;
@@ -470,12 +470,12 @@ get_char:
 
 ; loop until there's something in the buffer
 rx_empty:
-    ld.q  r10, (r8)
+    ld      r10, (r8)
 
     skip.bs r10, #6
     bra     rx_empty
 
-    ld.q    r0, (r9)    ; read data from RX
+    ld      r0, (r9)    ; read data from RX
     rts
 
 ;

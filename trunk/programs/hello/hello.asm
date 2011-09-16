@@ -75,9 +75,9 @@ send_char:
     mov  r9, #$4000_0000  ; uart decode address
 
 tx_full:
-    ld.l    r10, (r8)
+    ld    r10, (r8)
 
-    skip.bc r10, #7
+    skip.bs r10, #7
     bra tx_full
 
     st.b    r0, (r9)
@@ -94,12 +94,12 @@ get_char:
     mov   r9, #$4000_0000  ; uart decode address
 
 rx_empty:
-    ld.l  r10, (r8)
+    ld  r10, (r8)
 
     skip.bs r10, #6
     bra rx_empty
 
-    ld.l    r0, (r9)
+    ld    r0, (r9)
 
     rts
 
