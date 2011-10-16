@@ -43,8 +43,8 @@ entity rtl_mem is
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
 
-      i_addr : in std_logic_vector  (9 downto 0);
-      i_dat   : out std_logic_vector (INST_MSB downto 0)
+      i_addr    : in std_logic_vector  (9 downto 0);
+      i_dat     : out std_logic_vector (INST_MSB downto 0)
     );
 
 
@@ -79,8 +79,11 @@ begin
   --
   delay_lsb: process
     begin
-      wait until rising_edge(clk);
+
+      wait until falling_edge(clk);
+
       lsb_p1 <= i_addr(0);
+
     end process;
     
   i_dat <=   loc_i_dat(15 downto  0) when ( lsb_p1 = '1' )
@@ -115,9 +118,13 @@ begin
         end if;
 
         dout3 <= ram_b3( to_integer( unsigned(d_addr) ) );
-        iout3 <= ram_b3( to_integer( unsigned(i_addr(9 downto 1)) ) );
 
       end if;
+
+      if falling_edge(clk) then
+        iout3 <= ram_b3( to_integer( unsigned(i_addr(9 downto 1)) ) );
+      end if;
+
     end process;
 
   din3 <= loc_wdat(31 downto 24);
@@ -137,9 +144,13 @@ begin
         end if;
 
         dout2 <= ram_b2( to_integer( unsigned(d_addr) ) );
-        iout2 <= ram_b2( to_integer( unsigned(i_addr(9 downto 1)) ) );
 
       end if;
+
+      if falling_edge(clk) then
+        iout2 <= ram_b2( to_integer( unsigned(i_addr(9 downto 1)) ) );
+      end if;
+
     end process;
 
   din2 <= loc_wdat(23 downto 16);
@@ -159,9 +170,13 @@ begin
         end if;
 
         dout1 <= ram_b1( to_integer( unsigned(d_addr) ) );
-        iout1 <= ram_b1( to_integer( unsigned(i_addr(9 downto 1)) ) );
 
       end if;
+
+      if falling_edge(clk) then
+        iout1 <= ram_b1( to_integer( unsigned(i_addr(9 downto 1)) ) );
+      end if;
+
     end process;
 
   din1 <= loc_wdat(15 downto 8);
@@ -181,9 +196,13 @@ begin
         end if;
 
         dout0 <= ram_b0( to_integer( unsigned(d_addr) ) );
-        iout0 <= ram_b0( to_integer( unsigned(i_addr(9 downto 1)) ) );
 
       end if;
+
+      if falling_edge(clk) then
+        iout0 <= ram_b0( to_integer( unsigned(i_addr(9 downto 1)) ) );
+      end if;
+
     end process;
 
   din0 <= loc_wdat(7 downto 0);
