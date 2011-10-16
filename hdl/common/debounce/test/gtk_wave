@@ -1,0 +1,91 @@
+[timestart] 0
+[size] 1600 1144
+[pos] -1 -1
+*-46.285427 213100000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.testbench.
+@28
+top.testbench.tick_en
+top.testbench.clk
+@800023
+#{top.testbench.sw[7:0]} top.testbench.sw[7] top.testbench.sw[6] top.testbench.sw[5] top.testbench.sw[4] top.testbench.sw[3] top.testbench.sw[2] top.testbench.sw[1] top.testbench.sw[0]
+@29
+top.testbench.sw[7]
+top.testbench.sw[6]
+top.testbench.sw[5]
+top.testbench.sw[4]
+top.testbench.sw[3]
+top.testbench.sw[2]
+top.testbench.sw[1]
+top.testbench.sw[0]
+@1001201
+-group_end
+@800022
+#{top.testbench.sw_press[7:0]} top.testbench.sw_press[7] top.testbench.sw_press[6] top.testbench.sw_press[5] top.testbench.sw_press[4] top.testbench.sw_press[3] top.testbench.sw_press[2] top.testbench.sw_press[1] top.testbench.sw_press[0]
+@28
+top.testbench.sw_press[7]
+top.testbench.sw_press[6]
+top.testbench.sw_press[5]
+top.testbench.sw_press[4]
+top.testbench.sw_press[3]
+top.testbench.sw_press[2]
+top.testbench.sw_press[1]
+top.testbench.sw_press[0]
+@1001200
+-group_end
+@800022
+#{top.testbench.sw_release[7:0]} top.testbench.sw_release[7] top.testbench.sw_release[6] top.testbench.sw_release[5] top.testbench.sw_release[4] top.testbench.sw_release[3] top.testbench.sw_release[2] top.testbench.sw_release[1] top.testbench.sw_release[0]
+@28
+top.testbench.sw_release[7]
+top.testbench.sw_release[6]
+top.testbench.sw_release[5]
+top.testbench.sw_release[4]
+top.testbench.sw_release[3]
+top.testbench.sw_release[2]
+top.testbench.sw_release[1]
+top.testbench.sw_release[0]
+@1001200
+-group_end
+@800022
+#{top.testbench.sw_state[7:0]} top.testbench.sw_state[7] top.testbench.sw_state[6] top.testbench.sw_state[5] top.testbench.sw_state[4] top.testbench.sw_state[3] top.testbench.sw_state[2] top.testbench.sw_state[1] top.testbench.sw_state[0]
+@28
+top.testbench.sw_state[7]
+top.testbench.sw_state[6]
+top.testbench.sw_state[5]
+top.testbench.sw_state[4]
+top.testbench.sw_state[3]
+top.testbench.sw_state[2]
+top.testbench.sw_state[1]
+top.testbench.sw_state[0]
+@800200
+-tb_sw5
+@28
+top.testbench.tb_sw5.sw_in
+top.testbench.tb_sw5.sw_x0
+top.testbench.tb_sw5.sw_x1
+top.testbench.tb_sw5.sw_x2
+top.testbench.tb_sw5.sw_dat
+top.testbench.tb_sw5.sw_dat_z0
+top.testbench.tb_sw5.sw_press
+top.testbench.tb_sw5.sw_release
+top.testbench.tb_sw5.sw_state
+@1000200
+-tb_sw5
+@c00200
+-tb_sw6
+@28
+top.testbench.tb_sw6.sw_in
+top.testbench.tb_sw6.sw_x0
+top.testbench.tb_sw6.sw_x1
+top.testbench.tb_sw6.sw_x2
+top.testbench.tb_sw6.sw_dat
+top.testbench.tb_sw6.sw_dat_z0
+top.testbench.tb_sw6.sw_press
+top.testbench.tb_sw6.sw_release
+top.testbench.tb_sw6.sw_state
+@1401200
+-tb_sw6
+@1001200
+-group_end
+[pattern_trace] 1
+[pattern_trace] 0
