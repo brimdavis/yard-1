@@ -12,10 +12,6 @@
 -----------------------------------------------------------------
 
 --
--- TODO: code not simulated- needs testbench
---
-
---
 --  Minimalist UART
 --
 --    - fixed data format:
@@ -44,7 +40,7 @@ entity m_uart is
   port 
     (        
       clk     : in  std_logic;
-      rst_s   : in  std_logic;
+      s_rst   : in  std_logic;
 
       en_16x  : in  std_logic;
 
@@ -94,7 +90,7 @@ architecture arch1 of m_uart is
   signal rx_sr         : std_logic_vector(10 downto 0) := ( others => '1');
   alias  rx_done       : std_logic is rx_sr(0);
 
-  signal rx_rdy_local  : std_logic; 
+  signal rx_rdy_local  : std_logic := '0'; 
 
 
   --
@@ -127,7 +123,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      if rst_s = '1' then
+      if s_rst = '1' then
         baud_phase <= (others => '0');
 
       elsif en_16x = '1' then
@@ -141,7 +137,8 @@ begin
   --
   -- en_1x logic asserts for a single clock cycle
   --
-  en_1x  <= '1' when ( en_16x = '1' ) AND ( baud_phase = X"F" ) else '0';
+  en_1x  <=  '1'  when ( en_16x = '1' ) AND ( baud_phase = X"F" ) 
+        else '0';
 
 
   ---------------------------------
@@ -164,7 +161,7 @@ begin
       --
       -- shift reg & bit count logic
       --
-      if rst_s = '1' then
+      if s_rst = '1' then
 
         tx_sr        <= ( others => '1' );
         tx_bit_local <= '1';
@@ -173,7 +170,7 @@ begin
       elsif ( wr_en = '1') AND ( tx_done = '1' ) then
         --
         -- write : 
-        --    load shift data and count 
+        --    load shift data 
         --    toggle write flag
         --
         tx_sr     <= wr_dat & '0';
@@ -221,7 +218,7 @@ begin
       -- two stage synchronizer
       --  reset to avoid srl inference
       --
-      if (rst_s = '1')  then
+      if (s_rst = '1')  then
         rx_x0 <= '1';
         rx_x1 <= '1';
       else
@@ -264,7 +261,7 @@ begin
       --
       -- shift reg & flag logic
       --
-      if rst_s = '1' then
+      if s_rst = '1' then
         rx_rdy_local <= '0';
         rd_dat <= ( others => '0' );
         rx_sr  <= ( others => '1' );

@@ -26,7 +26,7 @@ package m_uart_pkg is
     port 
       (        
         clk     : in  std_logic;
-        rst_s   : in  std_logic;
+        s_rst   : in  std_logic;
 
         en_16x  : in  std_logic;
 
@@ -57,11 +57,16 @@ package m_uart_pkg is
 
 
   component baud_gen is
+    generic
+      (
+        CLK_FREQUENCY_MHZ : real :=    50.0;
+        DEFAULT_BAUD_RATE : real := 19200.0
+      );
 
     port 
       (        
         clk       : in  std_logic;
-        rst_s     : in  std_logic;
+        s_rst     : in  std_logic;
 
         frac_baud : in  std_logic_vector(23 downto 0);
 
