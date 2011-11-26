@@ -1,0 +1,51 @@
+[timestart] 753000000000
+[size] 1600 1144
+[pos] -1 -1
+*-37.948788 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] top.
+[treeopen] top.testbench.
+[treeopen] top.testbench.e_m_uart.
+@28
+top.testbench.clk
+top.testbench.baud_16x
+@200
+-
+@28
+top.testbench.e_m_uart.rst_s
+@200
+-
+@28
+top.testbench.tx_bit
+top.testbench.rx_bit
+@200
+-
+@28
+top.testbench.e_m_uart.en_1x
+top.testbench.tx_rdy
+top.testbench.uart_wr
+@23
+#{top.testbench.e_m_uart.tx_sr[8:0]} top.testbench.e_m_uart.tx_sr[8] top.testbench.e_m_uart.tx_sr[7] top.testbench.e_m_uart.tx_sr[6] top.testbench.e_m_uart.tx_sr[5] top.testbench.e_m_uart.tx_sr[4] top.testbench.e_m_uart.tx_sr[3] top.testbench.e_m_uart.tx_sr[2] top.testbench.e_m_uart.tx_sr[1] top.testbench.e_m_uart.tx_sr[0]
+@22
+#{top.testbench.tx_dat[7:0]} top.testbench.tx_dat[7] top.testbench.tx_dat[6] top.testbench.tx_dat[5] top.testbench.tx_dat[4] top.testbench.tx_dat[3] top.testbench.tx_dat[2] top.testbench.tx_dat[1] top.testbench.tx_dat[0]
+@200
+-
+@28
+top.testbench.rx_avail
+top.testbench.uart_rd
+@22
+#{top.testbench.rx_dat[7:0]} top.testbench.rx_dat[7] top.testbench.rx_dat[6] top.testbench.rx_dat[5] top.testbench.rx_dat[4] top.testbench.rx_dat[3] top.testbench.rx_dat[2] top.testbench.rx_dat[1] top.testbench.rx_dat[0]
+@200
+-
+@22
+#{top.testbench.e_m_uart.baud_phase[3:0]} top.testbench.e_m_uart.baud_phase[3] top.testbench.e_m_uart.baud_phase[2] top.testbench.e_m_uart.baud_phase[1] top.testbench.e_m_uart.baud_phase[0]
+#{top.testbench.e_m_uart.rx_mid_phase[3:0]} top.testbench.e_m_uart.rx_mid_phase[3] top.testbench.e_m_uart.rx_mid_phase[2] top.testbench.e_m_uart.rx_mid_phase[1] top.testbench.e_m_uart.rx_mid_phase[0]
+@28
+top.testbench.e_m_uart.rx_dat_z0
+top.testbench.e_m_uart.rx_dat_z1
+top.testbench.e_m_uart.rx_rdy_local
+@22
+#{top.testbench.e_m_uart.rx_sr[10:0]} top.testbench.e_m_uart.rx_sr[9] top.testbench.e_m_uart.rx_sr[8] top.testbench.e_m_uart.rx_sr[7] top.testbench.e_m_uart.rx_sr[6] top.testbench.e_m_uart.rx_sr[5] top.testbench.e_m_uart.rx_sr[4] top.testbench.e_m_uart.rx_sr[3] top.testbench.e_m_uart.rx_sr[2] top.testbench.e_m_uart.rx_sr[1] top.testbench.e_m_uart.rx_sr[0]
+@28
+top.testbench.e_m_uart.rx_rdy
+[pattern_trace] 1
+[pattern_trace] 0
