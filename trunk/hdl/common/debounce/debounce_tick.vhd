@@ -4,10 +4,10 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2011  B. Davis
+-- (C) COPYRIGHT 2001-2011  Brian Davis
 --
 -- Code released under the terms of the "new" BSD license
--- see license/new_bsd.txt
+-- see license/bsd_2-clause.txt
 --
 -----------------------------------------------------------------
 

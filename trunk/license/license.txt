@@ -3,9 +3,12 @@
 
 
     - Most of the YARD-1 VHDL code and support files are released 
-      under the "new BSD" license.
+      under the BSD 2-clause license.
 
-      See license/new_bsd.txt
+      See license/bsd_2-clause.txt
+
+      Note that the Google Code project hosting site refers to the
+      BSD 2-clause license as the "New BSD License".
 
 
 

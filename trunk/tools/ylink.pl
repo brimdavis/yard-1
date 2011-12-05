@@ -9,7 +9,7 @@
 #
 # Copyright (c) 2001,2007,2011, Brian Davis
 #
-# released under the "new BSD" license, see license/new_bsd.txt
+# released under the BSD 2-clause license, see license/bsd_2-clause.txt
 #
 #-------------------------------------------------------------------------------
 
