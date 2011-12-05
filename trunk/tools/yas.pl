@@ -142,25 +142,25 @@ my $help_syntax=<<END_SYNTAX;
 
   - underscores are allowed in constants 
 
-  - numerical constant radix: leading "$" for hex ,"%" for binary, otherwise  decimal
+  - numerical constant radix: leading "\$" for hex ,"%" for binary, otherwise  decimal
        mov r0, #$8000_0000
        mov r0, #%1000_0000_0000_0000_0000_0000_0000_0000
        mov r0, #-2_147_483_648
 
   - character/string constants:  
 
-      leading \'\ for immediate character byte
+      leading ' for immediate character byte
        mov r0, #'?
 
-       \"\ encloses dc.s strings
+      enclose dc.s strings within " " 
        dc.s "hello"
 
   - no constant expression parser yet (i.e., + - * / )
      - kludge for bra targets allows @+offset or @-offset (for bra/bsr only)
      - unary minus works only for decimal constants
 
-
 END_SYNTAX
+#"
 
 #-------------------------------------------------------------------------------
 
@@ -177,8 +177,8 @@ my $help_bugs=<<END_BUGS;
 
   - character constants mangle uppercase letters to lowercase
         dc.b 'D   assembles as lower case 'd
-
 END_BUGS
+#'
 
 #-------------------------------------------------------------------------------
 

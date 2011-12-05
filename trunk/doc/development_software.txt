@@ -22,6 +22,10 @@ FPGA Software:
       WebPACK_SFD_92i.zip      9.2i Webpack single file download 
       9_2_04i_win.exe          Service Pack 4
 
+    site registration is required for download
+
+    as of August 2011, the files can be found here:
+
     http://www.xilinx.com/support/download/index.htm
 
       - click "archive" on the left version list
