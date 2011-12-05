@@ -2,10 +2,10 @@
 ;
 ; YARDBUG serial debugger 0.2
 ;
-; (C) COPYRIGHT 2001, 2011  B. Davis
+; (C) COPYRIGHT 2001-2011  B. Davis
 ;
-; Code released under the terms of the "new BSD" license
-; see %YARD_HOME%/license/new_bsd.txt
+; Code released under the terms of the BSD 2-clause license
+; see license/bsd_2-clause.txt
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
