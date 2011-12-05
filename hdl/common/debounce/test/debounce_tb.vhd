@@ -4,7 +4,10 @@
 
 ---------------------------------------------------------------
 --
---%%!y1_license!%%
+-- (C) COPYRIGHT 2001-2011  Brian Davis
+--
+-- Code released under the terms of the BSD 2-clause license
+-- see license/bsd_2-clause.txt
 --
 ---------------------------------------------------------------
 
