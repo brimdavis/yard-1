@@ -33,7 +33,7 @@ Assembling and Linking a program :
   [ command shell path setup ]
 
   > cd programs\hello
-  > yas hello.asm
+  > yas hello.s
   > ylink hello.obj
 
 
