@@ -158,6 +158,31 @@ package y1a_comps is
   end component;
   
 
+  component skip_dcd is
+    generic
+      (
+        CFG       : y1a_config_type
+      );
+    port
+      (
+        skip_sense   : in  std_logic;
+        skip_type    : in  std_logic_vector(2 downto 0);
+        skip_cp_sel  : in  std_logic;
+        skip_ra_type : in  std_logic_vector(2 downto 0);
+
+        sel_opa      : in  std_logic_vector(3 downto 0);
+        opb_const    : in  std_logic_vector(4 downto 0);
+
+        ain          : in  std_logic_vector(ALU_MSB downto 0);
+        bimm         : in  std_logic_vector(ALU_MSB downto 0);
+
+        flag_reg     : in  std_logic_vector(15 downto 0);
+
+        skip_cond    : out std_logic
+      );
+  end component;
+
+
   component rstack is
     port
       (
