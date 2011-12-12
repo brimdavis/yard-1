@@ -14,9 +14,11 @@
 --
 -- Y1A inferred blockram
 --
---   dual port BRAM for data & instruction memory 
+--   - dual port BRAM for data & instruction memory 
 --
---   memories are inferred from initialized arrays
+--   - memories are inferred from initialized arrays
+--
+--   - falling edge clk used to hide BRAM register latency
 --
 
 
@@ -111,7 +113,7 @@ begin
   --
   process(clk)
     begin
-      if rising_edge(clk) then
+      if falling_edge(clk) then
 
         if d_we3 = '1' then
           ram_b3(to_integer(unsigned(d_addr))) <= din3;
@@ -137,7 +139,7 @@ begin
   --
   process(clk)
     begin
-      if rising_edge(clk) then
+      if falling_edge(clk) then
 
         if d_we2 = '1' then
           ram_b2(to_integer(unsigned(d_addr))) <= din2;
@@ -163,7 +165,7 @@ begin
   --
   process(clk)
     begin
-      if rising_edge(clk) then
+      if falling_edge(clk) then
 
         if d_we1 = '1' then
           ram_b1(to_integer(unsigned(d_addr))) <= din1;
@@ -189,7 +191,7 @@ begin
   --
   process(clk)
     begin
-      if rising_edge(clk) then
+      if falling_edge(clk) then
 
         if d_we0 = '1' then
           ram_b0(to_integer(unsigned(d_addr))) <= din0;
