@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2011  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -12,7 +12,27 @@
 ---------------------------------------------------------------
 
 --
--- Y1A byte/wyde/quad lane mux for databus stores                                                                
+-- Y1A byte/wyde/quad lane mux for data bus stores                                                                
+--
+--   replicates byte/wyde register fields across all lanes of the
+--   memory data bus as needed, based upon store operand size:
+--
+--
+--      bus     D31 ... D24  D23 ... D16  D15 ... D8  D7 ...  D0
+--      ---------------------------------------------------------
+--      quad    A31                     ..                    A0
+--
+--      wyde    A15        ..        A0   A15       ..        A0
+--
+--      byte    A7  ..  A0   A7  ..  A0   A7  ..  A0  A7  ..  A0
+--                                                    
+--                                                    
+--   Where:
+--     An = register data bit ain(n)
+--     Dn = memory bus data bit d_wdat(n)
+--
+--   Note, byte lane write enables are asserted only for active lanes
+--         see <dbus_ctl.vhd> 
 --
 
 library ieee;
@@ -36,7 +56,7 @@ entity st_mux is
       mem_size  : in  std_logic_vector(1 downto 0);
       lea_bit   : in  std_logic;
 
-      ain        : in  std_logic_vector(ALU_MSB downto 0);
+      ain       : in  std_logic_vector(ALU_MSB downto 0);
 
       d_wdat    : out std_logic_vector(ALU_MSB downto 0)
     );

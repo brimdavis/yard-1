@@ -8,6 +8,7 @@ call ylink  %1\%~n1.obj   || exit /b 1
 call ymovit %1\%~n1       || exit /b 1
 
 cd sim
+
 call ghdl_comp || exit /b 1
 ::call sym_comp || exit /b 1
 ::call isim_comp || exit /b 1

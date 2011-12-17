@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2011  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -79,7 +79,6 @@ begin
           wyde_dat(15 downto  8) when '0',
           wyde_dat( 7 downto  0) when '1',
           ( others => 'X')    when others;
-          --( others => '0')    when others;
 
       -- byte sign or zero extension
       byte_ext <= byte_dat(7) when mem_sign = '1' else '0';
