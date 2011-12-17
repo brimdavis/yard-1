@@ -14,7 +14,6 @@
 --
 -- Y1A bit counting
 --
---   release 0.0.2
 --
 
 library ieee;
@@ -44,25 +43,25 @@ architecture arch1 of bitcnt is
     -- check for supported ALU widths
     --
     assert ( ALU_WIDTH = 16 ) OR ( ALU_WIDTH = 32 ) 
-        report "Unsupported ALU width for bitcnt"
-        severity error;
+      report "Unsupported ALU width for bitcnt"
+      severity error;
 
     --
     -- adder tree, done using carry chains & masks
     --
 
     gen_bcnt16: if ( ALU_WIDTH = 16 ) generate
-        begin
+      begin
 
         process(din)
   
-            variable temp  : unsigned (ALU_MSB downto 0);
-            variable temp1 : unsigned (ALU_MSB downto 0);
-            variable temp2 : unsigned (ALU_MSB downto 0);
-            variable temp3 : unsigned (ALU_MSB downto 0);
-            variable temp4 : unsigned (ALU_MSB downto 0);
+          variable temp  : unsigned (ALU_MSB downto 0);
+          variable temp1 : unsigned (ALU_MSB downto 0);
+          variable temp2 : unsigned (ALU_MSB downto 0);
+          variable temp3 : unsigned (ALU_MSB downto 0);
+          variable temp4 : unsigned (ALU_MSB downto 0);
  
-            begin
+          begin
 
             temp  := unsigned(din);
   
@@ -76,24 +75,25 @@ architecture arch1 of bitcnt is
 
             cnt <= std_logic_vector(temp4(5 downto 0));
  
-            end process;
+          end process;
   
-        end generate gen_bcnt16;
+      end generate gen_bcnt16;
 
 
     gen_bcnt32: if ( ALU_WIDTH = 32 ) generate
-    begin
+      begin
 
         process(din)
 
-        variable temp  : unsigned (ALU_MSB downto 0);
-        variable temp1 : unsigned (ALU_MSB downto 0);
-        variable temp2 : unsigned (ALU_MSB downto 0);
-        variable temp3 : unsigned (ALU_MSB downto 0);
-        variable temp4 : unsigned (ALU_MSB downto 0);
-        variable temp5 : unsigned (ALU_MSB downto 0);
+          variable temp  : unsigned (ALU_MSB downto 0);
+          variable temp1 : unsigned (ALU_MSB downto 0);
+          variable temp2 : unsigned (ALU_MSB downto 0);
+          variable temp3 : unsigned (ALU_MSB downto 0);
+          variable temp4 : unsigned (ALU_MSB downto 0);
+          variable temp5 : unsigned (ALU_MSB downto 0);
 
-        begin
+          begin
+
             temp  := unsigned(din);
   
             temp1 := (temp  AND X"5555_5555") + ( ( temp  srl 1)  AND X"5555_5555");  -- 0..2 out  x16
@@ -108,8 +108,8 @@ architecture arch1 of bitcnt is
 
             cnt <= std_logic_vector(temp5(5 downto 0));
 
-        end process;
+          end process;
 
-    end generate gen_bcnt32;
+      end generate gen_bcnt32;
 
   end arch1;

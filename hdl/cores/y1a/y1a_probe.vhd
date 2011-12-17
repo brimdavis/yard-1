@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2011  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -69,9 +69,8 @@ architecture sim1 of y1a_probe is
   
             write(L, now );
             write( L, string'(": EA"));
-            writeline( OUTPUT, L);
   
-            write( L, string'("        ea_off_mux="));
+            write( L, string'("   ea_off_mux="));
             hwrite(L,  y1a_probe_sigs.ea_off_mux );
 
             write( L, string'("  ea_reg_mux   ="));

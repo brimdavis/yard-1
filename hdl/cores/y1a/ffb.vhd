@@ -46,8 +46,8 @@ begin
   -- check for supported ALU widths
   --
   assert ( ALU_WIDTH = 16 ) OR ( ALU_WIDTH = 32 ) 
-      report "Unsupported ALU width for ffb"
-      severity error;
+    report "Unsupported ALU width for ffb"
+    severity error;
 
 
   --

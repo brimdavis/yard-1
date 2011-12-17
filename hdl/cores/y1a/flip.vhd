@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2003-2011  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -18,7 +18,20 @@
 --     see "Hackers Delight", 2003, Hank Warren, page 102;
 --     FLIP instruction credited to Guy Steele
 --
-
+--
+--  bsel =  bit swap control field
+--
+--     bsel(4) : swap even/odd wydes
+--     bsel(3) : swap even/odd bytes
+--     bsel(2) : swap even/odd nybbles
+--     bsel(1) : swap even/odd bit pairs
+--     bsel(0) : swap even/odd bits
+--
+--  e.g.
+--     11000 : byte reverse register ( swap wydes & bytes )
+--     11111 : bit reverse register  ( swap everything )
+--     00111 : bit reverse all bytes in register
+--
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -46,8 +59,8 @@ begin
   -- check for supported ALU widths
   --
   assert ( ALU_WIDTH = 16 ) OR ( ALU_WIDTH = 32 ) 
-      report "Unsupported ALU width for flip"
-      severity error;
+    report "Unsupported ALU width for flip"
+    severity error;
 
 
   --
@@ -78,7 +91,7 @@ begin
 
         end process;
 
-   end generate gen_flip16;
+    end generate gen_flip16;
 
 
 
@@ -108,7 +121,7 @@ begin
 
         end process;
 
-   end generate gen_flip32;
+    end generate gen_flip32;
 
 end arch1;
 

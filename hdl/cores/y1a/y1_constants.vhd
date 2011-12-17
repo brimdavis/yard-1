@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2011  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -274,10 +274,10 @@ package y1_constants is
   --  0 xx  load unsigned
   --  1 xx  load signed 
   --
-  --  x 00  ?? future expansion  ??
-  --  x 01  long (32 bit)
-  --  x 10  word (16 bit)
-  --  x 11  byte (8 bit)
+  --  x 00  quad (32 bit) stack offset addressing mode 
+  --  x 01  quad (32 bit) normal addressing mode 
+  --  x 10  wyde (16 bit)   "
+  --  x 11  byte (8 bit)    "
   --
 
   constant MEM_SIGNED   : std_logic := '1';
@@ -298,7 +298,7 @@ package y1_constants is
   constant LD_S32    : std_logic_vector(2 downto 0) := MEM_SIGNED   & MEM_32;  -- dummy definition on 32 bit machine
 
   constant LD_U16    : std_logic_vector(2 downto 0) := MEM_UNSIGNED & MEM_16;
-  constant LD_S16    : std_logic_vector(2 downto 0) := MEM_SIGNED   & MEM_16;    -- dummy definition on 16 bit machine
+  constant LD_S16    : std_logic_vector(2 downto 0) := MEM_SIGNED   & MEM_16;  -- dummy definition on 16 bit machine
 
   constant LD_U8     : std_logic_vector(2 downto 0) := MEM_UNSIGNED & MEM_8;
   constant LD_S8     : std_logic_vector(2 downto 0) := MEM_SIGNED   & MEM_8;

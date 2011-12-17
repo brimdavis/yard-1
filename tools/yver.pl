@@ -9,7 +9,7 @@
 
 #-------------------------------------------------------------------------------
 #
-# Copyright (c) 2000-2011, B. Davis
+# Copyright (c) 2001-2011, B. Davis
 #
 # released under the BSD 2-clause license, see license/bsd_2-clause.txt
 #

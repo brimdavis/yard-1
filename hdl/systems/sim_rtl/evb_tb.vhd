@@ -43,7 +43,7 @@ architecture bench1 of testbench is
   constant TB_CLK_PERIOD : time := 10 ns;
   constant TB_HOLD       : time :=  2 ns;
 
-  signal clk     : std_logic;
+  signal clk     : std_logic := 'H';  -- initialize for clk gen
   signal rst_l   : std_logic;
   
   signal irq_l   : std_logic;
@@ -89,21 +89,10 @@ begin
   --
   -- clock generation
   --
-  P_clk_gen : process
-    begin
-      loop
-  
-        clk <= '1';
-        wait for  TB_CLK_PERIOD/2;
-  
-        clk <= '0';
-        wait for  TB_CLK_PERIOD/2;
-  
-      end loop;
-    end process P_clk_gen;
+  clk <= NOT clk after TB_CLK_PERIOD/2;
   
   --
-  -- startup reset signal
+  -- assert startup reset signal for 10 clocks
   --
   rst_l <= '0', '1' after 10 * TB_CLK_PERIOD + TB_HOLD;
 
@@ -138,10 +127,10 @@ begin
         hwrite(L,  tp );
 
         write( L, string'(" RST="));
-        write(L,  std_logic'image(rst_l) );
+        write(L,  rst_l );
 
         write( L, string'(" IRQ="));
-        write(L,  std_logic'image(irq_l) );
+        write(L,  irq_l );
 
         write( L, string'(" dip_sw="));
         write(L,  dip_sw );
