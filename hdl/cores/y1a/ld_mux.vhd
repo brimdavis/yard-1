@@ -60,15 +60,29 @@ architecture arch1 of ld_mux is
 
 begin
 
-  gen_rdat: if cfg.native_load_only = TRUE generate
+  --
+  -- check for illegal config/ALU width settings
+  --
+  assert ( CFG.non_native_load AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.non_native_load )
+    report "Unsupported load configuration flag and/or ALU_WIDTH settings."
+    severity error;
+
+
+  --
+  --
+  --
+  GF_cnnl: if cfg.non_native_load = FALSE generate
     begin
 
       mem_wb_bus <= d_rdat when ( inst_fld = OPM_LD ) else ( others => '0' );
 
-    end generate gen_rdat;
+    end generate GF_cnnl;
 
  
-  gen_rdat32: if ( alu_width = 32 ) and ( cfg.native_load_only = FALSE ) generate
+  --
+  --
+  --
+  GT_cnnl: if ( alu_width = 32 ) and ( cfg.non_native_load = TRUE ) generate
     begin
   
       --
@@ -76,42 +90,50 @@ begin
       --
       with ea_dat(0) select
         byte_dat <= 
-          wyde_dat(15 downto  8) when '0',
-          wyde_dat( 7 downto  0) when '1',
-          ( others => 'X')    when others;
+          wyde_dat(15 downto  8)  when '0',
+          wyde_dat( 7 downto  0)  when '1',
+          ( others => 'X')        when others;
 
+      --
       -- byte sign or zero extension
-      byte_ext <= byte_dat(7) when mem_sign = '1' else '0';
+      --
+      byte_ext <=  byte_dat(7) when mem_sign = '1' 
+              else '0';
 
       --
       -- wyde (16 bit) lane mux
       --
       wyde_dat <=  d_rdat(31 downto 16)  when ( ea_dat(1) = '0' ) 
-           else d_rdat(15 downto 0);
+              else d_rdat(15 downto 0);
 
+      --
       -- wyde (16 bit) sign or zero extension
+      --
       wyde_ext <=  wyde_dat(15) when mem_sign = '1' 
-           else '0';
+              else '0';
 
       mem_wb_bus 
+        --
         -- quad (32 bit) load
-         <=   d_rdat              
+        --
+        <=    d_rdat              
         when  ( ( inst_fld = OPM_LD ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) )  
 
+        --
         -- wyde (16 bit) load
+        --
         else  ( ALU_MSB downto 16 => wyde_ext ) & wyde_dat(15 downto 0)   
         when  ( inst_fld = OPM_LD ) AND (mem_size = MEM_16 ) 
 
+        --
         -- byte load
+        --
         else  ( ALU_MSB downto 8 => byte_ext ) & byte_dat(7 downto 0)
         when  ( inst_fld = OPM_LD ) AND (mem_size = MEM_8 ) 
 
-        else ( others => '0' );
+        else  ( others => 'X' );
 
-    end generate gen_rdat32;
+    end generate GT_cnnl;
   
-  --
-  -- TODO: error on illegal config/ALU width generate settings
-  --
 
 end arch1;

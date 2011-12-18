@@ -69,16 +69,30 @@ architecture arch1 of st_mux is
 
 begin
 
-  gen_dat: if CFG.native_store_only = TRUE generate                                           
+  --
+  -- check for illegal config/ALU width settings
+  --
+  assert ( CFG.non_native_store AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.non_native_store )
+    report "Unsupported store configuration flag and/or ALU_WIDTH settings."
+    severity error;
+
+
+  --
+  -- non-native stores disabled: memory write bus driven directly from ain
+  --
+  GF_cnns: if NOT CFG.non_native_store generate                                           
     begin                                                                                     
                                                                                               
       d_wdat  <= ain                                                                           
           when     ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') )                              
           else ( others => '0');                                                              
                                                                                               
-    end generate gen_dat;                                                                     
-                                                                                              
-  gen_dat32: if ( ALU_WIDTH = 32 ) and ( CFG.native_store_only = FALSE ) generate            
+    end generate GF_cnns;                                                                     
+
+  --
+  -- non-native stores enabled: fill all memory write bus lanes with the desired field
+  --
+  GT_cnns: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_store ) generate            
     begin                                                                                    
                                                                                               
       d_wdat  <=                                                                             
@@ -93,10 +107,6 @@ begin
 
         ( others => '0');                                                                    
                                                                                               
-    end generate gen_dat32;                                                                  
-
-  --
-  -- TODO: error on illegal config/ALU width generate settings
-  --
+    end generate GT_cnns;
 
 end arch1;

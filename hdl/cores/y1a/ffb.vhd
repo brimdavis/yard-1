@@ -23,7 +23,9 @@
 library ieee;
   use ieee.std_logic_1164.all;
 
+library work;
   use work.y1_constants.all;
+
 
 entity ffb is
   port

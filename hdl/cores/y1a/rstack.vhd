@@ -17,15 +17,12 @@
 --   push/pop PC & SR
 --
 
-
-
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
   use ieee.std_logic_unsigned."+";
   use ieee.std_logic_unsigned."-";
-
 
 library work;
   use work.y1a_config.all;
