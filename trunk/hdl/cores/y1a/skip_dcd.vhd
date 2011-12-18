@@ -94,18 +94,18 @@ begin
   --
   -- mux for skip-on-bit
   --
-  gen_csobt: if CFG.skip_on_bit = TRUE generate
+  GT_csob: if CFG.skip_on_bit generate
     begin
       c_bit  <= ain(to_integer(unsigned(opb_const)));
-    end generate gen_csobt;
+    end generate GT_csob;
 
   --
   --   if bit test is disabled, uses sign bit instead
   --
-  gen_csobf: if CFG.skip_on_bit = FALSE generate
+  GF_csob: if NOT CFG.skip_on_bit generate
     begin
       c_bit  <= ain(ALU_MSB);
-    end generate gen_csobf;
+    end generate GF_csob;
   
   --
   -- TODO: implement coprocessor skips
@@ -165,15 +165,15 @@ begin
   -- should look into merging this subtractor with original ALU at some point
   --
 
-  gen_sgbf: if CFG.skip_group_b = FALSE generate
+  GF_csc: if NOT CFG.skip_compare generate
     cb_n <= '0';
     cb_c <= '0';
     cb_v <= '0';
     cb_z <= '0';
-  end generate gen_sgbf;
+  end generate GF_csc;
   
 
-  gen_sgbt: if CFG.skip_group_b = TRUE generate
+  GT_csc: if CFG.skip_compare generate
 
     skip_b: block
        signal wide_diff : std_logic_vector(ALU_MSB+2 downto 0);
@@ -194,7 +194,7 @@ begin
   		 
        end block skip_b;
 
-  end generate gen_sgbt;
+  end generate GT_csc;
     
 
   --
@@ -238,9 +238,9 @@ begin
   -- drive simulation probe signals 
   --
   ------------------------------------------------------------------------------
-  ea_prb : block
+  B_sc_prb : block
     begin
       y1a_probe_sigs.skipc <= skip_cond_a & c_bit & cb_n & cb_c & cb_v & cb_z;
-    end block ea_prb;
+    end block B_sc_prb;
 
 end arch1;

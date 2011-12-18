@@ -18,7 +18,6 @@
 --   defines opcode and datapath related constants
 --
 
-
 library ieee;
   use ieee.std_logic_1164.all;
 
