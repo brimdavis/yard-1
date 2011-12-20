@@ -1,4 +1,4 @@
- YARD-1 Design Files copyright (c)  2001-2011, Brian Davis
+ YARD-1 Design Files copyright (c)  2000-2011, Brian Davis
  All rights reserved.
 
 
