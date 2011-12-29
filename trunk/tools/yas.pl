@@ -243,7 +243,7 @@ our $D1 = 1;
 # globals
 #-------------------------------------------------------------
 
-my $VERSION = "0.0.2-alpha";
+my $VERSION = "0.2-alpha";
 
 #
 # location counter

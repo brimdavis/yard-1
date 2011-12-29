@@ -38,7 +38,7 @@ entity ea_calc is
       mem_mode   : in  std_logic;
       sel_opb    : in  std_logic_vector(3 downto 0);
 
-      bimm       : in  std_logic_vector(ALU_MSB downto 0);
+      bin        : in  std_logic_vector(ALU_MSB downto 0);
       imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
 
       sp_offset  : in  std_logic_vector(3 downto 0);
@@ -119,10 +119,7 @@ begin
        else  sp_reg   
        when  ( mem_mode  = '1' ) AND ( dcd_SP )
  
---       else   imm_reg   
---       when ( sel_opb = REG_IMM )
- 
-       else bimm;
+       else bin;
        
 
      ea_dat <=  ea_off_mux + ea_reg_mux;
