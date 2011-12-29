@@ -226,6 +226,7 @@ begin
   -- d_addr is currently hardcoded for 32 bit processor
   --
   blk_mem1 : entity work.blk_mem
+--  rtl_mem1 : entity work.rtl_mem
     port map 
       (
         clk       => clk,
@@ -284,15 +285,18 @@ begin
   --
   -- note, UART decode signals are all active high
   --
-  dcd_uart <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"4" ) )
-           else '0';
+  dcd_uart     <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"4" ) )
+              else  '0';
 
-  dcd_uart_wr <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
-              else '0';
+  dcd_uart_wr  <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
+              else  '0';
 
-  dcd_uart_rd <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' )
-              else '0';
+  dcd_uart_rd  <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' )
+              else  '0';
 
+  --
+  -- tristate drivers for UART read data
+  --
   d_rdat <=   (ALU_MSB downto 8 => '0') & rx_dat  when ( dcd_uart_rd = '1' ) 
             else (others=>'Z');
 
@@ -307,11 +311,13 @@ begin
 
 
    --
+   -- TODO: add programmable baud rate generator w/automated clock-to-baud counter calculation
+   --
    -- fixed rate clock divider for UART baud rate
    -- runs at 16x desired 19200 baud 
    --
-   --  50 MHz / ( 19,200 x 16 ) => 162 
-   --  counter counts from N-1 .. 0, so load value is 161 => X"A2" 
+   --  50 MHz / ( 19,200 x 16 ) => 162.7 ~= 163 
+   --  counter counts from N-1 .. 0, so load value is 162 => X"A2" 
    --
    bc1: process
      begin

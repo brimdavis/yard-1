@@ -48,7 +48,7 @@ entity skip_dcd is
       opb_const    : in  std_logic_vector(4 downto 0);
 
       ain          : in  std_logic_vector(ALU_MSB downto 0);
-      bimm         : in  std_logic_vector(ALU_MSB downto 0);
+      bin          : in  std_logic_vector(ALU_MSB downto 0);
 
       flag_reg     : in  std_logic_vector(15 downto 0);
 
@@ -182,7 +182,7 @@ begin
   
        begin
          pad_ar <= ( '0' & ain(ALU_MSB) & ain );
-         pad_br <= ( '0' & bimm(ALU_MSB) & bimm );
+         pad_br <= ( '0' & bin(ALU_MSB) & bin );
   
          wide_diff <= pad_ar - pad_br;
     

@@ -38,14 +38,14 @@ entity rtl_mem is
 
       d_rdat    : out std_logic_vector(ALU_MSB downto 0);
       d_wdat    : in  std_logic_vector(ALU_MSB downto 0);
-      d_addr    : in  std_logic_vector (8 downto 0);
+      d_addr    : in  std_logic_vector (10 downto 0);
       d_cs_l    : in  std_logic;    
       d_rd_l    : in  std_logic;    
       d_wr_l    : in  std_logic;
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
 
-      i_addr    : in std_logic_vector  (9 downto 0);
+      i_addr    : in std_logic_vector  (11 downto 0);
       i_dat     : out std_logic_vector (INST_MSB downto 0)
     );
 

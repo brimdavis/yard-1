@@ -176,13 +176,13 @@ begin
 
         d_rdat    => blkram_rdat,
         d_wdat    => d_wdat,
-        d_addr    => d_addr(10 downto 2),
+        d_addr    => d_addr(12 downto 2),
         d_cs_l    => ram_cs_l,
         d_rd_l    => d_rd_l,
         d_wr_l    => d_wr_l,
         d_wr_en_l => d_wr_en_l,
 
-        i_addr    => i_addr(10 downto 1),
+        i_addr    => i_addr(12 downto 1),
         i_dat     => i_dat
       );
 

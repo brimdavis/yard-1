@@ -142,7 +142,7 @@ package y1a_comps is
         mem_mode   : in  std_logic;
         sel_opb    : in  std_logic_vector(3 downto 0);
 
-        bimm       : in  std_logic_vector(ALU_MSB downto 0);
+        bin        : in  std_logic_vector(ALU_MSB downto 0);
         imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
 
         sp_offset  : in  std_logic_vector(3 downto 0);
@@ -174,7 +174,7 @@ package y1a_comps is
         opb_const    : in  std_logic_vector(4 downto 0);
 
         ain          : in  std_logic_vector(ALU_MSB downto 0);
-        bimm         : in  std_logic_vector(ALU_MSB downto 0);
+        bin          : in  std_logic_vector(ALU_MSB downto 0);
 
         flag_reg     : in  std_logic_vector(15 downto 0);
 

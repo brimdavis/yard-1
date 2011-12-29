@@ -74,7 +74,8 @@ begin
   GF_cnnl: if cfg.non_native_load = FALSE generate
     begin
 
-      mem_wb_bus <= d_rdat when ( inst_fld = OPM_LD ) else ( others => '0' );
+      mem_wb_bus <=  d_rdat when ( inst_fld = OPM_LD ) OR ( inst_fld = OPM_LDI ) 
+                else ( others => '0' );
 
     end generate GF_cnnl;
 
@@ -117,8 +118,8 @@ begin
         -- quad (32 bit) load
         --
         <=    d_rdat              
-        when  ( ( inst_fld = OPM_LD ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) )  
-
+        when   ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) )  
+             OR  ( inst_fld = OPM_LDI )
         --
         -- wyde (16 bit) load
         --
