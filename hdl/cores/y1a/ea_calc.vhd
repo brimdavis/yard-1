@@ -57,13 +57,14 @@ end ea_calc;
 
 architecture arch1 of ea_calc is
 
-  signal ea_off_mux : std_logic_vector(ALU_MSB downto 0);
-  signal ea_reg_mux : std_logic_vector(ALU_MSB downto 0);
+  signal ea_off_mux  : std_logic_vector(ALU_MSB downto 0);
+  signal ea_reg_mux  : std_logic_vector(ALU_MSB downto 0);
 
-  signal ea_pc_lsbs : std_logic_vector(1 downto 0);
+  signal ea_pc_lsbs  : std_logic_vector(1 downto 0);
 
-  signal dcd_LDI  : boolean;
-  signal dcd_SP   : boolean;
+  signal dcd_LDI     : boolean;
+  signal dcd_SP      : boolean;
+  signal dcd_src_mux : boolean;
 
 
   --
@@ -119,10 +120,19 @@ begin
        else  sp_reg   
        when  ( mem_mode  = '1' ) AND ( dcd_SP )
  
-       else bin;
+       else  ( others => 'X');
+--       else bin;
        
 
-     ea_dat <=  ea_off_mux + ea_reg_mux;
+--     ea_dat <=  ea_off_mux + ea_reg_mux;
+
+     --
+     -- merge bin mux with adder to shorten critical path
+     --
+     dcd_src_mux <=  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT dcd_SP ) ) OR dcd_SP;
+
+     ea_dat  <=  ea_off_mux + ea_reg_mux   when dcd_src_mux
+            else ea_off_mux + bin;         
 
 
    --

@@ -124,7 +124,7 @@ begin
       end if;
 
       if falling_edge(clk) then
-        iout3 <= ram_b3( to_integer( unsigned(i_addr(9 downto 1)) ) );
+        iout3 <= ram_b3( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -150,7 +150,7 @@ begin
       end if;
 
       if falling_edge(clk) then
-        iout2 <= ram_b2( to_integer( unsigned(i_addr(9 downto 1)) ) );
+        iout2 <= ram_b2( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -176,7 +176,7 @@ begin
       end if;
 
       if falling_edge(clk) then
-        iout1 <= ram_b1( to_integer( unsigned(i_addr(9 downto 1)) ) );
+        iout1 <= ram_b1( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -202,7 +202,7 @@ begin
       end if;
 
       if falling_edge(clk) then
-        iout0 <= ram_b0( to_integer( unsigned(i_addr(9 downto 1)) ) );
+        iout0 <= ram_b0( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;

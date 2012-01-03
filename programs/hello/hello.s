@@ -3,19 +3,28 @@
 ;
 ;  prints hello message out EVB RS232 port
 ;
-;  serial format: 19200,N,8,1
+;  serial format set in HW, typically 19200,N,8,1
+;
+
+;
+; I/O addresses
+;
+IO_PORT equ $8000_0000      
+UART    equ $c000_0000      
 
 ;
 ; program start
 ;
+
     org $600
 
 start:
     nop
 
 
-; r8 = I/O port address
-    mov r8,#$8000_0000      
+; load port addresses
+    mov  r8,#IO_PORT      
+    mov  r9,#UART
 
 ;
 ; print test string
@@ -66,13 +75,17 @@ crlf:
     rts
 
 ;       
-; send a character in R0 using HW UART
-; clobbers r0
-; expects port address in r8
-; uses r9,r10
+; send a character using HW UART
+;
+;   input data in r0
+;
+;   expects
+;     r8 = I/O port address
+;     r9 = UART port address
+;
+;   uses r10
 ;
 send_char:
-    mov  r9, #$4000_0000  ; uart decode address
 
 tx_full:
     ld    r10, (r8)
@@ -84,14 +97,19 @@ tx_full:
 
     rts
 
+
 ;       
-; receive a character in R0 using HW UART
-; returns char in r0
-; expects I/O port address in r8
-; uses r9,r10
+; receive a character using HW UART
+;
+;   returns char in r0
+;
+;   expects
+;     r8 = I/O port address
+;     r9 = UART port address
+;
+;   uses r10
 ;
 get_char:
-    mov   r9, #$4000_0000  ; uart decode address
 
 rx_empty:
     ld  r10, (r8)
