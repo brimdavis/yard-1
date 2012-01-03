@@ -93,13 +93,16 @@ begin
 
     
 
-  -- data bus 
+  --
+  -- connect local data bus siganls to ports
+  --
   d_rdat  <= loc_rdat;
---       when  ( ( d_rd_l = '0' ) AND ( d_cs_l = '0' ) )
---       else (others => 'Z');
 
   loc_wdat <= d_wdat;
 
+  --
+  -- data and byte enables
+  --
   d_en  <= NOT d_cs_l;
 
   d_we3 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(3));

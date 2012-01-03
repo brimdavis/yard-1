@@ -126,7 +126,7 @@ begin
   c_z0 <= '1' when ( ain( 7 downto  0) = X"00" ) else '0';
 
 
-  skip_decode_a: process(skip_ra_type, skip_cp_sel, skip_cp, c_z3, c_z2, c_z1, c_z0, ain, flag_reg)
+  skip_decode_a: process(skip_ra_type, skip_cp_sel, skip_cp, c_z3, c_z2, c_z1, c_z0, ain, flag_reg, sel_opa)
     variable skip_mux_a : std_logic;
 
     begin

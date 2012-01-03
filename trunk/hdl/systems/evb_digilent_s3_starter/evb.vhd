@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -56,14 +56,14 @@ end evb;
 architecture evb1 of evb is
   
   --
-  --
+  -- clock and control 
   --
   signal clk   : std_logic;	
   signal rst_l : std_logic;	
   signal irq_l : std_logic;	
   
   --
-  --
+  -- instruction bus
   --
   signal i_en_l  : std_logic;	
   signal i_rd_l  : std_logic;	
@@ -72,7 +72,7 @@ architecture evb1 of evb is
   signal i_dat   : std_logic_vector(INST_MSB downto 0);
   
   --
-  --
+  -- data bus
   --
   signal d_en_l  : std_logic;	
   signal d_rd_l  : std_logic;	
@@ -83,10 +83,17 @@ architecture evb1 of evb is
   signal d_rdat  : std_logic_vector(ALU_MSB downto 0);
   signal d_wdat  : std_logic_vector(ALU_MSB downto 0);
   
-  signal blkram_rdat  : std_logic_vector(ALU_MSB downto 0);
-
   signal d_stall    : std_logic;	
   signal d_stall_p1 : std_logic;	
+
+  --
+  -- data bus mux structure
+  --
+  signal blkram_rdat  : std_logic_vector(ALU_MSB downto 0);
+  signal uart_rdat    : std_logic_vector(ALU_MSB downto 0);
+  signal io_rdat      : std_logic_vector(ALU_MSB downto 0);
+  signal spare_rdat   : std_logic_vector(ALU_MSB downto 0);
+
   
   --
   -- local decodes
@@ -226,7 +233,6 @@ begin
   -- d_addr is currently hardcoded for 32 bit processor
   --
   blk_mem1 : entity work.blk_mem
---  rtl_mem1 : entity work.rtl_mem
     port map 
       (
         clk       => clk,
@@ -246,14 +252,16 @@ begin
   --
   -- chip select decode
   --
-  ram_cs_l <= '0'  when (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"0" )
-         else '1';
+  ram_cs_l <= d_addr(ADDR_MSB);
+
+--  ram_cs_l <= '0'  when (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"0" )
+--         else '1';
 
   --
-  -- blockram data bus tristate
+  -- blockram data bus mux
   --
   d_rdat  <=   blkram_rdat when  ( ( d_rd_l = '0' ) AND ( ram_cs_l = '0' ) )
-              else (others => 'Z');
+              else uart_rdat;
 
 
   ---------------------------------------------------------------
@@ -285,7 +293,7 @@ begin
   --
   -- note, UART decode signals are all active high
   --
-  dcd_uart     <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"4" ) )
+  dcd_uart     <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
               else  '0';
 
   dcd_uart_wr  <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
@@ -295,10 +303,10 @@ begin
               else  '0';
 
   --
-  -- tristate drivers for UART read data
+  -- bus mux for UART read data
   --
-  d_rdat <=   (ALU_MSB downto 8 => '0') & rx_dat  when ( dcd_uart_rd = '1' ) 
-            else (others=>'Z');
+  uart_rdat <=   (ALU_MSB downto 8 => '0') & rx_dat  when ( dcd_uart_rd = '1' ) 
+            else io_rdat;
 
   --
   -- BMD no stall
@@ -362,24 +370,25 @@ begin
   --
   -- 8 bit input port
   --
-  P_in_port1 : process( d_addr, d_rdat, d_en_l, d_rd_l, in_reg1 )
+  P_in_port1 : process( d_addr, d_en_l, d_rd_l, in_reg1 )
     begin
  
       if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
 
         if d_rd_l = '0' then
-          d_rdat <= (ALU_MSB downto 8 => '0') & in_reg1(7 downto 0);
+          io_rdat <= (ALU_MSB downto 8 => '0') & in_reg1(7 downto 0);
         else
-          d_rdat <= (others=>'Z');
+          io_rdat <= spare_rdat;
         end if;
 
       else
-        d_rdat <= (others=>'Z');
+        io_rdat <= spare_rdat;
 
       end if;
  
     end process p_in_port1;
- 
+
+
   --
   -- input port connections
   --   input data clocked to hold data stable during processor read cycle
@@ -419,6 +428,12 @@ begin
       led <= rx_dat;
 
     end process P_LED;
+
+
+  --
+  -- end-of-bus data mux source
+  --
+  spare_rdat <= ( others => '0' );
 
 end evb1;
 

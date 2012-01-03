@@ -54,6 +54,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;
+; I/O addresses
+;
+IO_PORT equ $8000_0000      
+UART    equ $c000_0000      
+
+;
 ;
 ; program start
 ;
@@ -68,9 +74,9 @@ start:
     nop     ; put a NOP first while debugging new reset vector code
 
 
-; UART & I/O addresses
-    mov     r8, #$8000_0000 ; r8 = I/O port address
-    mov     r9, #$4000_0000 ; uart decode address
+; I/O port & UART addresses
+    mov     r8, #IO_PORT 
+    mov     r9, #UART    
 
 
 ; print the help message

@@ -193,7 +193,7 @@ begin
   --
   -- note, UART decode signals are all active high
   --
-  dcd_uart <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"4" ) )
+  dcd_uart <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
            else '0';
 
   dcd_uart_wr <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
