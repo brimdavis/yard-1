@@ -597,6 +597,14 @@ sub emit_op
       }
 
     $next_address = $address + 2;
+
+    #
+    # history updates moved here to emit_op() so they reflect the last emitted opcode
+    # done to avoid problems caused by blank lines/directives/etc
+    #
+    $last_address = $address;
+    $last_skip = $skip_flag;
+
   }
 
 
@@ -1164,12 +1172,9 @@ sub dump_op_hashes
        $line_num++;
 
        #
-       # update history
+       # update history, last_xxx fields moved to emit_op()
        #
-       $last_address = $address;
-       $address      = $next_address;
-
-       $last_skip = $skip_flag;
+       $address   = $next_address;
        $skip_flag = 0;
 
        #
@@ -1190,7 +1195,7 @@ sub dump_op_hashes
 
        if ($D1) 
          {
-           printf $JNK_F ("\naddress, next_address = %08x, %08x\n", $address,$next_address); 
+           printf $JNK_F ("\nlast address, address, next_address = %08x, %08x, %08x\n", $last_address,$address,$next_address); 
            printf $JNK_F ("Stripped line: %s\n",$line);
          }
 
