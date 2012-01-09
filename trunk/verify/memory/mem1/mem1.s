@@ -25,13 +25,15 @@
 
 ;
 ; Note:
-;  need nop's before verify's so load has completed when testbench checks for
+;  Need to update verify routine to ignore data bus stalls for loads
+;
+;  Using nop's before verify's so load has completed when testbench checks for
 ;  an address match;  otherwise, it checks register file both on the first cycle
-;  of the load, before  the load writeback has completed (and fails), then again
-;  on the second cycle (and passes)
+;  of the stalled load, before  the load writeback has completed (and fails), 
+;  then again on the second cycle (and passes)
 ;
-;  Need to update verify routine to ignore load stalls
 ;
+
 
 ;
 ; load long

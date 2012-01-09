@@ -667,7 +667,6 @@
 ;
 done:
         bra  done
-        nop
 
   end
 
