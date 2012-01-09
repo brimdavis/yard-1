@@ -72,7 +72,6 @@ done:
     nop
 
 
-
 error:
     nop
     .verify fail

@@ -20,7 +20,7 @@
 ;    combos
 ;
 
-   org $000
+   org $0
 
 ; nop first, reset vector isn't working quite right
     nop
@@ -296,6 +296,7 @@ done:
 ; force a verify error
 ;
 error:
+    nop
     .verify fail
     bra     done
 
