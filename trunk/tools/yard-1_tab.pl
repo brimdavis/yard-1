@@ -1399,8 +1399,6 @@ sub ps_spam
 
     my $status;
 
-    # report error until hardware updated
-    do_error("SPAM instruction not yet implemented in Y1A 0.0.2 release" );
 
     # should follow a skip
     if ( !get_last_skip() )
