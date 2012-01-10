@@ -24,7 +24,7 @@
 --
 -- falling edge clocks used to hide BRAM clk latency:
 --   I_DAT  : falling edge clock
---   R_xDAT : falling edge clock
+--   D_xDAT : falling edge clock
 --
 --
 
@@ -44,19 +44,19 @@ library work;
 entity blk_mem is
   port
     (   
-      clk : in std_logic;
+      clk       : in std_logic;
 
-      d_rdat    : out std_logic_vector(ALU_MSB downto 0);
-      d_wdat    : in  std_logic_vector(ALU_MSB downto 0);
-      d_addr    : in  std_logic_vector (10 downto 0);
       d_cs_l    : in  std_logic;    
       d_rd_l    : in  std_logic;    
       d_wr_l    : in  std_logic;
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
+      d_addr    : in  std_logic_vector (10 downto 0);
+      d_rdat    : out std_logic_vector(ALU_MSB downto 0);
+      d_wdat    : in  std_logic_vector(ALU_MSB downto 0);
 
-      i_addr : in std_logic_vector  (11 downto 0);
-      i_dat   : out std_logic_vector (INST_MSB downto 0)
+      i_addr    : in  std_logic_vector  (11 downto 0);
+      i_dat     : out std_logic_vector (INST_MSB downto 0)
     );
 
 
@@ -94,7 +94,7 @@ begin
     
 
   --
-  -- connect local data bus siganls to ports
+  -- connect local data bus signals to ports
   --
   d_rdat  <= loc_rdat;
 
