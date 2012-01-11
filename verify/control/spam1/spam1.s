@@ -267,7 +267,7 @@ done:
 ; force a verify error
 ;
 error:
-	nop
+    nop
     .verify fail
     bra     done
 
