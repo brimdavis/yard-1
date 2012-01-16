@@ -283,12 +283,12 @@ sub ps_lrri
     my $invert_opb;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra,$rb;
 
     check_argument_count( $#operands, 2 );
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     if ($D1) { print $JNK_F ("ps_lrri label, operation, operands : $label, $operation, @operands\n"); }
-
 
     if ($pass == 2)
       {
@@ -333,20 +333,20 @@ sub ps_lrri
                   { substr( $opcode, 4, 1 ) = '0'; }                 
               }
    
-            $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 ) );
-            $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 ) );
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+            $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 )  );
+            $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
+            $opcode = stuff_op_field( $opcode, 'a', $ra                   );
 
             if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
           }
 
         else
           {
-            check_data_register($operands[1]);
+            $rb = check_data_register($operands[1]);
 
-            $opcode = stuff_op_field( $opcode, 't', "00" );
-            $opcode = stuff_op_field( $opcode, 'b', "0" . $data_reg_map{$operands[1]} );
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+            $opcode = stuff_op_field( $opcode, 't', "00"      );
+            $opcode = stuff_op_field( $opcode, 'b', "0" . $rb );
+            $opcode = stuff_op_field( $opcode, 'a', $ra       );
 
           }
       }
@@ -392,9 +392,10 @@ sub ps_arri
 
     my $opcode = $ops{$operation}{opc};
     my $type   = $ops{$operation}{type};
+    my $ra,$rb;
 
     check_argument_count( $#operands, 2 );
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     if ( $type = "A_R_RI_C" ) 
       {
@@ -416,20 +417,20 @@ sub ps_arri
                 $imm = $imm5_encode{"00000000"};
               }
     
-            $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 ) );
-            $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 ) );
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+            $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 )  );
+            $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
+            $opcode = stuff_op_field( $opcode, 'a', $ra                   );
 
             if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
           }
 
         else
           {
-            check_data_register($operands[1]);
+            $rb = check_data_register($operands[1]);
 
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
-            $opcode = stuff_op_field( $opcode, 't', "00" );
-            $opcode = stuff_op_field( $opcode, 'b', "0" . $data_reg_map{$operands[1]} );
+            $opcode = stuff_op_field( $opcode, 'a', $ra        );
+            $opcode = stuff_op_field( $opcode, 't', "00"       );
+            $opcode = stuff_op_field( $opcode, 'b', "0" . $rb  );
           }
       }
     
@@ -476,9 +477,10 @@ sub ps_sr
     my $imm;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra,$rb;
 
 #    check_argument_count( $#operands, 1 );
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     if ($pass == 2)
       {
@@ -512,7 +514,7 @@ sub ps_sr
 
         if ($D1) { printf $JNK_F ("shift constant=%d   %s\n",  $offset, $imm  ); }
 
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra  );
         $opcode = stuff_op_field( $opcode, 'b', $imm );
       }
 
@@ -579,13 +581,14 @@ sub ps_a1r
     my ( @operands  ) = @_;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra;
 
     check_argument_count( $#operands, 1 );
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     if ($pass == 2)
       {
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
       }
 
     emit_op($opcode);
@@ -616,16 +619,17 @@ sub ps_orr
     my ( @operands  ) = @_;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra,$rb;
 
     check_argument_count( $#operands, 2 );
 
-    check_data_register( $operands[0] );
-    check_data_register( $operands[1] );
+    $ra = check_data_register( $operands[0] );
+    $rb = check_data_register( $operands[1] );
 
     if ($pass == 2)
       {
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
-        $opcode = stuff_op_field( $opcode, 'b', $data_reg_map{$operands[1]} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
+        $opcode = stuff_op_field( $opcode, 'b', $rb );
       }
 
     emit_op($opcode);
@@ -657,9 +661,10 @@ sub ps_ori
     my $imm;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra;
 
     check_argument_count( $#operands, 2 );
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     if ($pass == 2)
       {
@@ -680,7 +685,7 @@ sub ps_ori
 
         if ($D1) { printf $JNK_F ("flip constant=%d   %s\n",  $offset, $imm  ); }
 
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
         $opcode = stuff_op_field( $opcode, 'b', $imm );
 
       }
@@ -809,11 +814,12 @@ sub ps_mem
     my $opcode = $ops{$operation}{opc};
     my $type   = $ops{$operation}{type};
     my $size   = $ops{$operation}{size};
+    my $ra,$rb;
 
 
     check_argument_count( $#operands, 2 );
 
-    check_data_register( $operands[0] );
+    $ra = check_data_register( $operands[0] );
 
     #
     # parse address field : $1 = offset field  $2 = address register field
@@ -835,12 +841,12 @@ sub ps_mem
               { 
                 $imm_mode = "1"; 
 
-                 check_addr_register($2);
+                 $rb = check_addr_register($2);
 
-                 $opcode = stuff_op_field( $opcode, 's', $size );
+                 $opcode = stuff_op_field( $opcode, 's', $size     );
                  $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-                 $opcode = stuff_op_field( $opcode, 'b', $addr_reg_map{$2} );
-                 $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+                 $opcode = stuff_op_field( $opcode, 'b', $rb       );
+                 $opcode = stuff_op_field( $opcode, 'a', $ra       );
               }
 
             #
@@ -869,15 +875,12 @@ sub ps_mem
                 if ( $status == 0 ) 
                   {
                     # BMD make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
-                    if ( $offset > 63 ) 
-                      {
-                        do_error("Stack offset must be quad aligned constant <= 60");
-                        $offset = 0;
-                      }
 
-                    if ( ( $offset % 4 ) > 0 )
+                    # check for valid offset 
+                    if ( ($offset > 60) || ($offset < 0) || ( ( $offset % 4 ) > 0 ) ) 
                       {
-                        do_error("Unaligned stack offset");
+                        do_error("Stack offset must be quad aligned, in the range 0..60");
+                        $offset = 0;
                       }
 
                     $offset_str = sprintf("%04b", $offset >> 2 );
@@ -897,10 +900,10 @@ sub ps_mem
                     $size = '00';
                   }
 
-                $opcode = stuff_op_field( $opcode, 's', $size );
-                $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
+                $opcode = stuff_op_field( $opcode, 's', $size       );
+                $opcode = stuff_op_field( $opcode, 'm', $imm_mode   );
                 $opcode = stuff_op_field( $opcode, 'b', $offset_str );
-                $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+                $opcode = stuff_op_field( $opcode, 'a', $ra         );
               }
 
             else
@@ -908,24 +911,24 @@ sub ps_mem
                 do_error("Only .imm(rn) offset syntax currently supported by assembler\n");
 
                 $imm_mode = '0';
-                check_addr_register($2);
+                $rb = check_addr_register($2);
 
-                $opcode = stuff_op_field( $opcode, 's', $size );
+                $opcode = stuff_op_field( $opcode, 's', $size     );
                 $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-                $opcode = stuff_op_field( $opcode, 'b', $addr_reg_map{$2} );
-                $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+                $opcode = stuff_op_field( $opcode, 'b', $rb       );
+                $opcode = stuff_op_field( $opcode, 'a', $ra       );
               }
           }
 
         else 
           { 
             $imm_mode = "0"; 
-            check_addr_register($2);
+            $rb = check_addr_register($2);
 
-            $opcode = stuff_op_field( $opcode, 's', $size );
+            $opcode = stuff_op_field( $opcode, 's', $size     );
             $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-            $opcode = stuff_op_field( $opcode, 'b', $addr_reg_map{$2} );
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+            $opcode = stuff_op_field( $opcode, 'b', $rb       );
+            $opcode = stuff_op_field( $opcode, 'a', $ra       );
           }
 
       }
@@ -1150,16 +1153,17 @@ sub ps_jir
     my ( @operands  ) = @_;
 
     my $opcode = $ops{$operation}{opc};
+    my $ra ;
 
     check_argument_count( $#operands, 1 );
 
     $operands[0] =~ /^\((.+)\)$/;
 
-    check_addr_register($1);
+    $ra = check_addr_register($1);
 
     if ($pass == 2)
       {
-        $opcode = stuff_op_field( $opcode, 'a', $addr_reg_map{$1} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
       }
 
     emit_op($opcode);
@@ -1251,6 +1255,7 @@ sub ps_skip
 
     my $opcode = $ops{$operation}{opc};
     my $type   = $ops{$operation}{type};
+    my $ra,$rb;
 
     #
     # update history flag
@@ -1271,8 +1276,8 @@ sub ps_skip
     #
     elsif ( $type eq 'SKIP_R' )
       {
-        check_data_register( $operands[0] );
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
+        $ra = check_data_register( $operands[0] );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
       }
 
     #
@@ -1312,11 +1317,11 @@ sub ps_skip
     #
     elsif  ( $type eq 'SKIP_R_R' )
       {
-        check_data_register( $operands[0] );
-        check_data_register( $operands[1] );
+        $ra = check_data_register( $operands[0] );
+        $rb = check_data_register( $operands[1] );
 
-        $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
-        $opcode = stuff_op_field( $opcode, 'b', $data_reg_map{$operands[1]} );
+        $opcode = stuff_op_field( $opcode, 'a', $ra );
+        $opcode = stuff_op_field( $opcode, 'b', $rb );
       }
 
 
@@ -1325,7 +1330,7 @@ sub ps_skip
     #
     elsif  ( $type eq 'SKIP_R_I' )
       {
-        check_data_register( $operands[0] );
+        $ra = check_data_register( $operands[0] );
 
         # check if second operand is an immediate constant
         if($operands[1] =~ /^#(.+)$/) 
@@ -1343,10 +1348,9 @@ sub ps_skip
 
             if ($D1) { printf $JNK_F ("skip bit number=%d   %s\n",  $offset, $bit_num  ); }
  
-            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{$operands[0]} );
-            $opcode = stuff_op_field( $opcode, 'b', $bit_num                    );
+            $opcode = stuff_op_field( $opcode, 'a', $ra      );
+            $opcode = stuff_op_field( $opcode, 'b', $bit_num );
 
-#           $opcode = $opcode . $bit_num . $data_reg_map{$operands[0]};
           }
         else 
           {
