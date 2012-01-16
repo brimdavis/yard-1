@@ -386,24 +386,44 @@ sub check_argument_count
 #-------------------------------------------------------------
 sub check_data_register 
   {
-    my ($reg) = @_;
+    my ($reg) = lc shift;
 
-    if ( !exists $data_reg_map{$reg} )
+    my $rbits = $data_reg_map{$reg};
+
+#    if ( !exists $data_reg_map{$reg} )
+
+    if ( $rbits )
+      {
+        return $rbits;
+      }
+    else
       {
         do_error("Invalid data register \"" . $reg . "\"");
+        return '0000';
       }
+
+
   }
+
 
 #-------------------------------------------------------------
 # Check for valid address register 
 #-------------------------------------------------------------
 sub check_addr_register 
   {
-    my ($reg) = @_;
+    my ($reg) = lc shift;
 
-    if ( !exists $addr_reg_map{$reg} )
+    my $rbits = $addr_reg_map{$reg};
+
+#    if ( !exists $addr_reg_map{$reg} )
+    if ( $rbits )
+      {
+        return $rbits;
+      }
+    else
       {
         do_error("Invalid address register \"" . $reg . "\"");
+        return '0000';
       }
   }
 
@@ -412,11 +432,19 @@ sub check_addr_register
 #-------------------------------------------------------------
 sub check_ctl_register 
   {
-    my ($reg) = @_;
+    my ($reg) = lc shift;
 
-    if ( !exists $ctl_reg_map{$reg} )
+    my $rbits = $ctl_reg_map{$reg};
+
+#    if ( !exists $ctl_reg_map{$reg} )
+    if ( $rbits )
+      {
+        return $rbits;
+      }
+    else
       {
         do_error("Invalid control register \"" . $reg . "\"");
+        return '0000';
       }
   }
 
@@ -431,7 +459,7 @@ sub label_exists
     # fixup prefix if a local label
     if ($label  =~ /^\./) {$label = $label_prefix . $label;} 
 
-    $label = lc $label;
+#    $label = lc $label;
     return ((exists $labels{$label}) || ($label eq "@"));
   }
 
@@ -453,7 +481,7 @@ sub label_value
 
     else 
       {
-        $label = lc $label;
+#        $label = lc $label;
         return $labels{$label};
       }
   }
@@ -463,7 +491,7 @@ sub set_label
   {
     my ($label, $value) = @_;
 
-    $label = lc $label;
+#    $label = lc $label;
     $labels{$label} = $value;
   }
 
@@ -471,13 +499,54 @@ sub init_label
   {
     my $label = shift;
 
-    $label = lc $label;
+#    $label = lc $label;
 
     if (label_exists($label)) 
       {
         do_error("Duplicate label definition: $label");
       }
     set_label($label, 0);
+  }
+
+
+#
+# process_label called by line parser for label fields
+#
+# global variable usage:
+#
+#   use:
+#      $address 
+#
+#   use/modify: ( used elsewhere in parsing )
+#      $label_field 
+#      $label_prefix
+#
+#
+sub process_label
+  {
+    # TODO: add a check for any illegal characters in label name
+
+    # local label : add prefix to label
+    if ($label_field  =~ /^\./) 
+      {
+        $label_field = $label_prefix . $label_field; 
+      } 
+
+    # global label: remove colon, set prefix 
+    elsif ($label_field  =~ /:$/) 
+      {
+        chop $label_field;
+        $label_prefix = $label_field;
+      }
+
+    # normal label : set prefix
+    else
+      {
+        $label_prefix = $label_field;
+      }
+
+    if ( $pass == 1 ) { init_label($label_field) };
+    set_label($label_field, $address);
   }
 
 #-------------------------------------------------------------
@@ -1172,7 +1241,8 @@ sub dump_op_hashes
        $line_num++;
 
        #
-       # update history, last_xxx fields moved to emit_op()
+       # update state variables
+       # last_xxx history updates moved to emit_op()
        #
        $address   = $next_address;
        $skip_flag = 0;
@@ -1184,7 +1254,6 @@ sub dump_op_hashes
        $raw_line = $line;      # save the original line 
 
        $line =~ s/;.*//;       # strip the comments 
-       $line =~ tr/A-Z/a-z/;   # convert to lowercase
        $line =~ s/,/ /g;       # convert commas to spaces ( for operand field separators )    
 
        if ($line =~ /^\s*$/ ) # empty line
@@ -1206,38 +1275,14 @@ sub dump_op_hashes
       @words   = split(/\s+/, $line); 
 
       $label_field     = shift @words;
-      $operation_field = shift @words;
+      $operation_field = lc shift @words;
       @operand_fields  = @words;
 
-      # BMD add a check for any illegal characters in label name
-
-      # define any label found
-      if ($label_field) 
-        { 
-          # local label : add prefix to label
-          if ($label_field  =~ /^\./) 
-            {
-              $label_field = $label_prefix . $label_field; 
-            } 
-
-          # global label: remove colon, set prefix 
-          elsif ($label_field  =~ /:$/) 
-            {
-              chop $label_field;
-              $label_prefix = $label_field;
-            }
-
-          # normal label : set prefix
-          else
-            {
-              $label_prefix = $label_field;
-            }
-
-          if ( $pass == 1 ) { init_label($label_field) };
-          set_label($label_field, $address);
-        }
-
       if ($D1) { print $JNK_F ("new parse- label_field, operation_field, operand_fields : $label_field, $operation_field, @operand_fields\n"); }
+
+      # handle any label 
+      if ($label_field) { process_label(); }
+
 
       #
       # new HOH dispatch
@@ -1289,7 +1334,7 @@ sub dump_op_hashes
 #
 printf $LST_F ( "\n\nSymbols (by name):\n\n"); 
 
-foreach my $label ( sort keys(%labels))  
+foreach my $label ( sort { lc($a) cmp lc($b) } keys(%labels) )  
   { printf $LST_F ( "  %08X  %s\n",label_value($label), $label); }
 
 #
@@ -1297,7 +1342,7 @@ foreach my $label ( sort keys(%labels))
 #
 printf $LST_F ( "\n\nSymbols (by value):\n\n"); 
 
-foreach my $label ( sort { $labels{$a} <=> $labels{$b}  or   $a cmp $b } keys(%labels) )
+foreach my $label ( sort { $labels{$a} <=> $labels{$b}  or  lc($a) cmp lc($b) } keys(%labels) )
   { printf $LST_F ( "  %08X  %s\n",label_value($label), $label); }
 
 #
