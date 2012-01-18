@@ -55,7 +55,7 @@ L0FE:
 ; org for non-contiguous code
     org     $13e
 
-L13e:
+L13E
     lea     r0,(pc)
     .verify r0,#$0000_013e
         

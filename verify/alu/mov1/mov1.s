@@ -624,6 +624,20 @@
     mov.not r14, #$7fff_ffff
     .verify r14, #$8000_0000
 
+;
+; test some non-hex assembler encoding formats
+;
+    mov     r0, #'@
+    .verify r0, #$40
+
+    mov     r0, #-7
+    .verify r0, #$ffff_fff9
+
+    mov     r0, #%1000_0000_0000_0000_0000_0000_0000_0000
+    or      r0, #%0000_0000_0000_0000_0000_0000_0000_0001
+    .verify r0, #$8000_0001
+
+
 done:
    bra  done
 

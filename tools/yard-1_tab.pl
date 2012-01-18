@@ -441,10 +441,7 @@ sub ps_arri
 
 #----------------------
 # SHIFT_R: OP Ra {,#imm}
-#   handles simple shifts
-#
-# BMD
-#     add IMM5 decode for full shift implementation
+#   handles shifts
 #
 #----------------------
 %ops_sr = 
@@ -497,7 +494,7 @@ sub ps_sr
                     do_error("Only shift/rotate lengths of 1 are currently supported by the Y1A core");
                   }
 
-                # BMD need mask or field overflow test
+                # FIXME: need mask or field overflow test
                 $imm = sprintf("%05b", $offset);
               }
 
@@ -673,7 +670,7 @@ sub ps_ori
           { 
             ($status, $offset) = extract_word($1);
 
-            # BMD need mask or field overflow test
+            # FIXME: need mask or field overflow test
             $imm = sprintf("%05b", $offset);
           }
 
@@ -750,7 +747,7 @@ sub ps_imm12
 
             #
             # %012b format overflows format field for negative integers, truncate string to 12 bits
-            # BMD should check for overflow here
+            # FIXME: should check for overflow here
             #
             $imm = substr( $imm, length($imm)-12, 12);
 
@@ -830,7 +827,7 @@ sub ps_mem
     if ($D1) { printf $JNK_F ("MEM fields=%s %s\n",  $1,  $2 ); }
 
     #
-    # BMD compact this if, too many redundant paths
+    # TODO: compact this if, too many redundant paths
     #
     if ($pass == 2)
       {
@@ -1017,7 +1014,7 @@ sub ps_ldi
 # BRI: OP  ea9 | ea21
 #   {l}bra, {l}bsr
 #
-# BMD: problems
+# FIXME: 
 #      bsr.d : stacked return address HW needs fixup to work properly with interrupts
 #      lbsr  : code needs work to handle 21 bit address offset calculation & prefix generation
 #------------------------------------------------------------------------------
@@ -1173,9 +1170,7 @@ sub ps_jir
 #---------------------------------------------
 # SKIP: skip.cc Ra {IMM5}
 #
-#   BMD add check of valid modes for each skip type  
-#
-#   BMD add verification tests for byte/wyde, parity, and flag skips
+#   FIXME: add check of valid modes for each skip type  
 #
 #---------------------------------------------
    
@@ -1268,7 +1263,7 @@ sub ps_skip
     if ( $type eq 'SKIP_0' )
       {
         # full opcode already defined, do nothing
-        # BMD add error check that there are no operands
+        # FIXME: add error check that there are no operands
       }
     
     #
