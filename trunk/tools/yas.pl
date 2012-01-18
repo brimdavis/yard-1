@@ -172,11 +172,11 @@ my $help_bugs=<<END_BUGS;
  assembler known bug list:
 
   - error checking for illegal immediates:
-      - error if imm5 doesn't match encoded constants
-      - error if imm12 out of range
+      - error if shift/flip immediate field is out of range
+      - error if imm12 out of range ( now silently masked )
 
-  - character constants mangle uppercase letters to lowercase
-        dc.b 'D   assembles as lower case 'd
+  - character constant field doesn't accept spaces
+        dc.b '    ; produces assembler error
 END_BUGS
 #'
 
@@ -274,7 +274,7 @@ my $OBJ_F;
 my $LST_F;
 my $VFY_F;
 
-our $JNK_F;   # BMD debug prints in yas_tab need to see $JNK_F 
+our $JNK_F;   # debug prints in yas_tab need to see $JNK_F 
 
 #
 # status & counts
@@ -390,8 +390,6 @@ sub check_data_register
 
     my $rbits = $data_reg_map{$reg};
 
-#    if ( !exists $data_reg_map{$reg} )
-
     if ( $rbits )
       {
         return $rbits;
@@ -415,7 +413,6 @@ sub check_addr_register
 
     my $rbits = $addr_reg_map{$reg};
 
-#    if ( !exists $addr_reg_map{$reg} )
     if ( $rbits )
       {
         return $rbits;
@@ -436,7 +433,6 @@ sub check_ctl_register
 
     my $rbits = $ctl_reg_map{$reg};
 
-#    if ( !exists $ctl_reg_map{$reg} )
     if ( $rbits )
       {
         return $rbits;
@@ -594,7 +590,7 @@ sub extract_word
     #
     # leading ' for ASCII character
     #
-    #  BMD: problem area- entire line is converted to lower case, so 'A becomes 'a
+    #  FIXME: doesn't work for space /' / due to parser split-on-spaces- use raw line?
     #
     elsif($tmp =~ /^\'(.+)$/)  
       {
@@ -876,7 +872,7 @@ my %old_directive_defs =
 #                 
 # old directives parser
 #
-# BMD rewrite like opcode hash using a few 
+# TODO: rewrite like opcode hash using a few 
 # parsing subroutines instead of big if-elsif
 #
 sub parse_directive
@@ -1224,7 +1220,7 @@ sub dump_op_hashes
      $label_prefix = '';
 
      #
-     # BMD need to add file loop here
+     # TODO: need to add file loop here
      #
 
      #
