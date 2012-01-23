@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -52,9 +52,12 @@ end regfile;
 
 architecture arch1 of regfile is
 
-    type rf_type is array (natural range <>) of std_logic_vector (RF_DAT_MSB downto 0);
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
-    signal rf1 : rf_type (RF_DEPTH-1 downto 0) := (others => (others => '0') );
+  type rf_type is array (natural range <>) of std_logic_vector (RF_DAT_MSB downto 0);
+
+  signal rf1 : rf_type (RF_DEPTH-1 downto 0) := (others => (others => '0') );
 
 begin
 

@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -36,7 +36,7 @@ entity ld_mux is
       mem_size   : in  std_logic_vector(1 downto 0);
       mem_sign   : in  std_logic;
 
-      ea_dat     : in  std_logic_vector(ALU_MSB downto 0);
+      ea_lsbs    : in  std_logic_vector(1 downto 0);
 
       d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -47,6 +47,9 @@ end ld_mux;
 
 
 architecture arch1 of ld_mux is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
   -- byte/wyde lane shifters
   signal byte_dat : std_logic_vector( 7 downto 0);
@@ -89,7 +92,7 @@ begin
       --
       -- byte lane mux
       --
-      with ea_dat(0) select
+      with ea_lsbs(0) select
         byte_dat <= 
           wyde_dat(15 downto  8)  when '0',
           wyde_dat( 7 downto  0)  when '1',
@@ -104,7 +107,7 @@ begin
       --
       -- wyde (16 bit) lane mux
       --
-      wyde_dat <=  d_rdat(31 downto 16)  when ( ea_dat(1) = '0' ) 
+      wyde_dat <=  d_rdat(31 downto 16)  when ( ea_lsbs(1) = '0' ) 
               else d_rdat(15 downto 0);
 
       --

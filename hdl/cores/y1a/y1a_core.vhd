@@ -87,14 +87,12 @@
 --
 --
 
-
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
   use ieee.std_logic_unsigned."+";
   use ieee.std_logic_unsigned."-";
-
 
 library work;
   use work.y1_constants.all;
@@ -166,8 +164,8 @@ architecture arch1 of y1a_core is
   -- 
   -- prevent optimizations across core interface
   --
---  attribute syn_hier : string;
---  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
 
   --
@@ -185,8 +183,6 @@ architecture arch1 of y1a_core is
   --
   signal wb_bus     : std_logic_vector(ALU_MSB downto 0);
   signal mem_wb_bus : std_logic_vector(ALU_MSB downto 0);
-
-  attribute keep of mem_wb_bus    : signal is true;
 
   signal force_sel_opa : std_logic_vector(3 downto 0);
 
@@ -290,22 +286,24 @@ architecture arch1 of y1a_core is
   --  used to break up combinatorial ALU cascade into CLB sized chunks
   --
   
-  attribute keep of ain   : signal is true;
-  attribute keep of bin   : signal is true;
-  
-  attribute keep of ar   : signal is true;
-  attribute keep of br   : signal is true;
-
-  attribute keep of arith_dat  : signal is true;
-  attribute keep of logic_dat  : signal is true;
-  
-  attribute keep of cg_out   : signal is true;
-  
-  attribute keep of skip_cond   : signal is true;
-
-  attribute keep of ffb_dat     : signal is true;
-  attribute keep of bitcnt_dat  : signal is true;
-  attribute keep of flip_dat    : signal is true;
+--   attribute keep of ain   : signal is true;
+--   attribute keep of bin   : signal is true;
+--   
+--   attribute keep of ar   : signal is true;
+--   attribute keep of br   : signal is true;
+-- 
+--   attribute keep of arith_dat  : signal is true;
+--   attribute keep of logic_dat  : signal is true;
+--   
+--   attribute keep of cg_out   : signal is true;
+--   
+--   attribute keep of skip_cond   : signal is true;
+-- 
+--   attribute keep of ffb_dat     : signal is true;
+--   attribute keep of bitcnt_dat  : signal is true;
+--   attribute keep of flip_dat    : signal is true;
+-- 
+--   attribute keep of mem_wb_bus    : signal is true;
   
   ----------------------
 
@@ -443,7 +441,6 @@ constant CFG_REG_I_ADDR : boolean := TRUE;
 ------------------------------------------------------------------------------
 
 
-
 begin
 
   ------------------------------------------------------------------------------
@@ -508,51 +505,32 @@ begin
   --   register file accesses
   --
 
-  --
-  -- stack & frame pointer registers snoop register file writes
-  --
-  -- used for independent read access port only, values in register file track external registers
-  --
   sp_fp_reg1: process (clk,rst_l)
     begin
 
       if  rst_l = '0' then
-        fp_reg <= ( others => '0');
-        sp_reg <= ( others => '0');
+        fp_reg  <= ( others => '0');
+        sp_reg  <= ( others => '0');
+        imm_reg <= ( others => '0');
 
       elsif rising_edge(clk) then
 
-        if ( wb_en = '1' ) AND ( sel_opa = REG_FP ) then
+        if ( wb_en = '1' ) AND ( force_sel_opa = REG_FP ) then
           fp_reg <= wb_bus;
         end if;
 
-        if ( wb_en = '1' ) AND ( sel_opa = REG_SP ) then
+        if ( wb_en = '1' ) AND ( force_sel_opa = REG_SP ) then
           sp_reg <= wb_bus;
         end if;
-
-      end if;
-
-    end process;
-
-
-  --
-  -- IMM register writeback snooping 
-  --
-  imm1:  process (clk,rst_l)
-    begin
- 
-      if  rst_l = '0' then
-        imm_reg(ALU_MSB downto 0) <= ( others => '0');
- 
-      elsif rising_edge(clk) then
 
         if ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
           imm_reg <= wb_bus;
         end if;
 
       end if;
- 
-    end process imm1;
+
+    end process;
+
 
   ------------------------------------------------------------------------------
   --
@@ -615,17 +593,17 @@ begin
   --
   ------------------------------------------------------------------------------
   I_addsub: addsub
-   port map
-     (
-       inst_fld   => inst_fld,
-       arith_op   => arith_op,
+    port map
+      (
+        inst_fld   => inst_fld,
+        arith_op   => arith_op,
 
-       ain        => ain,
-       bin        => inv_bin,
+        ain        => ain,
+        bin        => inv_bin,
   
-       arith_cout => arith_cout,
-       arith_dat  => arith_dat
-     );
+        arith_cout => arith_cout,
+        arith_dat  => arith_dat
+      );
 
 
   ------------------------------------------------------------------------------
@@ -779,7 +757,7 @@ begin
 
     signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
-    attribute keep of wb_muxb  : signal is true;
+--    attribute keep of wb_muxb  : signal is true;
 
     begin
 
@@ -890,33 +868,32 @@ begin
   sr1:  process (clk,rst_l)
     begin
   
-       if  rst_l = '0' then
-         st_reg(SR_MSB-8 downto 0) <= ( others => '0');
+      if  rst_l = '0' then
+        st_reg(SR_MSB-8 downto 0) <= ( others => '0');
   
-       elsif rising_edge(clk) then
+      elsif rising_edge(clk) then
   
-         if ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
-           st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
-         end if;
+        if ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
+          st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
+        end if;
    
-       end if;
+      end if;
   
     end process sr1;
 
   --
   -- generate masks for SPAM instruction
   --
---  spam_length_mask <= std_logic_vector(unsigned(SPAM_ONES) sll to_integer(unsigned(spam_mode)));
   with spam_mode select
   spam_length_mask  <=
-                    X"FF" when B"000",
-                    X"FE" when B"001",
-                    X"FC" when B"010",
-                    X"F8" when B"011",
-                    X"F0" when B"100",
-                    X"E0" when B"101",
-                    X"C0" when B"110",
-                    X"FF" when others;           
+    X"FF" when B"000",
+    X"FE" when B"001",
+    X"FC" when B"010",
+    X"F8" when B"011",
+    X"F0" when B"100",
+    X"E0" when B"101",
+    X"C0" when B"110",
+    X"FF" when others;           
 
   -- 
   -- instruction flow 
@@ -1085,7 +1062,7 @@ begin
         if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
           pc_reg_p1     <= pc_reg_p1;
           ireg          <= ireg;
-          force_sel_opa <= ireg( 3 downto 0);
+          force_sel_opa <= force_sel_opa;
   
         else
           pc_reg_p1 <= pc_reg;
@@ -1205,7 +1182,7 @@ begin
         mem_size  => mem_size,  
         lea_bit   => lea_bit,   
                                
-        ea_dat    => ea_dat,    
+        ea_lsbs   => ea_dat(1 downto 0),    
                                
         d_en_l    => d_en_l,    
         d_rd_l    => d_rd_l,    
@@ -1237,7 +1214,7 @@ begin
   --
   I_ld_mux: ld_mux
     generic map
-      ( CFG       => CFG )
+      ( CFG        => CFG )
 
     port map
       (
@@ -1245,7 +1222,7 @@ begin
         mem_size   => mem_size,   
         mem_sign   => mem_sign,   
 
-        ea_dat     => ea_dat,     
+        ea_lsbs    => ea_dat(1 downto 0),     
 
         d_rdat     => d_rdat,     
 
@@ -1258,6 +1235,9 @@ begin
   -- drive simulation probe signals 
   --
   ------------------------------------------------------------------------------
+
+  -- pragma translate_off
+
   B_probe : block
     begin
       y1a_probe_sigs.ain        <= ain;
@@ -1288,6 +1268,7 @@ begin
 
     end block B_probe;
 
+  -- pragma translate_on
   
 end arch1;
  
