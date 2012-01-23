@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -59,6 +59,9 @@ end skip_dcd;
 
 
 architecture arch1 of skip_dcd is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
   signal skip_cond_a : std_logic;
 
@@ -238,9 +241,14 @@ begin
   -- drive simulation probe signals 
   --
   ------------------------------------------------------------------------------
+
+  -- pragma translate_off
+
   B_sc_prb : block
     begin
       y1a_probe_sigs.skipc <= skip_cond_a & c_bit & cb_n & cb_c & cb_v & cb_z;
     end block B_sc_prb;
+
+  -- pragma translate_on
 
 end arch1;

@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2001-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -210,7 +210,7 @@ package y1a_comps is
         mem_size  : in  std_logic_vector(1 downto 0);
         lea_bit   : in  std_logic;
 
-        ea_dat    : in  std_logic_vector(ALU_MSB downto 0);
+        ea_lsbs   : in  std_logic_vector(1 downto 0);
 
         d_en_l    : out std_logic;	
         d_rd_l    : out std_logic;	
@@ -249,7 +249,7 @@ package y1a_comps is
         mem_size   : in  std_logic_vector(1 downto 0);
         mem_sign   : in  std_logic;
 
-        ea_dat     : in  std_logic_vector(ALU_MSB downto 0);
+        ea_lsbs    : in  std_logic_vector(1 downto 0);
 
         d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
 

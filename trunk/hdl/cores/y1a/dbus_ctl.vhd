@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -33,7 +33,7 @@ entity dbus_ctl is
       mem_size  : in  std_logic_vector(1 downto 0);
       lea_bit   : in  std_logic;
 
-      ea_dat    : in  std_logic_vector(ALU_MSB downto 0);
+      ea_lsbs   : in  std_logic_vector(1 downto 0);
 
       d_en_l    : out std_logic;	
       d_rd_l    : out std_logic;	
@@ -46,6 +46,8 @@ end dbus_ctl;
 
 architecture arch1 of dbus_ctl is
 
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
 begin
 
@@ -90,16 +92,16 @@ begin
       -- first cut at byte write enables, should add enable gating
 
         d_wr_en_l 
-            <=   B"0000"  when ( mem_size = MEM_32_SP ) AND ( ea_dat(1 downto 0) = "00" )
-           else  B"0000"  when ( mem_size = MEM_32    ) AND ( ea_dat(1 downto 0) = "00" )
+            <=   B"0000"  when ( mem_size = MEM_32_SP ) AND ( ea_lsbs(1 downto 0) = "00" )
+           else  B"0000"  when ( mem_size = MEM_32    ) AND ( ea_lsbs(1 downto 0) = "00" )
 
-           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_dat(1 downto 0) = "00" )    
-           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_dat(1 downto 0) = "10" )    
+           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "00" )    
+           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "10" )    
 
-           else  B"0111"  when ( mem_size = MEM_8     ) AND ( ea_dat(1 downto 0) = "00" )    
-           else  B"1011"  when ( mem_size = MEM_8     ) AND ( ea_dat(1 downto 0) = "01" )    
-           else  B"1101"  when ( mem_size = MEM_8     ) AND ( ea_dat(1 downto 0) = "10" )    
-           else  B"1110"  when ( mem_size = MEM_8     ) AND ( ea_dat(1 downto 0) = "11" )    
+           else  B"0111"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "00" )    
+           else  B"1011"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "01" )    
+           else  B"1101"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "10" )    
+           else  B"1110"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "11" )    
   
            else  B"1111" ;
   

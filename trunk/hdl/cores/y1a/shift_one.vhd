@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2001-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -41,6 +41,9 @@ end shift_one;
 
 
 architecture arch1 of shift_one is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
   signal shift_msb : std_logic;
   signal shift_lsb : std_logic;

@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -48,6 +48,9 @@ entity rstack is
 end rstack;
 
 architecture arch1 of rstack is
+
+--  attribute syn_hier : string;
+--  attribute syn_hier of arch1: architecture is "hard";
 
   type rs_pc_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (PC_MSB downto 0);
   type rs_sr_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (SR_MSB downto 0);

@@ -4,7 +4,7 @@
 #
 # YARD-1 Assembler
 #
-# Modifications for YARD-1 COPYRIGHT (C) 2000-2011  B. Davis
+# Modifications for YARD-1 COPYRIGHT (C) 2000-2012  B. Davis
 #
 #   under the same license terms as the original risc8_asm (see below)
 #

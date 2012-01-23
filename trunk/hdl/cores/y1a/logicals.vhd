@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -40,6 +40,9 @@ end logicals;
 
 
 architecture arch1 of logicals is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
 begin
 
