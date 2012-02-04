@@ -47,7 +47,7 @@ entity ea_calc is
       sp_reg     : in  std_logic_vector(ALU_MSB downto 0);
       fp_reg     : in  std_logic_vector(ALU_MSB downto 0);
 
-      pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
+      pcr_addr   : in  std_logic_vector(ALU_MSB downto 0);
     
       ea_dat     : out std_logic_vector(ALU_MSB downto 0)
     );
@@ -63,12 +63,9 @@ architecture arch1 of ea_calc is
   signal ea_off_mux  : std_logic_vector(ALU_MSB downto 0);
   signal ea_reg_mux  : std_logic_vector(ALU_MSB downto 0);
 
-  signal ea_pc_lsbs  : std_logic_vector(1 downto 0);
-
   signal dcd_LDI     : boolean;
-  signal dcd_SP      : boolean;
-  signal dcd_src_mux : boolean;
-
+  signal mode_SP     : boolean;
+  signal src_mux_ctl : boolean;
 
   --
   -- declare synthesis attributes
@@ -78,71 +75,49 @@ architecture arch1 of ea_calc is
 
 begin
 
--- 
--- BMD rewrite? : 
---    reg_mux as one 4:1 with imm, move last br | reg_mux stage into adder
--- 
--- 
+  --
+  -- instruction decodes
+  --
+  dcd_LDI     <= ( inst_fld = OPM_LDI   );
 
-     dcd_LDI <= ( inst_fld = OPM_LDI   );
-     dcd_SP  <= ( mem_size = MEM_32_SP );
+  mode_SP     <= ( mem_size = MEM_32_SP );
 
-     --
-     -- LSB's of PC zeroed for LDI quad aligned addressing
-     --
-     ea_pc_lsbs  <= B"00" when dcd_LDI else pc_reg_p1(1 downto 0);
+  src_mux_ctl <=  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT mode_SP ) ) OR mode_SP;
 
-     --
-     -- mux ea offset sources
-     --
-     ea_off_mux <=  
+
+  --
+  -- mux ea offset sources
+  --
+  ea_off_mux <=  
+
+          imm_reg                                
+    when  ( mem_mode  = '1' ) AND ( NOT ( mode_SP OR dcd_LDI ) )
  
-             ( ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" )  
-       when  dcd_LDI
-
-       else  imm_reg                                
-       when  ( mem_mode  = '1' ) AND ( NOT dcd_SP )
+    else  X"0000_00" & B"00" & sp_offset & B"00" 
+    when  mode_SP AND ( NOT dcd_LDI )
  
-       else  X"0000_00" & B"00" & sp_offset & B"00" 
-       when  dcd_SP
- 
-       else  ALU_ZERO;  
+    else  ALU_ZERO;  
  
 
-     --
-     -- mux EA register sources
-     --
-     ea_reg_mux  <=  
+  --
+  -- mux EA register sources
+  --
+  ea_reg_mux  <=  
 
-             ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1(PC_MSB downto 2)  & ea_pc_lsbs
-       when  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT dcd_SP ) )
-
-       else  fp_reg   
-       when  ( mem_mode  = '0' ) AND ( dcd_SP )
+          fp_reg   
+    when  ( mem_mode  = '0' ) AND ( mode_SP ) AND ( NOT dcd_LDI )
  
-       else  sp_reg   
-       when  ( mem_mode  = '1' ) AND ( dcd_SP )
+    else  sp_reg   
+    when  ( mem_mode  = '1' ) AND ( mode_SP ) AND ( NOT dcd_LDI )
  
-       else  ( others => 'X');
---       else bin;
-       
+    else  pcr_addr;
+    
 
---     ea_dat <=  ea_off_mux + ea_reg_mux;
-
-     --
-     -- merge bin mux with adder to shorten critical path
-     --
-     dcd_src_mux <=  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT dcd_SP ) ) OR dcd_SP;
-
-     ea_dat  <=  ea_off_mux + ea_reg_mux   when dcd_src_mux
-            else ea_off_mux + bin;         
-
-
-   --
-   -- add CONFIG_STACK_ADDRESSING flag to simplify?
-   --
-   -- OR: make a dedicated pc_reg_p1 adder, used for LDI / branch / delayed vs. nondelayed return address
-   --
+  --
+  -- merge bin mux with adder to shorten critical path
+  --
+  ea_dat  <=  ea_off_mux + ea_reg_mux   when src_mux_ctl
+         else ea_off_mux + bin;         
 
 
   ------------------------------------------------------------------------------

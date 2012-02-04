@@ -194,10 +194,10 @@ architecture arch1 of y1a_core is
   --
   -- alu/logic inputs
   --
-  signal ain     : std_logic_vector(ALU_MSB downto 0);
-  signal bin     : std_logic_vector(ALU_MSB downto 0);
-  signal mux_bin : std_logic_vector(ALU_MSB downto 0);
-  signal inv_bin : std_logic_vector(ALU_MSB downto 0);
+  signal ain         : std_logic_vector(ALU_MSB downto 0);
+  signal bin         : std_logic_vector(ALU_MSB downto 0);
+  signal mux_bin     : std_logic_vector(ALU_MSB downto 0);
+  signal mux_inv_bin : std_logic_vector(ALU_MSB downto 0);
 
   --
   -- signals for arithmetic/logic units
@@ -220,9 +220,10 @@ architecture arch1 of y1a_core is
   signal cg_out     : std_logic_vector(ALU_MSB downto 0);
   
   --
-  -- effective address 
+  -- effective address calculation
   --
   signal ea_dat     : std_logic_vector(ALU_MSB downto 0);
+  signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
   --
   -- frame & stack pointer snooping registers for address generation
@@ -237,6 +238,8 @@ architecture arch1 of y1a_core is
   signal pc_reg_p1 : std_logic_vector(PC_MSB downto 0);
 
   signal next_pc   : std_logic_vector(PC_MSB downto 0);
+
+  signal ext_bra_offset : std_logic_vector(ALU_MSB downto 0);
   
   --
   -- instruction register
@@ -581,8 +584,8 @@ begin
       --
       -- new code, share B inverter for SUB & logicals
       --
-      inv_bin <=  NOT mux_bin when ( (inst_type = OPL ) AND (logic_notb = '1') ) OR ( inst_fld = OPA_SUB )
-             else     mux_bin;
+      mux_inv_bin <=   NOT mux_bin when ( (inst_type = OPL ) AND (logic_notb = '1') ) OR ( inst_fld = OPA_SUB )
+                 else      mux_bin;
 
          
     end block op_sel1;
@@ -599,7 +602,7 @@ begin
         arith_op   => arith_op,
 
         ain        => ain,
-        bin        => inv_bin,
+        bin        => mux_inv_bin,
   
         arith_cout => arith_cout,
         arith_dat  => arith_dat
@@ -617,7 +620,7 @@ begin
         logic_op  => logic_op,   
 
         ain       => ain,        
-        bin       => inv_bin,        
+        bin       => mux_inv_bin,        
   
         logic_dat => logic_dat
       );
@@ -721,29 +724,55 @@ begin
   
   ------------------------------------------------------------------------------
   --
+  --   PC Relative address calculation
+  --     calculates pc_reg_p1 instruction relative offsets
+  --     LDI; EA; call return addresses 
+  --
+  ------------------------------------------------------------------------------
+  I_pcr_calc: pcr_calc
+    port map
+      (
+        inst_fld   => inst_fld,  
+        sel_opb    => sel_opb,
+
+        dslot      => dslot,
+        call_type  => call_type,
+        ext_bit    => ext_bit,  
+        ext_grp    => ext_grp,  
+
+        ldi_offset => ldi_offset,
+
+        pc_reg_p1  => pc_reg_p1, 
+                   
+        pcr_addr   => pcr_addr
+      );
+
+
+  ------------------------------------------------------------------------------
+  --
   --   Effective Address calculation
   --
   ------------------------------------------------------------------------------
   I_ea_calc: ea_calc
     port map
       (
-        inst_fld   => inst_fld,  
-        mem_size   => mem_size,  
-        mem_mode   => mem_mode,  
-        sel_opb    => sel_opb,
+        inst_fld       => inst_fld,  
+        mem_size       => mem_size,  
+        mem_mode       => mem_mode,  
+        sel_opb        => sel_opb,
 
-        bin        => bin,      
-        imm_reg    => imm_reg,   
+        bin            => bin,      
+        imm_reg        => imm_reg,   
 
-        sp_offset  => sp_offset, 
-        ldi_offset => ldi_offset,
+        sp_offset      => sp_offset, 
+        ldi_offset     => ldi_offset,
 
-        sp_reg     => sp_reg,    
-        fp_reg     => fp_reg,    
+        sp_reg         => sp_reg,    
+        fp_reg         => fp_reg,    
 
-        pc_reg_p1  => pc_reg_p1, 
+        pcr_addr       => pcr_addr, 
                    
-        ea_dat     => ea_dat    
+        ea_dat         => ea_dat    
       );
 
 
@@ -895,6 +924,19 @@ begin
     X"C0" when B"110",
     X"FF" when others;           
 
+  --
+  -- compute extended branch offset
+  -- BMD compiles for 32 bit core only as currently coded
+  --
+  ext_bra_offset <=
+
+         imm_reg(21 downto 0) & bra_offset & '0'  
+    when ( bra_long = '1' )
+
+    else ( ALU_MSB downto 10 => bra_offset(8) ) & bra_offset & '0'
+    ;
+
+
   -- 
   -- instruction flow 
   --   creates PC, flow control logic
@@ -903,21 +945,7 @@ begin
   --
   pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, bra_offset, bra_long, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
-    variable ext_bra_offset : std_logic_vector(ALU_MSB downto 0);
-
     begin
-
-      --
-      -- compute extended branch offset
-      -- BMD compiles for 32 bit core only as currently coded
-      --
-      if ( bra_long = '1' ) then
-        ext_bra_offset := imm_reg(21 downto 0) & bra_offset & '0';
-
-      else
-        ext_bra_offset := ( ( ALU_MSB downto 10 => bra_offset(8) ) & bra_offset & '0');
-
-      end if;
 
       --
       -- flow control logic
@@ -1048,7 +1076,7 @@ begin
   --   instruction register
   --   pipelined copy of PC for EX stage
   --
-  --   moved opa select field force logic before ireg to reduce critial path
+  --   moved opa select field force logic before ireg to reduce critical path
   --
   pipe_reg1: process (clk,rst_l)
     begin
@@ -1098,10 +1126,9 @@ begin
         pop    => dcd_pop,
 
         --
-        -- BMD pc_in needs to use pc_reg_p1 plus increment! 
-        -- (this stacks next fetched address, not next instruction- won't work with interrupts )
+        -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
         --
-        pc_in  => pc_reg, 
+        pc_in  => pcr_addr(PC_MSB downto 0), 
         sr_in  => st_reg,
 
         pc_stk => rsp_pc, 
@@ -1241,7 +1268,7 @@ begin
   B_probe : block
     begin
       y1a_probe_sigs.ain        <= ain;
-      y1a_probe_sigs.bin        <= inv_bin;
+      y1a_probe_sigs.bin        <= mux_inv_bin;
 
       y1a_probe_sigs.cg_out     <= cg_out;
 
