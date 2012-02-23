@@ -73,17 +73,15 @@
 --
 --   - Things that are broken and/or unfinished:
 --
---      - stacked return address needs work for interrupts and delayed subroutine calls
---
---      - fix interrupts
---
---      - TRAP instruction
---
 --      - mov/ld/st to R15 should push/pop HW return stack
 --
---      - SPAM instruction
+--      - fix interrupts
+--         - finish code rework for status register restore on RTI
+--         - stacked return address 
 --
---      - coprocessor interface
+--      - implement TRAP instruction
+--
+--      - implement coprocessor interface
 --
 --
 
@@ -320,9 +318,6 @@ architecture arch1 of y1a_core is
   alias ex_null   : std_logic is st_reg(SR_MSB);
   
   signal next_null_sr : std_logic_vector(7 downto 0);
-
-  signal next_rti_null : std_logic;
-  signal rti_null      : std_logic;
 
   signal spam_length_mask : std_logic_vector(7 downto 0);
   
@@ -819,7 +814,7 @@ begin
 
   I_skip_dcd: skip_dcd
     generic map
-      ( CFG       => CFG )
+      ( CFG          => CFG )
 
     port map
       (
@@ -883,12 +878,12 @@ begin
 
   --
   -- status register
-  --   BMD moved IMM to separate register
+  --
+  --   top 8 bits (the null_sr bits) are coded along with the instruction flow logic
   --
   --   missing :
-  --     - push/pop for interrupts & RTI ( started coding )
   --
-  --     - ex_null bit needs to live here for interrupts to work ( started coding )
+  --     - push/pop for interrupts & RTI ( started coding )
   --
   --     - define currently unused bits ( interrupt masks, levels, etc. )
   --        - especially the interrupt enables for single level interrupt code
@@ -902,6 +897,7 @@ begin
   
       elsif rising_edge(clk) then
   
+        -- FIXME: this is one cycle too early for SR restore
         if ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
           st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
         end if;
@@ -952,52 +948,75 @@ begin
       --
 
       if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+        --
         -- data stall
+        --
         next_pc       <= pc_reg;
         next_null_sr  <= null_sr;
-        next_rti_null <= '0';
   
       elsif ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
+        --
         -- SPAM instruction
+        --
         next_pc       <= pc_reg + PC_INC_I1;
 
         if spam_mode = B"111" then
-          next_null_sr  <=   ( 7 downto 0 => ex_null ) AND spam_mask;
+          next_null_sr  <= ( 7 downto 0 => ex_null ) AND spam_mask;
         else
           next_null_sr  <= ( ( 7 downto 0 => ex_null ) XOR spam_mask ) AND spam_length_mask;
         end if;
 
-        next_rti_null <= '0';
-
       elsif ( ex_null = '1' ) then
+        --
         -- nullified instruction
+        --
         next_pc       <= pc_reg + PC_INC_I1;
         next_null_sr  <= null_sr(6 downto 0) & '0';
-        next_rti_null <= '0';
 
       else
+        --
+        -- instruction execution
+        --
 
         case inst_fld is
 
           when OPC_BR =>
             next_pc       <= pc_reg_p1 + ext_bra_offset(PC_MSB downto 0);
             next_null_sr  <= NOT dslot & B"000_0000";
-            next_rti_null <= '0';
 
           when OPC_EXT =>
             if (ext_grp = EXT_JUMP) AND (ext_bit = '1' ) then
               next_pc       <= ain(PC_MSB downto 0);
               next_null_sr  <= NOT dslot & B"000_0000";
-              next_rti_null <= '0';
 
             elsif (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) then
-              next_pc   <= rsp_pc;
-              next_null_sr  <= NOT dslot & B"000_0000";
+              next_pc       <= rsp_pc;
 
+              --
+              -- existing code won't work for skip, bra.d, etc. 
+              -- that would have changed next state
+              --
+              -- TODO: revised approach
+              --
+              -- enter interrupt:
+              --   - null current EX stage
+              --   - push EX stage inst. address & status register
+              --   - next_pc = instruction vector
+              --   - set interrupt status flag
+              --
+              -- exit interrupt:
+              --   - #1 pop PC
+              --   - #1 execute or null delay slot as indicated by rti
+              --   - #2 pop SR during delay slot execution
+              --
+              --
+
+              -- ??  load next_null sr with dslot & stacked bits of saved null 
+              -- state for an rti ( was top bit was already used when stacked ) ??
               if ( ret_type = '1' ) then 
-                next_rti_null <= rsp_sr(SR_MSB); 
+                next_null_sr  <= NOT dslot & rsp_sr(SR_MSB-1 downto SR_MSB-7);
               else
-                next_rti_null <= '0';
+                next_null_sr  <= NOT dslot & B"000_0000";
               end if;
 
 --            -- this pops ex_null too early: pops old SR while executing RTI branch slot,
@@ -1013,34 +1032,28 @@ begin
             else
               next_pc       <= pc_reg + PC_INC_I1;
               next_null_sr  <= null_sr(6 downto 0) & '0';
-              next_rti_null <= '0';
     
           end if;
     
           when OPC_SKIP =>
             next_pc       <= pc_reg + PC_INC_I1;
             next_null_sr  <= ( skip_cond OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-            next_rti_null <= '0';
     
           when OPA_ADD =>
             next_pc       <= pc_reg + PC_INC_I1;
             next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-            next_rti_null <= '0';
   
           when OPA_SUB =>
             next_pc       <= pc_reg + PC_INC_I1;
             next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-            next_rti_null <= '0';
     
           when OPA_RSUB  =>
             next_pc       <= pc_reg + PC_INC_I1;
             next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-            next_rti_null <= '0';
-    
+                                                                                                            
           when others  =>
             next_pc       <= pc_reg + PC_INC_I1;
             next_null_sr  <= null_sr(6 downto 0) & '0';
-            next_rti_null <= '0';
     
         end case;
     
@@ -1058,12 +1071,10 @@ begin
       if rst_l = '0' then
         pc_reg   <= PC_RST_VEC;
         null_sr  <= B"1000_0000";
-        rti_null <= '0';
   
       elsif rising_edge(clk) then
         pc_reg   <= next_pc;
         null_sr  <= next_null_sr;
-        rti_null <= next_rti_null;
 
       end if;
   
