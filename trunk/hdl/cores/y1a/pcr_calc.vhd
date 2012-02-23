@@ -88,8 +88,8 @@ begin
 
     --
     -- return address calculation:
-    --   add 2 when dslot = 0
-    --   add 4 when dslot = 1
+    --   add 2 ( one instruction  ) when dslot = 0  ( return to instruction in delay slot )
+    --   add 4 ( two instructions ) when dslot = 1  ( return to instruction after delay slot )
     --
     else  ( ALU_MSB downto 3 => '0' ) & dslot & (NOT dslot) & '0'
     when  dcd_CALL

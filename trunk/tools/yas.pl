@@ -189,8 +189,6 @@ END_BUGS
 #
 #  - implement all opcodes
 #
-#  - add support for multiple input files
-#
 #  - inline constant tables for LDC
 #
 #  - IMM built-in macro for constants
@@ -199,7 +197,8 @@ END_BUGS
 #      - generate two word prefixed sequences when needed:
 #
 #        OP  ra, #big_const  =>  LDI table.big_const    
-#                                OP  ra,rk ; (add to table)
+#                                OP  ra,imm 
+#                                ; add table entry
 #
 #        MEM ra, offset(rb)  =>  IMM12 off 
 #                                MEM   ra, .imm(rb) 
@@ -215,8 +214,6 @@ END_BUGS
 #  - label syntax (make colon optional, :: for globals?)
 #
 #  - clean up unneeded parsing on pass 1 
-#
-#  - change opcode parser to strip "op.ext" into op & ext fields?
 #
 #  - other immediate constant improvements
 #     - add unary "-" for hex, binary 
@@ -1218,9 +1215,11 @@ while( $pass <= 2 )
     #
     # file loop 
     #
-    foreach $asm_filename (@source_filenames)
+    foreach my $filename (@source_filenames)
       {
-        open($ASM_F, "$asm_filename" ) or die "Can't open $asm_filename: $!\n" ;
+        open($ASM_F, "$filename" ) or die "Can't open $filename: $!\n" ;
+
+        $asm_filename = $filename;
 
         #
         #rewind input file

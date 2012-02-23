@@ -39,11 +39,14 @@ architecture arch1 of debounce_tick is
   --
   -- tick counter signals used to generate ~100 Hz clock enable for debouncing
   --
---  signal tick_cnt : unsigned(19 downto 0) := ( others => 'L');
---  signal tick_sum : unsigned(20 downto 0);
+  signal tick_cnt : unsigned(19 downto 0) := ( others => 'L');
+  signal tick_sum : unsigned(20 downto 0);
 
-  signal tick_cnt : unsigned(12 downto 0) := ( others => 'L');
-  signal tick_sum : unsigned(13 downto 0);
+  --
+  -- faster counter for sims
+  --
+--  signal tick_cnt : unsigned(12 downto 0) := ( others => 'L');
+--  signal tick_sum : unsigned(13 downto 0);
 
 
 begin
