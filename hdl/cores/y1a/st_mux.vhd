@@ -20,15 +20,15 @@
 --
 --      bus     D31 ... D24  D23 ... D16  D15 ... D8  D7 ...  D0
 --      ---------------------------------------------------------
---      quad    A31                     ..                    A0
+--      quad    R31                    ...                    R0
 --
---      wyde    A15        ..        A0   A15       ..        A0
+--      wyde    R15       ...        R0   R15      ...        R0
 --
---      byte    A7  ..  A0   A7  ..  A0   A7  ..  A0  A7  ..  A0
+--      byte    R7 ...  R0   R7 ...  R0   R7 ...  R0  R7 ...  R0
 --                                                    
 --                                                    
 --   Where:
---     An = register data bit ain(n)
+--     Rn = register data bit ain(n)
 --     Dn = memory bus data bit d_wdat(n)
 --
 --   Note, byte lane write enables are asserted only for active lanes
