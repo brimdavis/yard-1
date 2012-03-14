@@ -1,0 +1,34 @@
+BLOCK RESETPATHS ;
+BLOCK ASYNCPATHS ;
+FREQUENCY NET "clk50_in_c" 50.000000 MHz ;
+
+IOBUF ALLPORTS IO_TYPE=LVCMOS33 ;
+
+LOCATE COMP "clk50_in" SITE "21" ;
+
+LOCATE COMP "rx_bit"   SITE "110" ;
+LOCATE COMP "tx_bit"   SITE "109" ;
+
+LOCATE COMP "pb_3"    SITE "19" ; 
+#LOCATE COMP "pb_2"     
+#LOCATE COMP "pb_1"     
+#LOCATE COMP "pb_0"     
+
+LOCATE COMP "sw_7"    SITE "50" ; 
+LOCATE COMP "sw_6"    SITE "52" ; 
+LOCATE COMP "sw_5"    SITE "53" ; 
+LOCATE COMP "sw_4"    SITE "54" ; 
+LOCATE COMP "sw_3"    SITE "55" ; 
+LOCATE COMP "sw_2"    SITE "56" ; 
+LOCATE COMP "sw_1"    SITE "57" ; 
+LOCATE COMP "sw_0"    SITE "58" ; 
+
+LOCATE COMP "led_7"   SITE "37" ; 
+LOCATE COMP "led_6"   SITE "38" ; 
+LOCATE COMP "led_5"   SITE "39" ; 
+LOCATE COMP "led_4"   SITE "40" ; 
+LOCATE COMP "led_3"   SITE "43" ; 
+LOCATE COMP "led_2"   SITE "44" ; 
+LOCATE COMP "led_1"   SITE "45" ; 
+LOCATE COMP "led_0"   SITE "46" ; 
+                      
