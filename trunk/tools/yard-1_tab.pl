@@ -1434,15 +1434,15 @@ sub ps_skip
 
 
 #---------------------------------------------
-# SPAM: spam.[and|xor] IMM8{,LEN}
+# SPAM: spam.[and|xorn] IMM8{,LEN}
 #
 #
 #---------------------------------------------
    
 %ops_spam = 
   (
-    'spam.and'  =>  { type =>  'SPAM_AND', opc => '11110nnnmmmmmmmm', ps => \&ps_spam, name => "Skip Propagate Against Mask, AND mode"  },
-    'spam.xor'  =>  { type =>  'SPAM_XOR', opc => '11110nnnmmmmmmmm', ps => \&ps_spam, name => "Skip Propagate Against Mask, XOR mode"  }
+    'spam.and'  =>  { type => 'SPAM_AND'  , opc => '11110nnnmmmmmmmm' , ps => \&ps_spam , name => "Skip Propagate Against Mask, AND mode"  },
+    'spam.xorn' =>  { type => 'SPAM_XORN' , opc => '11110nnnmmmmmmmm' , ps => \&ps_spam , name => "Skip Propagate Against Mask, XOR-Not mode"  }
   );
 
 
@@ -1486,7 +1486,7 @@ sub ps_spam
       }
 
 
-    if ( $type eq 'SPAM_XOR' )
+    if ( $type eq 'SPAM_XORN' )
       {
         check_argument_count( $#operands, 2 );
                                                                         
@@ -1499,7 +1499,7 @@ sub ps_spam
         # check for valid flag index 
         if ( ( $length > 8 ) || ( $length < 2 ) )
           {
-            do_error("spam.xor mask length out of range (2..8)");
+            do_error("spam.xorn mask length out of range (2..8)");
             $length = 8;
           }
 
