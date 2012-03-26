@@ -963,7 +963,7 @@ begin
         if spam_mode = B"111" then
           next_null_sr  <= ( 7 downto 0 => ex_null ) AND spam_mask;
         else
-          next_null_sr  <= ( ( 7 downto 0 => ex_null ) XOR spam_mask ) AND spam_length_mask;
+          next_null_sr  <= ( ( 7 downto 0 => ex_null ) XOR (NOT spam_mask) ) AND spam_length_mask;
         end if;
 
       elsif ( ex_null = '1' ) then
