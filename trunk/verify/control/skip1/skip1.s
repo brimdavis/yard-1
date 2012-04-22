@@ -20,16 +20,12 @@
 ;    combos
 ;
 
-   org $0
-
-; nop first, reset vector isn't working quite right
-    nop
+    org $0
 
     mov r1,#$0000_0000
     mov r2,#$0000_ffff
     mov r3,#$ffff_0000
     mov r4,#$ffff_0000
-
 
 ;
 ; skip always

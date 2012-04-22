@@ -19,10 +19,6 @@
 
         org $0
 
-; nop first, reset vector isn't working quite right
-        nop
-
-
 :
 ;    'skip.awz'  =>  "SKIP Any Wyde Zero" 
 ;    'skip.nwz'  =>  "SKIP No Wyde Zero"  

@@ -18,18 +18,21 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; lea tests using R15 as address operand should return current PC
 ;
     lea     r0,(pc)
-    .verify r0,#$0000_0002
+    lea     r1,(pc)
 
-    lea     r0,(pc)
-    .verify r0,#$0000_0004
+;
+; nops to avoid using verify psuedo-op @ address zero
+;
+    nop     
+    .verify r0,#$0000_0000
+
+    nop
+    .verify r1,#$0000_0002
 
     bra     L0FE
 

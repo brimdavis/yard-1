@@ -20,9 +20,6 @@
 
    org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
 ; r0 = test flags
     mov     r0, #0
 
@@ -67,6 +64,13 @@ targ4:
 
     nop
 
+; branch forward ~512 instructions
+    bra     targ5
+
+targ6:
+    nop
+    .verify pass
+
 done:
     bra     done
     nop
@@ -78,6 +82,15 @@ error:
 
     bra     done
 
+
+    org     $0000_0200
+
+targ5:
+    nop
+    .verify pass
+
+; branch backwards ~512 instructions
+    bra     targ6
 
 
 

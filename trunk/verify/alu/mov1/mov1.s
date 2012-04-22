@@ -25,9 +25,7 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
+    nop     ; pad to avoid verify psuedo-op @ address zero
 ;
 ; 5 bit sign extended & complement
 ;  (note, the ".not" encodings duplicate the set of un-complemented ones for 5 bit signed constants...)

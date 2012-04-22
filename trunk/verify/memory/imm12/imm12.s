@@ -17,9 +17,6 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
 ;
 ; check near 0, +max, -min, 
 ; note sign extension

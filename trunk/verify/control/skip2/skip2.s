@@ -19,9 +19,6 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
 ;
 ; skip.lo   lower
 ;   unsigned, RA <  RB

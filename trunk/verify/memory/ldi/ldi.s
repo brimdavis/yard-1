@@ -17,9 +17,6 @@
 
     org $0
 
-;   nop first, reset vector isn't working quite right
-    nop
-
     ldi     L_1234_5678
     mov     r0,imm 
     .verify r0, #$1234_5678
