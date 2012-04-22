@@ -17,10 +17,6 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
-
     mov     r0,#$0000_0000
     mov     r1,#$0000_ffff
 

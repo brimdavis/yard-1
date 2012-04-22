@@ -19,10 +19,6 @@
 
     org $0
 
-; nop first, reset vector isn't working quite right
-    nop
-
-
     mov     r1,#$8000_0000
     add     r1,#$f
 

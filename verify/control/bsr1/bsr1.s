@@ -20,10 +20,6 @@
 
        org $0
 
-; nop first, reset vector isn't working quite right
-        nop
-
-
 ; r0 = test flags
         mov     r0, #0
 
