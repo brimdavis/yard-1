@@ -14,17 +14,18 @@ FPGA Software:
 
  The required FPGA tools are free (as in free beer)
 
+
  Xilinx Webpack: 
 
   - Xilinx WebPack 9.2 with SP4
   
-    need the following files for installation:
+    Xilinx site registration is required for download.
+
+    The following files are needed for installation:
       WebPACK_SFD_92i.zip      9.2i Webpack single file download 
       9_2_04i_win.exe          Service Pack 4
 
-    site registration is required for download
-
-    as of August 2011, the files can be found here:
+    Aas of August 2011, the files can be found here:
 
     http://www.xilinx.com/support/download/index.htm
 
@@ -33,6 +34,14 @@ FPGA Software:
       - expand the "+9.2", look for "ISE Foundation WebPACK - 9.2i Full Product Installation"
 
       - expand the "+9.2 SP4", look for "ISE Foundation - 9.2i Service Pack 4"
+
+
+ Lattice Diamond: 
+
+    http://www.latticesemi.com/products/designsoftware/diamond/index.cfm
+
+    Free license supports many Lattice families.
+
 
 ================================================================
 
