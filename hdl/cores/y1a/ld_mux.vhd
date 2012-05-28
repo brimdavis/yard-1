@@ -27,7 +27,7 @@ library work;
 entity ld_mux is
   generic
     (
-      CFG       : y1a_config_type
+      CFG        : y1a_config_type
     );
 
   port
@@ -51,14 +51,17 @@ architecture arch1 of ld_mux is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  -- byte/wyde lane shifters
-  signal byte_dat : std_logic_vector( 7 downto 0);
-  signal wyde_dat : std_logic_vector(15 downto 0);
+  --
+  -- instruction decodes
+  --
+  signal dcd_quad: boolean;
+  signal dcd_wyde: boolean;
+  signal dcd_byte: boolean;
 
-  -- sign/zero extension
-  signal byte_ext : std_logic;
-  signal wyde_ext : std_logic;
-
+  --
+  -- msb fill for sign/zero extension
+  --
+  signal msb_fill : std_logic;
 
 
 begin
@@ -74,70 +77,83 @@ begin
   --
   --
   --
-  GF_cnnl: if cfg.non_native_load = FALSE generate
+  GF_cnnl: if CFG.non_native_load = FALSE generate
     begin
 
-      mem_wb_bus <=  d_rdat when ( inst_fld = OPM_LD ) OR ( inst_fld = OPM_LDI ) 
+      mem_wb_bus <=  d_rdat             when ( inst_fld = OPM_LD ) OR ( inst_fld = OPM_LDI ) 
                 else ( others => '0' );
 
     end generate GF_cnnl;
 
  
   --
+  -- mux rewritten per byte lane to reduce synthesis logic levels
   --
-  --
-  GT_cnnl: if ( alu_width = 32 ) and ( cfg.non_native_load = TRUE ) generate
+  GT_cnnl: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_load = TRUE ) generate
     begin
+
+      --
+      -- instruction decodes
+      --
+      dcd_quad <= ( inst_fld = OPM_LDI ) OR ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) );
+
+      dcd_wyde <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_16 );
+
+      dcd_byte <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_8 );
+
+
+      --
+      -- msb fill for sign/zero extension
+      --
+      msb_fill <=  '0'         when  mem_sign = '0'
+              else d_rdat(31)  when  ea_lsbs = B"00"
+              else d_rdat(23)  when  ea_lsbs = B"01"
+              else d_rdat(15)  when  ea_lsbs = B"10"
+              else d_rdat( 7)  when  ea_lsbs = B"11"
+              else 'X'
+              ;
   
       --
-      -- byte lane mux
+      -- byte lane 3 mux (MSB)
       --
-      with ea_lsbs(0) select
-        byte_dat <= 
-          wyde_dat(15 downto  8)  when '0',
-          wyde_dat( 7 downto  0)  when '1',
-          ( others => 'X')        when others;
+      mem_wb_bus(31 downto 24)
+         <=   d_rdat(31 downto 24)      when  dcd_quad
+
+        else  ( others => msb_fill )
+        ;
 
       --
-      -- byte sign or zero extension
+      -- byte lane 2 mux
       --
-      byte_ext <=  byte_dat(7) when mem_sign = '1' 
-              else '0';
+      mem_wb_bus(23 downto 16) 
+         <=   d_rdat(23 downto 16)      when  dcd_quad
+
+        else  ( others => msb_fill )
+        ;
 
       --
-      -- wyde (16 bit) lane mux
+      -- byte lane 1 mux
       --
-      wyde_dat <=  d_rdat(31 downto 16)  when ( ea_lsbs(1) = '0' ) 
-              else d_rdat(15 downto 0);
+      mem_wb_bus(15 downto 8)
+         <=   d_rdat(31 downto 24)      when  ( dcd_wyde AND ea_lsbs(1) = '0' )
+        else  d_rdat(15 downto  8)      when  ( dcd_wyde AND ea_lsbs(1) = '1' ) OR dcd_quad
+
+        else  ( others => msb_fill )
+        ;
 
       --
-      -- wyde (16 bit) sign or zero extension
+      -- byte lane 0 mux (LSB)
       --
-      wyde_ext <=  wyde_dat(15) when mem_sign = '1' 
-              else '0';
+      mem_wb_bus(7 downto 0)
+         <=   d_rdat(31 downto 24)  when ( dcd_byte AND ea_lsbs = B"00" )
+        else  d_rdat(23 downto 16)  when ( dcd_byte AND ea_lsbs = B"01" ) OR ( dcd_wyde AND ea_lsbs(1) = '0' )
+        else  d_rdat(15 downto  8)  when ( dcd_byte AND ea_lsbs = B"10" )
+        else  d_rdat( 7 downto  0)  when ( dcd_byte AND ea_lsbs = B"11" ) OR ( dcd_wyde AND ea_lsbs(1) = '1' ) OR dcd_quad
+        else ( others => 'X' )
+        ;
 
-      mem_wb_bus 
-        --
-        -- quad (32 bit) load
-        --
-        <=    d_rdat              
-        when   ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) )  
-             OR  ( inst_fld = OPM_LDI )
-        --
-        -- wyde (16 bit) load
-        --
-        else  ( ALU_MSB downto 16 => wyde_ext ) & wyde_dat(15 downto 0)   
-        when  ( inst_fld = OPM_LD ) AND (mem_size = MEM_16 ) 
 
-        --
-        -- byte load
-        --
-        else  ( ALU_MSB downto 8 => byte_ext ) & byte_dat(7 downto 0)
-        when  ( inst_fld = OPM_LD ) AND (mem_size = MEM_8 ) 
-
-        else  ( others => 'X' );
 
     end generate GT_cnnl;
-  
 
 end arch1;

@@ -86,9 +86,12 @@ begin
   GF_cnns: if NOT CFG.non_native_store generate                                           
     begin                                                                                     
                                                                                               
-      d_wdat  <= ain                                                                           
-          when     ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') )                              
-          else ( others => '0');                                                              
+      d_wdat  
+        <=   ain               
+        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') )                                                                                                       
+
+        else ( others => '0')
+        ;                                                              
                                                                                               
     end generate GF_cnns;                                                                     
 
@@ -98,17 +101,18 @@ begin
   GT_cnns: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_store ) generate            
     begin                                                                                    
                                                                                               
-      d_wdat  <=                                                                             
-        ain                                                                                   
-          when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( ( mem_size = MEM_32 ) OR ( mem_size = MEM_32_SP ) ) else  
-                                                                                              
-        ain(15 downto 0) & ain(15 downto 0)                                                    
-          when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_16 ) else  
-                                                                                              
-        ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0)                    
-          when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_8 )  else  
+      d_wdat  
+        <=   ain                                                                                   
+        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( ( mem_size = MEM_32 ) OR ( mem_size = MEM_32_SP ) ) 
 
-        ( others => '0');                                                                    
+        else ain(15 downto 0) & ain(15 downto 0)                                                    
+        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_16 ) 
+
+        else ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0)
+        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_8 )  
+
+        else ( others => '0')
+        ;
                                                                                               
     end generate GT_cnns;
 
