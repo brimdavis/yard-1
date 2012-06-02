@@ -251,17 +251,17 @@ sub stuff_op_field
 #--------------------------------
 %ops_lrri = 
   (
-    'mov'     =>  { type =>  'L_R_RI', opc => '00000ttbbbbbaaaa' , ps => \&ps_lrri, name => "MOVe"      },
-    'mov.not' =>  { type =>  'L_R_RI', opc => '00001ttbbbbbaaaa' , ps => \&ps_lrri, name => "MOVe NOT"  }, 
+    'mov'     =>  { type =>  'L_R_RI', opc => '00000ttbbbbbaaaa' , ps => \&ps_lrri, name => "MOVe"             },
+    'mov.not' =>  { type =>  'L_R_RI', opc => '00001ttbbbbbaaaa' , ps => \&ps_lrri, name => "MOVe NOT"         }, 
 
-    'and'     =>  { type =>  'L_R_RI', opc => '00010ttbbbbbaaaa' , ps => \&ps_lrri, name => "AND"       },
-    'and.not' =>  { type =>  'L_R_RI', opc => '00011ttbbbbbaaaa' , ps => \&ps_lrri, name => "AND NOT"   }, 
+    'and'     =>  { type =>  'L_R_RI', opc => '00010ttbbbbbaaaa' , ps => \&ps_lrri, name => "AND"              },
+    'and.not' =>  { type =>  'L_R_RI', opc => '00011ttbbbbbaaaa' , ps => \&ps_lrri, name => "AND NOT"          }, 
 
-    'or'      =>  { type =>  'L_R_RI', opc => '00100ttbbbbbaaaa' , ps => \&ps_lrri, name => "OR"        },
-    'or.not'  =>  { type =>  'L_R_RI', opc => '00101ttbbbbbaaaa' , ps => \&ps_lrri, name => "OR NOT"    },  
+    'or'      =>  { type =>  'L_R_RI', opc => '00100ttbbbbbaaaa' , ps => \&ps_lrri, name => "OR"               },
+    'or.not'  =>  { type =>  'L_R_RI', opc => '00101ttbbbbbaaaa' , ps => \&ps_lrri, name => "OR NOT"           },  
 
-    'xor'     =>  { type =>  'L_R_RI', opc => '00110ttbbbbbaaaa' , ps => \&ps_lrri, name => "XOR"       },
-    'xor.not' =>  { type =>  'L_R_RI', opc => '00111ttbbbbbaaaa' , ps => \&ps_lrri, name => "XOR NOT"   }  
+    'xor'     =>  { type =>  'L_R_RI', opc => '00110ttbbbbbaaaa' , ps => \&ps_lrri, name => "eXclusive OR"     },
+    'xor.not' =>  { type =>  'L_R_RI', opc => '00111ttbbbbbaaaa' , ps => \&ps_lrri, name => "eXclusive OR NOT" }  
   );
 
 # add to HOH opcode table
@@ -902,6 +902,9 @@ sub ps_mem
                 $opcode = stuff_op_field( $opcode, 'a', $ra         );
               }
 
+            #
+            # TODO: add automatic offset prefix
+            #
             else
               {
                 do_error("Only .imm(rn) offset syntax currently supported by assembler\n");
@@ -1055,7 +1058,7 @@ sub ps_bri
 
 
     #
-    # long branch logic not implemented yet
+    # TODO: long branch logic not implemented yet
     #
     if ( $ops{$operation}{type} eq 'LBRI' )
       {
@@ -1469,7 +1472,7 @@ sub ps_spam
     my $status;
 
 
-    # should follow a skip
+    # SPAM should follow a skip
     if ( !get_last_skip() )
       {
         do_error("SPAM instruction not preceded by a SKIP" );

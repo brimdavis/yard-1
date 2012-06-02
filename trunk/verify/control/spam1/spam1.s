@@ -82,11 +82,11 @@
 
 
 ;
-; test XOR mode
+; test XORN mode
 ;
 
 ;
-; XOR, skip always
+; XORN, skip always
 ;
     mov         r0,#0
 
@@ -107,7 +107,7 @@
 
 
 ;
-; XOR, skip never 
+; XORN, skip never 
 ;
     mov         r0,#0
 
@@ -129,7 +129,7 @@
 
 
 ;
-; XOR, spam length 7
+; XORN, spam length 7
 ;
     mov         r0,#0
 
@@ -150,7 +150,7 @@
 
 
 ;
-; XOR, spam length 6
+; XORN, spam length 6
 ;
     mov         r0,#0
 
@@ -171,7 +171,7 @@
 
 
 ;
-; XOR, spam length 5
+; XORN, spam length 5
 ;
     mov         r0,#0
 
@@ -192,7 +192,7 @@
 
 
 ;
-; XOR, spam length 4
+; XORN, spam length 4
 ;
     mov         r0,#0
 
@@ -213,7 +213,7 @@
 
 
 ;
-; XOR, spam length 3
+; XORN, spam length 3
 ;
     mov         r0,#0
 
@@ -234,7 +234,7 @@
 
 
 ;
-; XOR, spam length 2
+; XORN, spam length 2
 ;
     mov         r0,#0
 

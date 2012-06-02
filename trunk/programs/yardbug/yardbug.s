@@ -71,8 +71,6 @@ UART    equ $c000_0000
     org     $0
 
 start:
-    nop     ; put a NOP first while debugging new reset vector code
-
 
 ; I/O port & UART addresses
     mov     r8, #IO_PORT 
@@ -182,58 +180,6 @@ dump_loop:
     bsr     send_crlf   ; end of line
 
     bra     next_line
-
-
-
-;;
-;; dump memory
-;;
-;cmd_dump:
-;
-;; get the start address into R12
-;    bsr     ghex
-;    mov     r12, r1
-;
-;; if user entry was terminated with a space, read byte count; else dump 16 bytes
-;
-;    mov     r1,#16      ; load default count
-;
-;    skip.nz  r0         ; check return code of last ghex call ( r0=0 for a space )
-;    bsr     ghex         
-;
-;    mov     r13, r1
-;    and     r13, #$0000_1fff    ; limit loop iterations to 8K - 1
-;
-;    clr     r11         ; set line byte counter to wrap
-;
-;dump_loop:
-;    sub.snb r13,#1      ; decrement byte count, check for borrow
-;    bra     send_crlf   ; bail out if negative ( bra so send_crlf returns to main )
-;
-;    skip.z  r11
-;    bra     print_byte  ; don't start new line until counter underflows
-;
-;    mov     r11,#16     ; load default count
-;    bsr     send_crlf
-;
-;start_line:
-;    mov     r0, r12     ; print address
-;    bsr     phex32
-;
-;print_byte:
-;
-;    bsr     space
-;
-;    ld.ub   r0, (r12)   ; read next memory byte
-;    bsr     phex8
-;
-;    inc     r12         ; increment memory pointer
-;
-;    dec     r11         ; decrement line byte count
-;
-;    bra     dump_loop   
-;
-
 
 
 ;

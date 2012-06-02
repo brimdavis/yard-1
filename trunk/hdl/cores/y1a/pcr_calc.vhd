@@ -14,6 +14,8 @@
 --
 -- Y1A PC Relative address calculations
 --
+--   - now used only for return address calculations
+--
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -42,8 +44,6 @@ entity pcr_calc is
       ext_bit        : in  std_logic;
       ext_grp        : in  std_logic_vector(3 downto 0);
 
-      ldi_offset     : in  std_logic_vector(11 downto 0);
-
       pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
     
       pcr_addr       : out std_logic_vector(ALU_MSB downto 0)
@@ -57,11 +57,10 @@ architecture arch1 of pcr_calc is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  signal pc_p1_masked   : std_logic_vector(ALU_MSB downto 0);
-  signal pcr_off_mux    : std_logic_vector(ALU_MSB downto 0);
-  signal ea_pc_lsbs     : std_logic_vector(1 downto 0);
+  signal pc_p1_ext   : std_logic_vector(ALU_MSB downto 0);
+  signal pcr_offset  : std_logic_vector(ALU_MSB downto 0);
+  signal ea_pc_lsbs  : std_logic_vector(1 downto 0);
 
-  signal dcd_LDI     : boolean;
   signal dcd_CALL    : boolean;
 
 begin
@@ -69,48 +68,35 @@ begin
   --
   -- instruction decodes
   --
-  dcd_LDI  <= ( inst_fld = OPM_LDI );
-
   dcd_CALL <= (
                     ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
                 OR  ( inst_fld = OPC_BR )
               )
               AND ( call_type = '1' );
 
-
   --
-  -- mux pcr offset sources
+  -- return address calculation:
+  --   add 2 ( one instruction  ) when dslot = 0  ( return to instruction in delay slot )
+  --   add 4 ( two instructions ) when dslot = 1  ( return to instruction after delay slot )
   --
-  pcr_off_mux <=  
- 
-          ( ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" )  
-    when  dcd_LDI
-
-    --
-    -- return address calculation:
-    --   add 2 ( one instruction  ) when dslot = 0  ( return to instruction in delay slot )
-    --   add 4 ( two instructions ) when dslot = 1  ( return to instruction after delay slot )
-    --
-    else  ( ALU_MSB downto 3 => '0' ) & dslot & (NOT dslot) & '0'
+  pcr_offset <= ( ALU_MSB downto 3 => '0' ) & dslot & (NOT dslot) & '0'
     when  dcd_CALL
 
     else  ( others => '0')
     ;
 
 
-  --
-  -- LSB's of PC zeroed for LDI quad aligned addressing
-  --
-  ea_pc_lsbs   <= B"00" when dcd_LDI else pc_reg_p1(1 downto 0);
-
-  pc_p1_masked <= ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1(PC_MSB downto 2)  & ea_pc_lsbs;
---    when  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT dcd_SP ) )
+  pc_p1_ext <= ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1(PC_MSB downto 0);
 
 
   --
   -- PC Relative adder
   --
-  pcr_addr  <=  pcr_off_mux + pc_p1_masked;
+  pcr_addr  <=  pcr_offset + pc_p1_ext;
 
 
 end arch1;
+
+
+
+
