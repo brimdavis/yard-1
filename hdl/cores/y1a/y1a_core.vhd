@@ -14,7 +14,7 @@
 --
 -- Y1A processor core
 --
---   - alpha release
+--   - pre-alpha code
 --
 --   - code is still a mess, but passes basic verification test suite
 --
@@ -720,8 +720,7 @@ begin
   ------------------------------------------------------------------------------
   --
   --   PC Relative address calculation
-  --     calculates pc_reg_p1 instruction relative offsets
-  --     LDI; EA; call return addresses 
+  --    - now used only for return address calculations
   --
   ------------------------------------------------------------------------------
   I_pcr_calc: pcr_calc
@@ -734,8 +733,6 @@ begin
         call_type  => call_type,
         ext_bit    => ext_bit,  
         ext_grp    => ext_grp,  
-
-        ldi_offset => ldi_offset,
 
         pc_reg_p1  => pc_reg_p1, 
                    
@@ -751,23 +748,22 @@ begin
   I_ea_calc: ea_calc
     port map
       (
-        inst_fld       => inst_fld,  
-        mem_size       => mem_size,  
-        mem_mode       => mem_mode,  
-        sel_opb        => sel_opb,
+        inst_fld   => inst_fld,  
+        mem_size   => mem_size,  
+        mem_mode   => mem_mode,  
+        sel_opb    => sel_opb,
 
-        bin            => bin,      
-        imm_reg        => imm_reg,   
+        bin        => bin,      
+        imm_reg    => imm_reg,   
 
-        sp_offset      => sp_offset, 
-        ldi_offset     => ldi_offset,
+        sp_offset  => sp_offset, 
+        sp_reg     => sp_reg,    
+        fp_reg     => fp_reg,    
 
-        sp_reg         => sp_reg,    
-        fp_reg         => fp_reg,    
-
-        pcr_addr       => pcr_addr, 
+        ldi_offset => ldi_offset,
+        pc_reg_p1  => pc_reg_p1, 
                    
-        ea_dat         => ea_dat    
+        ea_dat     => ea_dat    
       );
 
 
@@ -939,7 +935,7 @@ begin
   --
   -- re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, bra_offset, bra_long, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, bra_long, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 
@@ -1000,15 +996,19 @@ begin
               --
               -- enter interrupt:
               --   - null current EX stage
-              --   - push EX stage inst. address & status register
+              --   - push EX stage inst. address, status register 
               --   - next_pc = instruction vector
               --   - set interrupt status flag
               --
               -- exit interrupt:
               --   - #1 pop PC
-              --   - #1 execute or null delay slot as indicated by rti
+              --   - #1 execute or null delay slot as indicated by rti ?
               --   - #2 pop SR during delay slot execution
               --
+              -- issues:
+              --   Probably need to also stack current instruction fetch address,
+              --   restart fetch along with restoring EX stage ireg and pc_reg_p1.
+              --   Otherwise an interrupted branch delay slot won't work.
               --
 
               -- ??  load next_null sr with dslot & stacked bits of saved null 
@@ -1208,6 +1208,7 @@ begin
   -- data bus address sourced by ea adder
   --
   d_addr <= ea_dat;
+
 
   --
   -- data bus control signals

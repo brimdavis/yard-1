@@ -42,12 +42,11 @@ entity ea_calc is
       imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
 
       sp_offset  : in  std_logic_vector(3 downto 0);
-      ldi_offset : in  std_logic_vector(11 downto 0);
-
       sp_reg     : in  std_logic_vector(ALU_MSB downto 0);
       fp_reg     : in  std_logic_vector(ALU_MSB downto 0);
 
-      pcr_addr   : in  std_logic_vector(ALU_MSB downto 0);
+      ldi_offset : in  std_logic_vector(11 downto 0);
+      pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
     
       ea_dat     : out std_logic_vector(ALU_MSB downto 0)
     );
@@ -60,12 +59,17 @@ architecture arch1 of ea_calc is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  signal ea_off_mux  : std_logic_vector(ALU_MSB downto 0);
-  signal ea_reg_mux  : std_logic_vector(ALU_MSB downto 0);
+  signal ea_mask_mux  : std_logic_vector(ALU_MSB downto 0);
+  signal ea_off_mux   : std_logic_vector(ALU_MSB downto 0);
+  signal ea_reg_mux   : std_logic_vector(ALU_MSB downto 0);
 
-  signal dcd_LDI     : boolean;
-  signal mode_SP     : boolean;
-  signal src_mux_ctl : boolean;
+  signal ea_sum       : std_logic_vector(ALU_MSB downto 0);
+
+  signal pc_p1_masked : std_logic_vector(ALU_MSB downto 0);
+
+  signal dcd_LDI      : boolean;
+  signal mode_SP      : boolean;
+  signal src_mux_ctl  : boolean;
 
   --
   -- declare synthesis attributes
@@ -85,6 +89,29 @@ begin
   src_mux_ctl <=  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT mode_SP ) ) OR mode_SP;
 
 
+--   --
+--   -- mux ea offset sources
+--   --
+--   ea_mask_mux <=  
+-- 
+--           ( ALU_MSB downto  6 => '0') & sp_offset  & B"00" 
+--     when  mode_SP AND ( NOT dcd_LDI )
+-- 
+--     else  ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" 
+--     ;
+--     
+-- 
+--   ea_off_mux <=  
+-- 
+--           imm_reg                                
+--     when  ( mem_mode  = '1' ) AND ( NOT ( mode_SP OR dcd_LDI ) )
+--  
+--     else  ea_mask_mux
+--     when  mode_SP OR dcd_LDI  
+-- 
+--     else  ALU_ZERO
+--     ;  
+
   --
   -- mux ea offset sources
   --
@@ -93,24 +120,38 @@ begin
           imm_reg                                
     when  ( mem_mode  = '1' ) AND ( NOT ( mode_SP OR dcd_LDI ) )
  
-    else  X"0000_00" & B"00" & sp_offset & B"00" 
+    else  ( ALU_MSB downto  6 => '0') & sp_offset  & B"00" 
     when  mode_SP AND ( NOT dcd_LDI )
+
+    else  ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" 
+    when  dcd_LDI  
+
+    else  ALU_ZERO
+    ;  
  
-    else  ALU_ZERO;  
  
+  --
+  -- LSB's of PC zeroed for LDI quad aligned addressing
+  --
+  pc_p1_masked <= 
+          ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1(PC_MSB downto 2)  & B"00" 
+    when  dcd_LDI 
+
+    else  ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1(PC_MSB downto 0)
+    ;
 
   --
   -- mux EA register sources
   --
-  ea_reg_mux  <=  
-
+  ea_reg_mux <= 
           fp_reg   
     when  ( mem_mode  = '0' ) AND ( mode_SP ) AND ( NOT dcd_LDI )
  
-    else  sp_reg   
+    else  sp_reg
     when  ( mem_mode  = '1' ) AND ( mode_SP ) AND ( NOT dcd_LDI )
  
-    else  pcr_addr;
+    else  pc_p1_masked
+    ;
     
 
   --
