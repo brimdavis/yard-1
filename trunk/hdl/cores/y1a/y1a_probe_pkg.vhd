@@ -54,11 +54,11 @@ package y1a_probe_pkg is
      -- ea calc
      --
      ea_off_mux  : std_logic_vector(ALU_MSB downto 0);
-     ea_reg_mux  : std_logic_vector(ALU_MSB downto 0);
+--x     ea_reg_mux  : std_logic_vector(ALU_MSB downto 0);
      ea_dat      : std_logic_vector(ALU_MSB downto 0);
 
-     fp_reg      : std_logic_vector(ALU_MSB downto 0);
-     sp_reg      : std_logic_vector(ALU_MSB downto 0);
+--x     fp_reg      : std_logic_vector(ALU_MSB downto 0);
+--x     sp_reg      : std_logic_vector(ALU_MSB downto 0);
 
      --
      -- status & control

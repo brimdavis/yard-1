@@ -36,7 +36,6 @@ entity pcr_calc is
   port
     (   
       inst_fld       : in  std_logic_vector(ID_MSB downto 0);
-      sel_opb        : in  std_logic_vector(3 downto 0);
 
       dslot          : in  std_logic;
 

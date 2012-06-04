@@ -73,8 +73,8 @@ architecture sim1 of y1a_probe is
             write( L, string'("   ea_off_mux="));
             hwrite(L,  y1a_probe_sigs.ea_off_mux );
 
-            write( L, string'("  ea_reg_mux   ="));
-            hwrite(L,  y1a_probe_sigs.ea_reg_mux );
+--x            write( L, string'("  ea_reg_mux   ="));
+--x            hwrite(L,  y1a_probe_sigs.ea_reg_mux );
 
             write( L, string'("  ea_dat   ="));
             hwrite(L,  y1a_probe_sigs.ea_dat );
@@ -135,12 +135,11 @@ architecture sim1 of y1a_probe is
 
             writeline( OUTPUT, L);
 
-
-            write( L, string'("        fp ="));
-            hwrite(L,  y1a_probe_sigs.fp_reg );
-
-            write( L, string'("  sp ="));
-            hwrite(L,  y1a_probe_sigs.sp_reg );
+--x            write( L, string'("        fp ="));
+--x            hwrite(L,  y1a_probe_sigs.fp_reg );
+--x
+--x            write( L, string'("  sp ="));
+--x            hwrite(L,  y1a_probe_sigs.sp_reg );
 
             writeline( OUTPUT, L);
 
@@ -226,7 +225,10 @@ architecture sim1 of y1a_probe is
          write( L, string'(": Register File"));
  
          writeline( OUTPUT, L);
- 
+
+         --
+         -- first line displays r0..r7
+         --
          for j in 0 to 7 loop
            hwrite(L,  reg_file(j) );
            write( L, ' ');
@@ -234,17 +236,22 @@ architecture sim1 of y1a_probe is
 
          writeline( OUTPUT, L);
 
-         for j in 8 to 13 loop
+         --
+         -- second line displays r8..r15
+         --   loop stops at r14, r15 handled below
+         --
+         for j in 8 to 14 loop
            hwrite(L,  reg_file(j) );
            write( L, ' ');
          end loop;
  
-         --
-         -- last two registers R14/IMM and R15/PC don't live in normal register file
-         --
-         hwrite(L,  y1a_probe_sigs.imm_reg );
-         write( L, ' ');
+--x         hwrite(L,  y1a_probe_sigs.imm_reg );
+--x         write( L, ' ');
 
+         --
+         -- R15/PC/RS doesn't live in normal register file
+         --   print top of return stack for R15 value
+         --
          hwrite(L,  y1a_probe_sigs.rsp_pc );
          write( L, ' ');
 
