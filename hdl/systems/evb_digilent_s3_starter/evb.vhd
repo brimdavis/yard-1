@@ -38,7 +38,7 @@ library work;
   
 entity evb is
   port
-    (	
+    (   
       clk50_in  : in  std_logic;
 
       rx_bit    : in  std_logic;
@@ -58,15 +58,15 @@ architecture evb1 of evb is
   --
   -- clock and control 
   --
-  signal clk   : std_logic;	
-  signal rst_l : std_logic;	
-  signal irq_l : std_logic;	
+  signal clk   : std_logic; 
+  signal rst_l : std_logic; 
+  signal irq_l : std_logic; 
   
   --
   -- instruction bus
   --
-  signal i_en_l  : std_logic;	
-  signal i_rd_l  : std_logic;	
+  signal i_en_l  : std_logic;   
+  signal i_rd_l  : std_logic;   
   
   signal i_addr  : std_logic_vector(PC_MSB downto 0);
   signal i_dat   : std_logic_vector(INST_MSB downto 0);
@@ -74,17 +74,17 @@ architecture evb1 of evb is
   --
   -- data bus
   --
-  signal d_en_l  : std_logic;	
-  signal d_rd_l  : std_logic;	
-  signal d_wr_l  : std_logic;	
-  signal d_wr_en_l : std_logic_vector(3 downto 0);	
+  signal d_en_l  : std_logic;   
+  signal d_rd_l  : std_logic;   
+  signal d_wr_l  : std_logic;   
+  signal d_wr_en_l : std_logic_vector(3 downto 0);  
   
   signal d_addr  : std_logic_vector(ADDR_MSB downto 0);
   signal d_rdat  : std_logic_vector(ALU_MSB downto 0);
   signal d_wdat  : std_logic_vector(ALU_MSB downto 0);
   
-  signal d_stall    : std_logic;	
-  signal d_stall_p1 : std_logic;	
+  signal d_stall    : std_logic;    
+  signal d_stall_p1 : std_logic;    
 
   --
   -- data bus mux structure
@@ -98,21 +98,21 @@ architecture evb1 of evb is
   --
   -- local decodes
   --
-  signal ram_cs_l    : std_logic;	
+  signal ram_cs_l    : std_logic;   
 
-  signal dcd_uart    : std_logic;	
-  signal dcd_uart_wr : std_logic;	
-  signal dcd_uart_rd : std_logic;	
-  signal dcd_uart_rd_done : std_logic;	
+  signal dcd_uart    : std_logic;   
+  signal dcd_uart_wr : std_logic;   
+  signal dcd_uart_rd : std_logic;   
+  signal dcd_uart_rd_done : std_logic;  
   
   --
   -- uart support signals
   --
   signal baud_div : std_logic_vector(7 downto 0) := ( others => '0');
-  signal baud_16x : std_logic;	
+  signal baud_16x : std_logic;  
 
-  signal tx_rdy   : std_logic;	
-  signal rx_avail : std_logic;	
+  signal tx_rdy   : std_logic;  
+  signal rx_avail : std_logic;  
 
   signal rx_dat   : std_logic_vector(7 downto 0);
   
@@ -166,12 +166,12 @@ begin
   --
   evb_core: entity work.y1a_core
     generic map
-      (	
+      ( 
         CFG         => DEFAULT_CONFIG
       )
 
     port map
-      (	
+      ( 
         clk        => clk,
         rst_l      => rst_l,
 
@@ -419,7 +419,7 @@ begin
   -- LED's 
   --
   P_LED : process
-	 begin
+     begin
       wait until rising_edge(clk);
 
       -- LSB's of PC

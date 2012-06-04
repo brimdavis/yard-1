@@ -146,8 +146,6 @@ package y1a_comps is
         imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
 
         sp_offset  : in  std_logic_vector(3 downto 0);
-        sp_reg     : in  std_logic_vector(ALU_MSB downto 0);
-        fp_reg     : in  std_logic_vector(ALU_MSB downto 0);
 
         ldi_offset : in  std_logic_vector(11 downto 0);
         pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
@@ -161,7 +159,6 @@ package y1a_comps is
      port
        (   
          inst_fld       : in  std_logic_vector(ID_MSB downto 0);
-         sel_opb        : in  std_logic_vector(3 downto 0);
 
          dslot          : in  std_logic;
          call_type      : in  std_logic;

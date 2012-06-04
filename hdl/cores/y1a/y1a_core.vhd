@@ -183,6 +183,7 @@ architecture arch1 of y1a_core is
   signal mem_wb_bus : std_logic_vector(ALU_MSB downto 0);
 
   signal force_sel_opa : std_logic_vector(3 downto 0);
+  signal force_sel_opb : std_logic_vector(3 downto 0);
 
   --
   -- writeback enable 
@@ -223,12 +224,6 @@ architecture arch1 of y1a_core is
   signal ea_dat     : std_logic_vector(ALU_MSB downto 0);
   signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
-  --
-  -- frame & stack pointer snooping registers for address generation
-  --
-  signal sp_reg     : std_logic_vector(ALU_MSB downto 0);
-  signal fp_reg     : std_logic_vector(ALU_MSB downto 0);
-  
   --
   -- program counter
   --
@@ -340,7 +335,7 @@ architecture arch1 of y1a_core is
   --    7:4   shift control field
   --    3:0   opa register field
   --
-  alias inst_type  : std_logic_vector(TYPE_MSB downto 0) is ireg(15 downto 14);
+  alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   
   alias arith_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
@@ -457,18 +452,11 @@ begin
         wd   => wb_bus,
 
         ra1  => force_sel_opa, 
-        ra2  => sel_opb, 
+        ra2  => force_sel_opb, 
 
         rd1  => ar, 
         rd2  => br
       );
-
---  --
---  -- force register file address to IMM (r14) for LDI and IMM12
---  --
---  force_sel_opa <= X"E" when ( inst_fld = OPM_IMM ) OR ( inst_fld = OPM_LDI )
---               else sel_opa;
-
 
   --
   -- register file writeback enable
@@ -503,23 +491,13 @@ begin
   --   register file accesses
   --
 
-  sp_fp_reg1: process (clk,rst_l)
+  snoop_reg: process (clk,rst_l)
     begin
 
       if  rst_l = '0' then
-        fp_reg  <= ( others => '0');
-        sp_reg  <= ( others => '0');
         imm_reg <= ( others => '0');
 
       elsif rising_edge(clk) then
-
-        if ( wb_en = '1' ) AND ( force_sel_opa = REG_FP ) then
-          fp_reg <= wb_bus;
-        end if;
-
-        if ( wb_en = '1' ) AND ( force_sel_opa = REG_SP ) then
-          sp_reg <= wb_bus;
-        end if;
 
         if ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
           imm_reg <= wb_bus;
@@ -727,7 +705,6 @@ begin
     port map
       (
         inst_fld   => inst_fld,  
-        sel_opb    => sel_opb,
 
         dslot      => dslot,
         call_type  => call_type,
@@ -757,8 +734,6 @@ begin
         imm_reg    => imm_reg,   
 
         sp_offset  => sp_offset, 
-        sp_reg     => sp_reg,    
-        fp_reg     => fp_reg,    
 
         ldi_offset => ldi_offset,
         pc_reg_p1  => pc_reg_p1, 
@@ -775,11 +750,15 @@ begin
   ------------------------------------------------------------------------------
   wb_mux : block
 
+    signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
     signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
 --    attribute keep of wb_muxb  : signal is true;
 
     begin
+
+--      wb_bus  <=   mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
+--             else  wb_muxa;
 
       wb_bus  <=   arith_dat    when  ( inst_type = OPA      ) AND ( arith_op /= T_MISC  )
              else  ea_dat       when  ( inst_fld  = OPM_ST   ) AND ( lea_bit = '1'       ) 
@@ -1107,19 +1086,41 @@ begin
           pc_reg_p1 <= pc_reg;
           ireg      <= i_dat;
 
+          --
+          -- force register file addressing for special case instruction modes
+          --
+
+          --
+          --    force opa = IMM (r14) for LDI and IMM12
+          --
           if  ( i_dat(15 downto 12) = OPM_IMM ) OR ( i_dat(15 downto 12) = OPM_LDI ) then
             force_sel_opa <= X"E" ;
           else 
             force_sel_opa <= i_dat(3 downto 0);
           end if;
+
+          --
+          --    force opb = FP/SP for memory accesses using stack mode
+          --
+          if  ( ( i_dat(15 downto 12) = OPM_LD ) OR ( i_dat(15 downto 12) = OPM_ST ) ) AND ( i_dat(10 downto 9) = MEM_32_SP ) then
+
+            if  i_dat(8) = '0'  then
+              force_sel_opb <= X"C" ;  -- fp
+            else 
+              force_sel_opb <= X"D" ;  -- sp
+            end if;
+
+          else 
+            force_sel_opb <= i_dat(7 downto 4);
+
+          end if;
+
   
         end if;
  
       end if;
  
    end process pipe_reg1;
-
-
 
 
   ------------------------------------------------------------------------------
@@ -1297,9 +1298,6 @@ begin
       y1a_probe_sigs.ex_null    <= ex_null;  
 
       y1a_probe_sigs.rsp_pc     <= ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc;
-
-      y1a_probe_sigs.fp_reg     <= fp_reg;
-      y1a_probe_sigs.sp_reg     <= sp_reg;
 
       y1a_probe_sigs.ea_dat     <= ea_dat;
 
