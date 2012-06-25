@@ -102,11 +102,10 @@ begin
 
   d_en  <= NOT d_cs_l;
 
-  d_we3 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(3));
-  d_we2 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(2));
-  d_we1 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(1));
-  d_we0 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(0));
-
+  d_we3 <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(3));
+  d_we2 <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(2));
+  d_we1 <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(1));
+  d_we0 <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(0));
 
   --
   -- infer byte lane 3 dual port
