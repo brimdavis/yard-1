@@ -56,14 +56,14 @@ end evb;
 architecture evb1 of evb is
   
   --
-  --
+  -- clock and control 
   --
   signal clk   : std_logic; 
   signal rst_l : std_logic; 
   signal irq_l : std_logic; 
   
   --
-  --
+  -- instruction bus
   --
   signal i_en_l  : std_logic;   
   signal i_rd_l  : std_logic;   
@@ -72,7 +72,7 @@ architecture evb1 of evb is
   signal i_dat   : std_logic_vector(INST_MSB downto 0);
   
   --
-  --
+  -- data bus
   --
   signal d_en_l  : std_logic;   
   signal d_rd_l  : std_logic;   
@@ -82,15 +82,17 @@ architecture evb1 of evb is
   signal d_addr  : std_logic_vector(ADDR_MSB downto 0);
   signal d_rdat  : std_logic_vector(ALU_MSB downto 0);
   signal d_wdat  : std_logic_vector(ALU_MSB downto 0);
+
+  signal d_stall    : std_logic;    
   
+  --
+  -- data bus mux structure
+  --
   signal blkram_rdat  : std_logic_vector(ALU_MSB downto 0);
   signal uart_rdat    : std_logic_vector(ALU_MSB downto 0);
   signal io_rdat      : std_logic_vector(ALU_MSB downto 0);
   signal spare_rdat   : std_logic_vector(ALU_MSB downto 0);
 
-  signal d_stall    : std_logic;    
-  signal d_stall_p1 : std_logic;    
-  
   --
   -- local decodes
   --
@@ -117,6 +119,8 @@ architecture evb1 of evb is
   --
   signal out_reg1 : std_logic_vector(7 downto 0);
   signal in_reg1  : std_logic_vector(7 downto 0);
+
+  signal in_flags : std_logic_vector(15 downto 0);
 
   --
   --
@@ -154,13 +158,13 @@ begin
     rst_l <= NOT pb3_debounce;
     irq_l <= NOT pb2_pulse;
 
-  end block B_debounce;
+  end block;
 
 
   --
   -- processor core
   --
-  evb_core: entity work.y1a_core
+  I_evb_core: entity work.y1a_core
     generic map
       ( 
         CFG         => DEFAULT_CONFIG
@@ -173,7 +177,7 @@ begin
 
         irq_l      => irq_l,
 
-        in_flags   => X"55AA",
+        in_flags   => in_flags,
 
         i_en_l     => i_en_l,
         i_rd_l     => i_rd_l,
@@ -196,32 +200,9 @@ begin
       );
 
   --
-  -- data stall logic
+  -- no data stalls
   --
-
-  -- no stalls
   d_stall <= '0';
-
-
-  -- disabled: decode of RAM address puts this on critical path!
-  --  d_stall <= (NOT ram_cs_l) AND (NOT d_rd_l) AND (NOT d_stall_p1);
-
-  --
-  -- disabled: stall for all loads
-  --
-  --  d_stall <= (NOT d_en_l) AND (NOT d_rd_l) AND (NOT d_stall_p1);
-
-  reg_cs1 : process (clk, rst_l)
-    begin
-      if rst_l = '0' then
-        d_stall_p1 <= '0';
-
-      elsif rising_edge(clk) then
-        d_stall_p1 <= d_stall;
-
-      end if;
-
-    end process reg_cs1;
 
 
   --
@@ -251,8 +232,6 @@ begin
   --
   ram_cs_l <= d_addr(ADDR_MSB);
 
---  ram_cs_l <= '0'  when (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"0" )
---         else '1';
 
   --
   -- blockram data bus mux
@@ -305,37 +284,33 @@ begin
             else io_rdat;
 
   --
-  -- BMD no stall
+  -- read pulse advances UART read data to next byte 
+  -- without data stalls, just a copy of the read decode
   --
-  dcd_uart_rd_done <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' ) 
-              else '0';
---
---  dcd_uart_rd_done <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' ) AND (d_stall_p1 = '1')
---              else '0';
+  dcd_uart_rd_done <= dcd_uart_rd;
 
-
-   --
-   -- TODO: add programmable baud rate generator w/automated clock-to-baud counter calculation
-   --
-   -- fixed rate clock divider for UART baud rate
-   -- runs at 16x desired 19200 baud 
-   --
-   --  50 MHz / ( 19,200 x 16 ) => 162.7 ~= 163 
-   --  counter counts from N-1 .. 0, so load value is 162 => X"A2" 
-   --
-   bc1: process
-     begin
-       wait until rising_edge(clk);
+  --
+  -- TODO: add programmable baud rate generator w/automated clock-to-baud counter calculation
+  --
+  -- fixed rate clock divider for UART baud rate
+  -- runs at 16x desired 19200 baud 
+  --
+  --  50 MHz / ( 19,200 x 16 ) => 162.7 ~= 163 
+  --  counter counts from N-1 .. 0, so load value is 162 => X"A2" 
+  --
+  P_bc: process
+    begin
+      wait until rising_edge(clk);
  
-       if ( baud_div = X"00" ) then
-         baud_div  <= X"a2";
-         baud_16x  <= '1';
-       else
-         baud_div  <= baud_div - 1;
-         baud_16x  <= '0';
-       end if;
+      if ( baud_div = X"00" ) then
+        baud_div  <= X"a2";
+        baud_16x  <= '1';
+      else
+        baud_div  <= baud_div - 1;
+        baud_16x  <= '0';
+      end if;
  
-     end process;
+    end process;
 
 
   ---------------------------------------------------------------
@@ -345,9 +320,23 @@ begin
   ---------------------------------------------------------------
 
   --
+  -- input flags
+  --
+  P_in_flags : process
+    begin
+      wait until rising_edge(clk);
+
+      in_flags(15) <= tx_rdy;
+      in_flags(14) <= rx_avail;
+      in_flags(13 downto 0) <= ( others => '0');
+
+    end process;
+ 
+
+  --
   -- 8 bit output port
   --
-  out_port1 : process(clk, rst_l)
+  P_out_port : process(clk, rst_l)
     begin
 
       if rst_l = '0' then
@@ -361,12 +350,12 @@ begin
 
       end if;
  
-    end process out_port1;
+    end process;
  
   --
   -- 8 bit input port
   --
-  P_in_port1 : process( d_addr, d_en_l, d_rd_l, in_reg1 )
+  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1 )
     begin
  
       if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
@@ -382,7 +371,7 @@ begin
 
       end if;
  
-    end process p_in_port1;
+    end process;
  
   --
   -- input port connections
@@ -406,7 +395,7 @@ begin
 
       in_reg1(5 downto 0) <= sw(5 downto 0);
 
-    end process p_in_reg1;
+    end process;
  
 
   --
@@ -422,7 +411,7 @@ begin
       -- UART receive data
       led <= NOT rx_dat;
 
-    end process P_LED;
+    end process;
 
 
   --
