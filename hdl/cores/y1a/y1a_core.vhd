@@ -914,7 +914,7 @@ begin
   --
   -- re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, bra_long, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 
@@ -1072,8 +1072,10 @@ begin
     begin
  
       if  rst_l = '0' then
-        pc_reg_p1 <= PC_RST_VEC;
-        ireg <= ( others => '0');
+        pc_reg_p1     <= PC_RST_VEC;
+        ireg          <= ( others => '0');
+        force_sel_opa <= ( others => '0');
+        force_sel_opb <= ( others => '0');
  
       elsif rising_edge(clk) then
 
@@ -1081,6 +1083,7 @@ begin
           pc_reg_p1     <= pc_reg_p1;
           ireg          <= ireg;
           force_sel_opa <= force_sel_opa;
+          force_sel_opb <= force_sel_opb;
   
         else
           pc_reg_p1 <= pc_reg;

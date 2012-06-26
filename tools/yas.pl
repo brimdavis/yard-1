@@ -344,11 +344,12 @@ sub do_error
   {
     my ( $msg ) = @_;
 
-    printf        ("Error: %s at line %d: %s\n", $msg, $line_num, $raw_line);
-    printf $LST_F ("Error: %s at line %d: %s\n", $msg, $line_num, $raw_line) if ($pass == 2); 
+    printf        ("Error: %s [%s:%d] : %s\n", $msg, $asm_filename, $line_num, $raw_line);
+    printf $LST_F ("Error: %s [%s:%d] : %s\n", $msg, $asm_filename, $line_num, $raw_line) if ($pass == 2); 
   
     $error_cnt++;
   }
+
 
 #-------------------------------------------------------------
 # warning message
@@ -357,8 +358,8 @@ sub do_warn
   {
     my ( $msg ) = @_;
 
-    printf        ("Warning: %s at line %d: %s\n", $msg, $line_num, $raw_line);
-    printf $LST_F ("Warning: %s at line %d: %s\n", $msg, $line_num, $raw_line) if ($pass == 2); 
+    printf        ("Warning: %s [%s:%d] : %s\n", $msg, $asm_filename, $line_num, $raw_line);
+    printf $LST_F ("Warning: %s [%s:%d] : %s\n", $msg, $asm_filename, $line_num, $raw_line) if ($pass == 2); 
 
     $warn_cnt++;
   }
@@ -1217,9 +1218,15 @@ while( $pass <= 2 )
     #
     foreach my $filename (@source_filenames)
       {
-        open($ASM_F, "$filename" ) or die "Can't open $filename: $!\n" ;
+        my $ext;
 
-        $asm_filename = $filename;
+           $ext = ''     , open($ASM_F, "$filename$ext" ) 
+        or $ext = '.s'   , open($ASM_F, "$filename$ext" ) 
+        or $ext = '.asm' , open($ASM_F, "$filename$ext" ) 
+
+        or die "Can't open $filename: $!\n" ;
+
+        $asm_filename = $filename . $ext;
 
         #
         #rewind input file

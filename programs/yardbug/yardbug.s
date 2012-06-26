@@ -2,7 +2,7 @@
 ;
 ; YARDBUG serial debugger 0.2
 ;
-; (C) COPYRIGHT 2001-2011  B. Davis
+; (C) COPYRIGHT 2001-2012  B. Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -56,8 +56,34 @@
 ;
 ; I/O addresses
 ;
-IO_PORT equ $8000_0000      
 UART    equ $c000_0000      
+
+;
+; Input Flag bit assignments
+;
+FLAG_TX_RDY     equ 15
+FLAG_RX_AVAIL   equ 14
+
+
+;
+; register usage:
+;
+;   r0 = local, parameter, return value
+;   r1 = local, 2nd return value
+;   r2 = unused
+;   r3 = local
+;   r4 = local
+;   r5 = unused
+;   r6 = unused
+;   r7 = unused ( old command search local )
+;   r8 = unused
+;   r9 = global, UART port address
+;   r10= local
+;   r11= local 
+;   r12= local (mem address)
+;   r13= local (mem loop count)
+;   r14= IMM, locals, address parameter
+;
 
 ;
 ;
@@ -72,8 +98,7 @@ UART    equ $c000_0000
 
 start:
 
-; I/O port & UART addresses
-    mov     r8, #IO_PORT 
+; UART addresses
     mov     r9, #UART    
 
 
@@ -104,7 +129,7 @@ parse_loop:
 ;
 
 ;
-; check character in r1 against the command list
+; check character in r0 against the command list
 ;   byte-wide pointer version of table search, 
 ;   target routine must be in low 256 bytes of memory
 ;
@@ -367,10 +392,7 @@ send_crlf:
 ;   input data in r0
 ;
 ;   expects
-;     r8 = I/O port address
 ;     r9 = UART port address
-;
-;   uses r10
 ;
 
 ; send a space, falls through to send_char
@@ -381,9 +403,7 @@ send_char:
 
 ; loop until transmitter ready flag = 1
 tx_wait:
-    ld      r10, (r8)
-
-    skip.bs r10, #7
+    skip.fs #FLAG_TX_RDY
     bra     tx_wait
 
     st      r0, (r9)    ; write data to TX
@@ -413,18 +433,13 @@ get_char_echo:
 ;   returns char in r0
 ;
 ;   expects
-;     r8 = I/O port address
 ;     r9 = UART port address
-;
-;   uses r10
 ;
 get_char:
 
 ; loop until there's something in the buffer
 rx_empty:
-    ld      r10, (r8)
-
-    skip.bs r10, #6
+    skip.fs #FLAG_RX_AVAIL
     bra     rx_empty
 
     ld      r0, (r9)    ; read data from RX
@@ -464,11 +479,12 @@ CMD_TAB:
 ; shortest help message (save ROM space)
 ;
 STR_HELP: 
-    dc.s    "YARDBUG,DGM?"
+    dc.s    "YARDBUG 0.2,DGM?"
 
 STR_CRLF:
     dc.b    $0d,$0a
     dc.b    0
+
 ;
 ; even shorter help message (save ROM space)
 ;

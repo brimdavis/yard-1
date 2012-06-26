@@ -73,9 +73,6 @@ architecture sim1 of y1a_probe is
             write( L, string'("   ea_off_mux="));
             hwrite(L,  y1a_probe_sigs.ea_off_mux );
 
---x            write( L, string'("  ea_reg_mux   ="));
---x            hwrite(L,  y1a_probe_sigs.ea_reg_mux );
-
             write( L, string'("  ea_dat   ="));
             hwrite(L,  y1a_probe_sigs.ea_dat );
 
@@ -132,14 +129,6 @@ architecture sim1 of y1a_probe is
             write( L, string'("        skip_cond: a,bit,n,c,v,z,b = "));
             write(L,  y1a_probe_sigs.skipc );
 --            write(L,  slv_5b'(skip_cond_a & c_bit & cb_n & cb_c & cb_v & cb_z )  );
-
-            writeline( OUTPUT, L);
-
---x            write( L, string'("        fp ="));
---x            hwrite(L,  y1a_probe_sigs.fp_reg );
---x
---x            write( L, string'("  sp ="));
---x            hwrite(L,  y1a_probe_sigs.sp_reg );
 
             writeline( OUTPUT, L);
 
@@ -245,9 +234,6 @@ architecture sim1 of y1a_probe is
            write( L, ' ');
          end loop;
  
---x         hwrite(L,  y1a_probe_sigs.imm_reg );
---x         write( L, ' ');
-
          --
          -- R15/PC/RS doesn't live in normal register file
          --   print top of return stack for R15 value
