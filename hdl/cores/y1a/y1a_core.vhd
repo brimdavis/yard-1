@@ -182,9 +182,6 @@ architecture arch1 of y1a_core is
   signal wb_bus     : std_logic_vector(ALU_MSB downto 0);
   signal mem_wb_bus : std_logic_vector(ALU_MSB downto 0);
 
-  signal force_sel_opa : std_logic_vector(3 downto 0);
-  signal force_sel_opb : std_logic_vector(3 downto 0);
-
   --
   -- writeback enable 
   --
@@ -410,6 +407,14 @@ architecture arch1 of y1a_core is
   alias spam_mode : std_logic_vector(2 downto 0) is ireg(10 downto 8);
   alias spam_mask : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
  
+
+  --
+  -- early instruction decodes
+  --
+  signal force_sel_opa  : std_logic_vector(3 downto 0);
+  signal force_sel_opb  : std_logic_vector(3 downto 0);
+
+  signal dcd_mem_ld     : boolean;
 
 ------------------------------------------------------------------------------
 --
@@ -704,16 +709,16 @@ begin
   I_pcr_calc: pcr_calc
     port map
       (
-        inst_fld   => inst_fld,  
+        inst_fld  => inst_fld,  
 
-        dslot      => dslot,
-        call_type  => call_type,
-        ext_bit    => ext_bit,  
-        ext_grp    => ext_grp,  
+        dslot     => dslot,
+        call_type => call_type,
+        ext_bit   => ext_bit,  
+        ext_grp   => ext_grp,  
 
-        pc_reg_p1  => pc_reg_p1, 
-                   
-        pcr_addr   => pcr_addr
+        pc_reg_p1 => pc_reg_p1, 
+                  
+        pcr_addr  => pcr_addr
       );
 
 
@@ -753,16 +758,18 @@ begin
     signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
     signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
---    attribute keep of wb_muxb  : signal is true;
+    attribute keep of wb_muxa  : signal is true;
+    attribute keep of wb_muxb  : signal is true;
 
     begin
 
 --      wb_bus  <=   mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
---             else  wb_muxa;
+      wb_bus  <=   mem_wb_bus   when  dcd_mem_ld
+             else  wb_muxa;
 
-      wb_bus  <=   arith_dat    when  ( inst_type = OPA      ) AND ( arith_op /= T_MISC  )
+      wb_muxa <=   arith_dat    when  ( inst_type = OPA      ) AND ( arith_op /= T_MISC  )
              else  ea_dat       when  ( inst_fld  = OPM_ST   ) AND ( lea_bit = '1'       ) 
-             else  mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
+--             else  mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
              else  wb_muxb;
 
       wb_muxb <=   logic_dat    when  ( inst_type = OPL      ) 
@@ -1066,29 +1073,57 @@ begin
   --   instruction register
   --   pipelined copy of PC for EX stage
   --
-  --   moved opa select field force logic before ireg to reduce critical path
-  --
-  pipe_reg1: process (clk,rst_l)
+  P_pipe_reg: process (clk,rst_l)
     begin
  
       if  rst_l = '0' then
         pc_reg_p1     <= PC_RST_VEC;
         ireg          <= ( others => '0');
-        force_sel_opa <= ( others => '0');
-        force_sel_opb <= ( others => '0');
  
       elsif rising_edge(clk) then
 
         if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
           pc_reg_p1     <= pc_reg_p1;
           ireg          <= ireg;
-          force_sel_opa <= force_sel_opa;
-          force_sel_opb <= force_sel_opb;
   
         else
           pc_reg_p1 <= pc_reg;
           ireg      <= i_dat;
 
+        end if;
+ 
+      end if;
+ 
+   end process;
+
+
+
+  --    
+  -- interim code
+  --    
+  -- workaround until top level aliases replaced with individual decodes in functional units   
+  --    
+  -- early decodes - moved ahead of instruction register to improve critical path timing
+  --    
+  P_early_dcd: process (clk,rst_l)
+    begin
+ 
+      if  rst_l = '0' then
+        force_sel_opa  <= ( others => '0');
+        force_sel_opb  <= ( others => '0');
+
+        dcd_mem_ld     <= FALSE;
+
+      elsif rising_edge(clk) then
+
+        if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+          force_sel_opa  <= force_sel_opa;
+          force_sel_opb  <= force_sel_opb;
+
+          dcd_mem_ld     <= dcd_mem_ld;
+
+  
+        else
           --
           -- force register file addressing for special case instruction modes
           --
@@ -1118,12 +1153,18 @@ begin
 
           end if;
 
-  
+
+          --
+          -- instruction decode for writeback bus memory source
+          --
+          dcd_mem_ld  <= ( i_dat(15 downto 12) = OPM_LDI ) OR ( i_dat(15 downto 12) = OPM_LD  );
+
         end if;
  
       end if;
  
-   end process pipe_reg1;
+   end process;
+
 
 
   ------------------------------------------------------------------------------

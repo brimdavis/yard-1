@@ -33,13 +33,14 @@ entity ld_mux is
   port
     (   
       inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+
       mem_size   : in  std_logic_vector(1 downto 0);
       mem_sign   : in  std_logic;
-
+                  
       ea_lsbs    : in  std_logic_vector(1 downto 0);
 
       d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
-
+                  
       mem_wb_bus : out std_logic_vector(ALU_MSB downto 0)
     );
 
@@ -54,9 +55,9 @@ architecture arch1 of ld_mux is
   --
   -- instruction decodes
   --
-  signal dcd_quad: boolean;
-  signal dcd_wyde: boolean;
-  signal dcd_byte: boolean;
+  signal dcd_quad_ld: boolean;
+  signal dcd_wyde_ld: boolean;
+  signal dcd_byte_ld: boolean;
 
   --
   -- msb fill for sign/zero extension
@@ -75,12 +76,22 @@ begin
 
 
   --
+  -- instruction decodes
+  --
+  dcd_quad_ld <= ( inst_fld = OPM_LDI ) OR ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) );
+
+  dcd_wyde_ld <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_16 );
+
+  dcd_byte_ld <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_8 );
+
+
+  --
   --
   --
   GF_cnnl: if CFG.non_native_load = FALSE generate
     begin
 
-      mem_wb_bus <=  d_rdat             when ( inst_fld = OPM_LD ) OR ( inst_fld = OPM_LDI ) 
+      mem_wb_bus <=  d_rdat             when  dcd_quad_ld
                 else ( others => '0' );
 
     end generate GF_cnnl;
@@ -91,16 +102,6 @@ begin
   --
   GT_cnnl: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_load = TRUE ) generate
     begin
-
-      --
-      -- instruction decodes
-      --
-      dcd_quad <= ( inst_fld = OPM_LDI ) OR ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) );
-
-      dcd_wyde <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_16 );
-
-      dcd_byte <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_8 );
-
 
       --
       -- msb fill for sign/zero extension
@@ -117,7 +118,7 @@ begin
       -- byte lane 3 mux (MSB)
       --
       mem_wb_bus(31 downto 24)
-         <=   d_rdat(31 downto 24)      when  dcd_quad
+         <=   d_rdat(31 downto 24)      when  dcd_quad_ld
 
         else  ( others => msb_fill )
         ;
@@ -126,7 +127,7 @@ begin
       -- byte lane 2 mux
       --
       mem_wb_bus(23 downto 16) 
-         <=   d_rdat(23 downto 16)      when  dcd_quad
+         <=   d_rdat(23 downto 16)      when  dcd_quad_ld
 
         else  ( others => msb_fill )
         ;
@@ -135,8 +136,8 @@ begin
       -- byte lane 1 mux
       --
       mem_wb_bus(15 downto 8)
-         <=   d_rdat(31 downto 24)      when  ( dcd_wyde AND ea_lsbs(1) = '0' )
-        else  d_rdat(15 downto  8)      when  ( dcd_wyde AND ea_lsbs(1) = '1' ) OR dcd_quad
+         <=   d_rdat(31 downto 24)      when  ( dcd_wyde_ld AND ea_lsbs(1) = '0' )
+        else  d_rdat(15 downto  8)      when  ( dcd_wyde_ld AND ea_lsbs(1) = '1' ) OR dcd_quad_ld
 
         else  ( others => msb_fill )
         ;
@@ -145,13 +146,12 @@ begin
       -- byte lane 0 mux (LSB)
       --
       mem_wb_bus(7 downto 0)
-         <=   d_rdat(31 downto 24)  when ( dcd_byte AND ea_lsbs = B"00" )
-        else  d_rdat(23 downto 16)  when ( dcd_byte AND ea_lsbs = B"01" ) OR ( dcd_wyde AND ea_lsbs(1) = '0' )
-        else  d_rdat(15 downto  8)  when ( dcd_byte AND ea_lsbs = B"10" )
-        else  d_rdat( 7 downto  0)  when ( dcd_byte AND ea_lsbs = B"11" ) OR ( dcd_wyde AND ea_lsbs(1) = '1' ) OR dcd_quad
+         <=   d_rdat(31 downto 24)  when ( dcd_byte_ld AND ea_lsbs = B"00" )
+        else  d_rdat(23 downto 16)  when ( dcd_byte_ld AND ea_lsbs = B"01" ) OR ( dcd_wyde_ld AND ea_lsbs(1) = '0' )
+        else  d_rdat(15 downto  8)  when ( dcd_byte_ld AND ea_lsbs = B"10" )
+        else  d_rdat( 7 downto  0)  when ( dcd_byte_ld AND ea_lsbs = B"11" ) OR ( dcd_wyde_ld AND ea_lsbs(1) = '1' ) OR dcd_quad_ld
         else ( others => 'X' )
         ;
-
 
 
     end generate GT_cnnl;

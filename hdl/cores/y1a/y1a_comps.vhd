@@ -158,16 +158,16 @@ package y1a_comps is
   component pcr_calc is
      port
        (   
-         inst_fld       : in  std_logic_vector(ID_MSB downto 0);
+         inst_fld  : in  std_logic_vector(ID_MSB downto 0);
 
-         dslot          : in  std_logic;
-         call_type      : in  std_logic;
-         ext_bit        : in  std_logic;
-         ext_grp        : in  std_logic_vector(3 downto 0);
+         dslot     : in  std_logic;
+         call_type : in  std_logic;
+         ext_bit   : in  std_logic;
+         ext_grp   : in  std_logic_vector(3 downto 0);
 
-         pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
+         pc_reg_p1 : in  std_logic_vector(PC_MSB downto 0);
        
-         pcr_addr       : out std_logic_vector(ALU_MSB downto 0)
+         pcr_addr  : out std_logic_vector(ALU_MSB downto 0)
        );
 
   end component;
@@ -176,7 +176,7 @@ package y1a_comps is
   component skip_dcd is
     generic
       (
-        CFG       : y1a_config_type
+        CFG          : y1a_config_type
       );
     port
       (
@@ -256,7 +256,7 @@ package y1a_comps is
   component ld_mux is
     generic
       (
-        CFG       : y1a_config_type
+        CFG        : y1a_config_type
       );
     port
       (
