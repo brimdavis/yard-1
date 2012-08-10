@@ -768,24 +768,24 @@ sub ps_imm12
 %ops_mem = 
   (
 
-    'ld'     =>  { type =>  'MEM32' , opc => '10000ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD"                   },
-    'ld.q'   =>  { type =>  'MEM32' , opc => '10000ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD, Quad"             },
+    'ld'     =>  { type =>  'MEM32' , opc => '1000mss0bbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD"                   },
+    'ld.q'   =>  { type =>  'MEM32' , opc => '1000mss0bbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "LoaD, Quad"             },
 
-    'ld.w'   =>  { type =>  'MEM16' , opc => '10001ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Wyde"             },
-    'ld.sw'  =>  { type =>  'MEM16' , opc => '10001ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Signed Wyde"      },
-    'ld.uw'  =>  { type =>  'MEM16' , opc => '10000ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Unsigned Wyde"    },
+    'ld.w'   =>  { type =>  'MEM16' , opc => '1000mss1bbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Wyde"             },
+    'ld.sw'  =>  { type =>  'MEM16' , opc => '1000mss1bbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Signed Wyde"      },
+    'ld.uw'  =>  { type =>  'MEM16' , opc => '1000mss0bbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "LoaD, Unsigned Wyde"    },
 
-    'ld.b'   =>  { type =>  'MEM8'  , opc => '10001ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Byte"             },
-    'ld.sb'  =>  { type =>  'MEM8'  , opc => '10001ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Signed Byte"      },
-    'ld.ub'  =>  { type =>  'MEM8'  , opc => '10000ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Unsigned Byte"    },
+    'ld.b'   =>  { type =>  'MEM8'  , opc => '1000mss1bbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Byte"             },
+    'ld.sb'  =>  { type =>  'MEM8'  , opc => '1000mss1bbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Signed Byte"      },
+    'ld.ub'  =>  { type =>  'MEM8'  , opc => '1000mss0bbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "LoaD, Unsigned Byte"    },
 
-    'st'     =>  { type =>  'MEM32' , opc => '10010ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore"                  },
-    'st.q'   =>  { type =>  'MEM32' , opc => '10010ssmbbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore, Quad"            },
+    'st'     =>  { type =>  'MEM32' , opc => '1001mss0bbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore"                  },
+    'st.q'   =>  { type =>  'MEM32' , opc => '1001mss0bbbbaaaa' , size => '01' ,  ps => \&ps_mem, name => "STore, Quad"            },
 
-    'st.w'   =>  { type =>  'MEM16' , opc => '10010ssmbbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "STore, Wyde"            },
-    'st.b'   =>  { type =>  'MEM8'  , opc => '10010ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "STore, Byte"            },
+    'st.w'   =>  { type =>  'MEM16' , opc => '1001mss0bbbbaaaa' , size => '10' ,  ps => \&ps_mem, name => "STore, Wyde"            },
+    'st.b'   =>  { type =>  'MEM8'  , opc => '1001mss0bbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "STore, Byte"            },
 
-    'lea'    =>  { type =>  'LEA'   , opc => '10011ssmbbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "Load Effective Address" }
+    'lea'    =>  { type =>  'LEA'   , opc => '1001mss1bbbbaaaa' , size => '11' ,  ps => \&ps_mem, name => "Load Effective Address" }
 
   );
 

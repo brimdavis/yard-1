@@ -342,7 +342,6 @@ architecture arch1 of y1a_core is
   
   alias arith_skip_nocarry  : std_logic is ireg(11);
   alias logic_notb : std_logic is ireg(11);
-  alias lea_bit    : std_logic is ireg(11);
  
   alias ext_bit    : std_logic is ireg(11);
   
@@ -376,11 +375,15 @@ architecture arch1 of y1a_core is
   --
   -- load/store/lea address mode & operand size/sign extension
   --
-  alias mem_sign   : std_logic is ireg(11);
+  -- August 2012 : mode and sign bits were swapped to enable shared
+  --               decode bits for reg-reg sign extension instructions
+  --
+  alias mem_mode   : std_logic is ireg(11);
   alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-  alias mem_mode   : std_logic is ireg(8);
+  alias mem_sign   : std_logic is ireg(8);
   alias sp_offset  : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
 
+  alias lea_bit    : std_logic is ireg(8);
   
   --
   -- opb control fields
@@ -1142,7 +1145,7 @@ begin
           --
           if  ( ( i_dat(15 downto 12) = OPM_LD ) OR ( i_dat(15 downto 12) = OPM_ST ) ) AND ( i_dat(10 downto 9) = MEM_32_SP ) then
 
-            if  i_dat(8) = '0'  then
+            if  i_dat(11) = '0'  then
               force_sel_opb <= X"C" ;  -- fp
             else 
               force_sel_opb <= X"D" ;  -- sp
