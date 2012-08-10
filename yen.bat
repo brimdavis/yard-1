@@ -13,9 +13,19 @@ set YARD_TOOLS=%YARD_HOME%\tools
 set path=%path%;%YARD_TOOLS%\winxp;
 
 ::
-:: BMD need to pick a PERL here ( check for perl install, bail to xilperl )
+:: TODO: need to pick a PERL here ( check for perl install, bail to xilperl )
 ::
 set YARD_PERL=perl
+
+::
+:: select a VHDL simulator 
+::
+::   GHDL       GHDL
+::   MTI        Model Technology / Modelsim
+::   SYMPHONY   Symphony EDA     / VHDL Simili
+::   ALDEC      Aldec            / Active-HDL
+::
+set YARD_SIM=GHDL
 
 ::
 :: select the default simulation target here
