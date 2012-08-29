@@ -7,9 +7,22 @@
 
       See license/bsd_2-clause.txt
 
-      Note that the Google Code project hosting site refers to the
-      BSD 2-clause license as the "New BSD License".
+************
 
+      Note that the Google Code project hosting site license selection
+      originally linked to the BSD 2-clause license for projects that had 
+      selected "New BSD License" from the Google Code license choices.
+
+      On Aug 13, 2012, Google "fixed" this by silently changing the project
+      license link to point to the 3-clause BSD license instead.
+
+      It would perhaps have been more useful to change the _description_
+      to read "Modified BSD" or "2-clause BSD", and leave the link alone.
+
+      I have since changed the Google Code license to "other" and updated 
+      this file accordingly.
+
+************
 
 
     - The main cross assembler file, <yas.pl>, is based on other free
