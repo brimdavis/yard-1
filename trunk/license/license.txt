@@ -17,7 +17,7 @@
       license link to point to the 3-clause BSD license instead.
 
       It would perhaps have been more useful to change the _description_
-      to read "Modified BSD" or "2-clause BSD", and leave the link alone.
+      to read "Simplified BSD" or "2-clause BSD", and leave the link alone.
 
       I have since changed the Google Code license to "other" and updated 
       this file accordingly.
