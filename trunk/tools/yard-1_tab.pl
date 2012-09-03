@@ -524,9 +524,11 @@ sub ps_sr
 #----------------------
 %ops_o0r = 
   (
-    'nop'  =>  { type =>  'O0R' , opc => '0000000000000000' , ps => \&ps_o0r, name => "No OPeration"           },   # mov r0,r0
-    'rts'  =>  { type =>  'O0R' , opc => '1111100000100000' , ps => \&ps_o0r, name => "ReTurn from Subroutine" },
-    'rti'  =>  { type =>  'O0R' , opc => '1111110000100000' , ps => \&ps_o0r, name => "ReTurn from Interrupt"  }
+    'rts.d' =>  { type =>  'O0R' , opc => '1111100000100000' , ps => \&ps_o0r, name => "ReTurn from Subroutine, Delayed" },
+    'rts'   =>  { type =>  'O0R' , opc => '1111101000100000' , ps => \&ps_o0r, name => "ReTurn from Subroutine"          },
+
+    'rti.d' =>  { type =>  'O0R' , opc => '1111110000100000' , ps => \&ps_o0r, name => "ReTurn from Interrupt, Delayed"  },
+    'rti'   =>  { type =>  'O0R' , opc => '1111111000100000' , ps => \&ps_o0r, name => "ReTurn from Interrupt"           }
   );
 
 # add to HOH opcode table
@@ -548,6 +550,36 @@ sub ps_o0r
     emit_op($opcode);
   }
 
+
+#----------------------
+#
+# A0R: OP Ra
+#   Opcode aliases, no registers
+#
+#----------------------
+%ops_a0r = 
+  (
+    'nop'   =>  { type =>  'ALIAS_0R' , opc => '0000000000000000' , ps => \&ps_a0r, name => "No OPeration" },   # mov r0,r0
+  );
+
+# add to HOH opcode table
+@ops{keys %ops_a0r} = values %ops_a0r;
+
+
+# A0R parser
+sub ps_a0r
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $opcode = $ops{$operation}{opc};
+
+    check_argument_count( $#operands, 0 );
+
+    emit_op($opcode);
+  }
 
 #----------------------
 #
@@ -598,8 +630,18 @@ sub ps_a1r
 #----------------------
 %ops_orr = 
   (
-    'ff1'   =>  { type =>  'ORR' , opc => '01111110bbbbaaaa' , ps => \&ps_orr, name => "Find First 1" },
-    'cnt1'  =>  { type =>  'ORR' , opc => '01111111bbbbaaaa' , ps => \&ps_orr, name => "CouNT 1's"    } 
+#
+# FIXME: bit counting temporarily displaced, will move elsewhere in ISA
+#
+#    'ff1'   =>  { type =>  'ORR' , opc => '01111110bbbbaaaa' , ps => \&ps_orr, name => "Find First 1" },
+#    'cnt1'  =>  { type =>  'ORR' , opc => '01111111bbbbaaaa' , ps => \&ps_orr, name => "CouNT 1's"    } 
+
+    'ext.uw' =>  { type =>  'ORR' , opc => '01111100bbbbaaaa' , ps => \&ps_orr, name => "EXTend, Unsigned Wyde" },
+    'ext.sw' =>  { type =>  'ORR' , opc => '01111101bbbbaaaa' , ps => \&ps_orr, name => "EXTend, Signed Wyde" },
+
+    'ext.ub' =>  { type =>  'ORR' , opc => '01111110bbbbaaaa' , ps => \&ps_orr, name => "EXTend, Unsigned Byte" },
+    'ext.sb' =>  { type =>  'ORR' , opc => '01111111bbbbaaaa' , ps => \&ps_orr, name => "EXTend, Signed Byte" },
+
   );
 
 
@@ -1024,15 +1066,15 @@ sub ps_ldi
 
 %ops_bri = 
   (
-    'bra'    =>  { type =>  'BRI'  , opc => '1110000rrrrrrrrr' , ps => \&ps_bri, name => "BRAnch"},
-    'bra.d'  =>  { type =>  'BRI'  , opc => '1110001rrrrrrrrr' , ps => \&ps_bri, name => "BRAnch, Delayed" },
-    'bsr'    =>  { type =>  'BRI'  , opc => '1110010rrrrrrrrr' , ps => \&ps_bri, name => "Branch SubRoutine" },
-    'bsr.d'  =>  { type =>  'BRI'  , opc => '1110011rrrrrrrrr' , ps => \&ps_bri, name => "Branch SubRoutine, Delayed" },
+    'bra.d'  =>  { type =>  'BRI'  , opc => '1110000rrrrrrrrr' , ps => \&ps_bri, name => "BRAnch, Delayed"                 },
+    'bra'    =>  { type =>  'BRI'  , opc => '1110001rrrrrrrrr' , ps => \&ps_bri, name => "BRAnch"                          },
+    'bsr.d'  =>  { type =>  'BRI'  , opc => '1110010rrrrrrrrr' , ps => \&ps_bri, name => "Branch SubRoutine, Delayed"      },
+    'bsr'    =>  { type =>  'BRI'  , opc => '1110011rrrrrrrrr' , ps => \&ps_bri, name => "Branch SubRoutine"               },
 
-    'lbra'   =>  { type =>  'LBRI' , opc => '1110100rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch"}, 
-    'lbra.d' =>  { type =>  'LBRI' , opc => '1110101rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch, Delayed" }, 
-    'lbsr'   =>  { type =>  'LBRI' , opc => '1110110rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine" }, 
-    'lbsr.d' =>  { type =>  'LBRI' , opc => '1110111rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine, Delayed" }
+    'lbra.d' =>  { type =>  'LBRI' , opc => '1110100rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch, Delayed"            }, 
+    'lbra'   =>  { type =>  'LBRI' , opc => '1110101rrrrrrrrr' , ps => \&ps_bri, name => "Long BRAnch"                     }, 
+    'lbsr.d' =>  { type =>  'LBRI' , opc => '1110110rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine, Delayed" },
+    'lbsr'   =>  { type =>  'LBRI' , opc => '1110111rrrrrrrrr' , ps => \&ps_bri, name => "Long Branch SubRoutine"          } 
   );
 
 
@@ -1132,11 +1174,11 @@ sub ps_bri
 #----------------
 %ops_jir = 
   (
-    'jmp'   =>  { type =>  'JIR'  , opc => '111110000000aaaa' , ps => \&ps_jir , name => "JuMP"                     },
-    'jmp.d' =>  { type =>  'JIRD' , opc => '111110100000aaaa' , ps => \&ps_jir , name => "JuMP, Delayed"            },
+    'jmp.d' =>  { type =>  'JIRD' , opc => '111110000000aaaa' , ps => \&ps_jir , name => "JuMP, Delayed"            },
+    'jmp'   =>  { type =>  'JIR'  , opc => '111110100000aaaa' , ps => \&ps_jir , name => "JuMP"                     },
 
-    'jsr'   =>  { type =>  'JIR'  , opc => '111111000000aaaa' , ps => \&ps_jir , name => "Jump SubRoutine"          },
-    'jsr.d' =>  { type =>  'JIRD' , opc => '111111100000aaaa' , ps => \&ps_jir , name => "Jump SubRoutine, Delayed" }
+    'jsr.d' =>  { type =>  'JIRD' , opc => '111111000000aaaa' , ps => \&ps_jir , name => "Jump SubRoutine, Delayed" },
+    'jsr'   =>  { type =>  'JIR'  , opc => '111111100000aaaa' , ps => \&ps_jir , name => "Jump SubRoutine"          }
   );
 
 

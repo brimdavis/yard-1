@@ -85,6 +85,7 @@ FLAG_RX_AVAIL   equ 14
 ;   r14= IMM, locals, address parameter
 ;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;
 ; program start
@@ -109,6 +110,7 @@ start:
 ; main loop
 ;
 parse_loop:
+    bsr     send_crlf
 
     mov     r0, #'@     ; @ or ? for prompt fits into short immediate encoding
     bsr     send_char
@@ -133,12 +135,16 @@ parse_loop:
 ;   byte-wide pointer version of table search, 
 ;   target routine must be in low 256 bytes of memory
 ;
-    imm12   #CMD_TAB    ; r14 = address of command lookup table
+
+    imm12   #CMD_LNK    ; r13 = address of command entry point table
+    mov     r13, r14
+
+    imm12   #CMD_TAB    ; r14 = address of command character lookup table
 
 match_loop:
     ld.ub   r11, (r14)  ; r11 = next table command byte
 
-    inc     r14         ; bump r14 to point at command address
+    inc     r14         ; bump r14 to next entry
 
     skip.nz r11         ; bail out if at end of table
     bra     parse_loop
@@ -146,20 +152,20 @@ match_loop:
     skip.ne r0,r11      ; check for match
     bra     got_it
 
-    inc     r14         ; on to next entry
+    add     r13,#1      ; increment byte address pointer
     bra     match_loop
 
 got_it:
-    ld.ub    r11, (r14)     ; r11 = command subroutine address
+    ld.ub    r11, (r13)     ; r11 = command subroutine address
 
     bsr     get_char_echo   ; get & echo one character after command letter
 
     jsr     (r11)           ; call selected command 
 
-;    bsr     send_crlf
-
     bra parse_loop
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; dump memory
 ;
@@ -207,14 +213,22 @@ dump_loop:
     bra     next_line
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; help 
 ;
 cmd_help:
-    imm12   #STR_HELP
-    bra     pstr        ; bra instead of bsr & rts saves an instruction (ROM space)
+
+;
+; note, CRLF string and list of commands immediately follow 
+; the banner string, so two calls to pstr will print all three
+;
+    imm12   #STR_BANNER
+    bsr     pstr        ; print initial banner
+    bra     pstr        ; print CRLF & commands, tail return
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; modify memory
 ;
@@ -240,12 +254,20 @@ next_byte:
     rts                 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; go
 ;
 cmd_go:
     bsr     ghex    ; r1 = target address 
     jmp     (r1)    ; jump to user program 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; utility routines
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
 ;
@@ -275,7 +297,7 @@ gloop:
 ;
 ; convert ASCII code  -> hex ( with liberties taken for illegal chars )
 ;
-; with & without subtract of $20:
+; before & after subtract of $20:
 ;   $30:$39 ( '0':'9' )  now is $10:19
 ;   $41:$46 ( 'A':'F' )  now is $21:26
 ;   $61:$66 ( 'a':'f' )  now is $41:46
@@ -286,10 +308,8 @@ gloop:
     and     r0, #$0f ; keep only the 4 LSB's
 
 ; shift last value up 4 bits
-    lsl     r1
-    lsl     r1
-    lsl     r1
-    lsl     r1
+    bsr     rol_r1_four
+    and     r1, #$ffff_fff0   ; clear out the 4 LSB's from rotate
 
 ; or in new nybble
     or      r1, r0
@@ -314,23 +334,25 @@ phex32:
     imm12   #32         ; # bits
 
 phex:
-    mov     r4,r0       ; copy input value to R4
+    mov     r1,r0       ; copy input value to R1
 
     mov     r3,r14      ; copy length to R3 = bit counter
 
     rsub    r14,#32     ; initial rotate of r0 by 32-N bits left to move desired field into MS nybble
-    bsr     rol_r4_imm  
+    bsr     rol_r1_imm  
 
 hloop:
-    bsr     rol_r4_four ; rotate MS nybble into the LS nybble
+    bsr     rol_r1_four ; rotate MS nybble into the LS nybble
 
-    mov     r0, r4      ; copy to r0 and mask 
+    mov     r0, r1      ; copy to r0 and mask 
     and     r0, #$0f
 
 ; hex to ASCII conversion
     sub     r0, #9
+
     skip.gtz   r0
     sub     r0, #7
+
     add     r0, #$40
 
     bsr     send_char   ; print character
@@ -343,22 +365,22 @@ hloop:
     rts
 
 ;
-; rol_r4_imm
-;   rotate r4 imm positions left
+; rol_r1_imm
+;   rotate r1 imm positions left
 ;
-; rol_r4_four
-;   alternate entry point, rotate r4 four positions left
+; rol_r1_four
+;   alternate entry point, rotate r1 four positions left
 ;
 ;
-rol_r4_four
+rol_r1_four
     imm12   #4
 
-rol_r4_imm
+rol_r1_imm
     sub.snb r14,#1          ; decrement shift count
     rts                     ; bail out if done
 
-    bra.d   rol_r4_imm      ; loop back (delayed)
-    rol     r4              ; rotate one bit left 
+    bra.d   rol_r1_imm      ; loop back (delayed)
+    rol     r1              ; rotate one bit left 
 
 ;
 ; print null terminated string 
@@ -367,24 +389,22 @@ rol_r4_imm
 ;
 ;   uses r0
 ;
+
+; alternate entry point prints CRLF string
+send_crlf:
+    imm12   #STR_CRLF
+
 pstr:
     ld.ub  r0,(r14)     ; get next byte of string
+    inc    r14          ; bump pointer to next character
 
     skip.nz r0          ; bail out if zero terminator
     rts
 
-    bsr  send_char      ; send it
+    bsr  send_char      ; send character
 
-    bra.d pstr          ; loop back (delayed)
-    add r14,#1          ; bump pointer to next character
+    bra  pstr           ; loop
 
-;
-;
-;
-send_crlf:
-     imm12   #STR_CRLF
-     bra     pstr        ; bra instead of bsr & rts saves an instruction (ROM space)
-          
 
 ;       
 ; send a character using HW UART
@@ -445,57 +465,52 @@ rx_empty:
     ld      r0, (r9)    ; read data from RX
     rts
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; constant tables
 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+;
+; constant message strings
+;
+; note, cmd_help currently requires STR_BANNER, STR_CRLF, and CMD_TAB to 
+; immediately follow one another so calls to pstr print each in turn
+;
+STR_BANNER: 
+    dc.s    "YARDBUG 0.2"
+
+STR_CRLF:
+    dc.b    $0d,$0a,$00
 
 ;
 ; commmand table
 ;
 ; notes:
 ;
-;    commands in table should be uppercase letters (A-Z), or punctuation chars < ASCII code $60 
+;   - entries in table should be uppercase letters (A-Z), or punctuation chars < ASCII code $60 
 ;
-;    one-byte table addresses limit calls to routines located in first 256 locations of memory
+;   - one-byte table addresses limit calls to routines located in first 256 locations of memory
 ;
 CMD_TAB:
-    dc.s    "D"
+    dc.s    "DGM?"
+    dc.b    0               ; end of table marker
+
+
+;     align   4             ; align not needed for byte-wide pointer table
+
+CMD_LNK:
     dc.b    cmd_dump
-
-    dc.s    "G"
     dc.b    cmd_go
-
-    dc.s    "M"
     dc.b    cmd_modify
-
-    dc.s    "?"
     dc.b    cmd_help
 
     dc.b    0              ; end of table marker
 
 
-;
-; shortest help message (save ROM space)
-;
-STR_HELP: 
-    dc.s    "YARDBUG 0.2,DGM?"
 
-STR_CRLF:
-    dc.b    $0d,$0a
-    dc.b    0
-
-;
-; even shorter help message (save ROM space)
-;
-;STR_HELP: 
-;    dc.s    "YARDBUG 0.2"
-;    dc.b    $0d,$0a
-;    dc.s    "DGM?"
-;
-;STR_CRLF:
-;    dc.b    $0d,$0a
-;    dc.b    0
 
 ; ;
 ; ; shorter help message (save ROM space)
@@ -535,59 +550,16 @@ STR_CRLF:
   end
 
 
-
-
-
-
 ;
-; original command table code replaced with byte-wide pointer version to save ROM space
+; original command table replaced with byte-wide pointer version to save ROM space
 ;
-; table search routine
 ;   - full 32 bit target addresses
 ;   - separate command and pointer tables
 ;
-; ; copy command char to r7
-;     mov     r7,r1
-;
-; ;
-; ; check it against the command list
-; ;
-; ; r12 = address of command lookup table
-;     imm12   #CMD_TAB
-;     mov     r12, r14
-; 
-; ; r13 = address of command entry point table
-;     imm12   #CMD_LNK
-;     mov     r13, r14
-; 
-; match_loop:
-;     ld.ub   r11, (r12)
-; 
-; 
-;     skip.nz r11         ; bail out if at end of table
-;     bra     parse_loop
-; 
-;     skip.ne r7,r11      ; check for match
-;     bra     got_it
-; 
-;     add     r12, #1
-;     add     r13, #4
-; 
-;     bra     match_loop
-; 
-; got_it:
-;     ld.q    r11, (r13)
-; 
-;     jsr     (r11)
-;
-;     bra parse_loop
-
-
 ; ;
 ; ; commmand table
 ; ;
-; ;  note: commands in table should be uppercase letters (A-Z) or
-; ;        punctuation chars < ASCII code $60 
+; ;   entries in table should be uppercase letters (A-Z), or punctuation chars < ASCII code $60 
 ; ;
 ; CMD_TAB:
 ;     dc.s    "DGM?"

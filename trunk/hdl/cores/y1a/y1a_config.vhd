@@ -44,9 +44,6 @@ package y1a_config is
   --     FALSE : shift and rotate only support bit shift lengths of 1
   --
   --
-  --   bit_seek: enable FF1 and CNT1 instructions
-  --
-  --
   --   bit_flip: enable FLIP instruction
   --
   --
@@ -66,7 +63,6 @@ package y1a_config is
      non_native_store : boolean;
  
      barrel_shift     : boolean;
-     bit_seek         : boolean;
      bit_flip         : boolean;
  
      skip_on_bit      : boolean;
@@ -81,7 +77,6 @@ package y1a_config is
      non_native_store => TRUE,
  
      barrel_shift     => FALSE,
-     bit_seek         => FALSE,
      bit_flip         => FALSE,
  
      skip_on_bit      => TRUE,
@@ -95,7 +90,6 @@ package y1a_config is
      non_native_store => FALSE,
  
      barrel_shift     => FALSE,
-     bit_seek         => FALSE,
      bit_flip         => FALSE,
  
      skip_on_bit      => TRUE,
@@ -111,7 +105,6 @@ package y1a_config is
 --   barrel_shift     => TRUE,  -- not implemented yet
      barrel_shift     => FALSE,
 
-     bit_seek         => TRUE,
      bit_flip         => TRUE,
  
      skip_on_bit      => TRUE,

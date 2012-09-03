@@ -209,6 +209,8 @@ architecture arch1 of y1a_core is
   signal ffb_dat    : std_logic_vector(5 downto 0);
   signal bitcnt_dat : std_logic_vector(5 downto 0);
   signal flip_dat   : std_logic_vector(ALU_MSB downto 0);
+
+  signal ext_dat    : std_logic_vector(ALU_MSB downto 0);
   
   --
   -- immediate constant generation
@@ -351,7 +353,7 @@ architecture arch1 of y1a_core is
   alias bra_long   : std_logic is ireg(11);
   alias ret_type   : std_logic is ireg(10);
   alias call_type  : std_logic is ireg(10);
-  alias dslot      : std_logic is ireg(9);
+  alias dslot_null : std_logic is ireg(9);
   alias bra_offset : std_logic_vector(8 downto 0) is ireg(8 downto 0);
 
   alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
@@ -645,36 +647,61 @@ begin
 
   ------------------------------------------------------------------------------
   --
+  -- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
+  --
   -- bit seek instructions ( find first bit, bit count )
   --
   ------------------------------------------------------------------------------
 
-  GT_seek: if CFG.bit_seek generate
-    begin
+--   GT_seek: if CFG.bit_seek generate
+--     begin
+-- 
+--       I_ffb: ffb
+--         port map
+--          (
+--            din   => bin,
+--            first => ffb_dat
+--          );
+-- 
+--       I_bitcnt: bitcnt
+--         port map
+--          (
+--            din  => bin,
+--            cnt  => bitcnt_dat
+--          );
+--   
+--     end generate GT_seek;
+-- 
+--   GF_seek: if NOT CFG.bit_seek generate
+--     begin
+-- 
+--       ffb_dat    <= ( others => '0' );
+--       bitcnt_dat <= ( others => '0' );
+-- 
+--     end generate GF_seek;
 
-      I_ffb: ffb
-        port map
-         (
-           din   => bin,
-           first => ffb_dat
-         );
+  ------------------------------------------------------------------------------
+  --
+  -- reg-reg sign/zero extension
+  --
+  ------------------------------------------------------------------------------
 
-      I_bitcnt: bitcnt
-        port map
-         (
-           din  => bin,
-           cnt  => bitcnt_dat
-         );
-  
-    end generate GT_seek;
+  I_rr_ext: reg_extend
+    generic map
+      ( CFG          => CFG )
+    port map
+      (   
+        inst_fld   => inst_fld,  
 
-  GF_seek: if NOT CFG.bit_seek generate
-    begin
+        mem_size   => mem_size,  
+        mem_sign   => mem_sign,   
 
-      ffb_dat    <= ( others => '0' );
-      bitcnt_dat <= ( others => '0' );
+        din        => bin,
+                  
+        ext_out    => ext_dat
+      );
 
-    end generate GF_seek;
+
 
   ------------------------------------------------------------------------------
   --
@@ -712,16 +739,16 @@ begin
   I_pcr_calc: pcr_calc
     port map
       (
-        inst_fld  => inst_fld,  
+        inst_fld   => inst_fld,  
 
-        dslot     => dslot,
-        call_type => call_type,
-        ext_bit   => ext_bit,  
-        ext_grp   => ext_grp,  
+        dslot_null => dslot_null,
+        call_type  => call_type,
+        ext_bit    => ext_bit,  
+        ext_grp    => ext_grp,  
 
-        pc_reg_p1 => pc_reg_p1, 
+        pc_reg_p1  => pc_reg_p1, 
                   
-        pcr_addr  => pcr_addr
+        pcr_addr   => pcr_addr
       );
 
 
@@ -780,9 +807,14 @@ begin
 
              else  ( ALU_MSB downto 12 => ireg(11) ) & ireg(11 downto 0) when ( inst_fld = OPM_IMM )
 
-             -- BMD hardcoded 32 bit sign/zero extend
-             else ( ALU_MSB downto 6 => ffb_dat(5) ) & ffb_dat   when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') AND (misc_grp = MISC_FFB) 
-             else ( ALU_MSB downto 6 => '0' ) & bitcnt_dat       when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') AND (misc_grp = MISC_CNTB) 
+--
+-- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
+--
+--             -- BMD hardcoded 32 bit sign/zero extend
+--             else ( ALU_MSB downto 6 => ffb_dat(5) ) & ffb_dat   when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') AND (misc_grp = MISC_FFB) 
+--             else ( ALU_MSB downto 6 => '0' ) & bitcnt_dat       when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') AND (misc_grp = MISC_CNTB) 
+
+             else ext_dat when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') 
 
              -- anything left in MISC should be a normal shift/rotate
              else  shift_dat    when  ( inst_fld  = OPA_MISC ) 
@@ -924,7 +956,7 @@ begin
   --
   -- re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 
@@ -967,12 +999,12 @@ begin
 
           when OPC_BR =>
             next_pc       <= pc_reg_p1 + ext_bra_offset(PC_MSB downto 0);
-            next_null_sr  <= NOT dslot & B"000_0000";
+            next_null_sr  <= dslot_null & B"000_0000";
 
           when OPC_EXT =>
             if (ext_grp = EXT_JUMP) AND (ext_bit = '1' ) then
               next_pc       <= ain(PC_MSB downto 0);
-              next_null_sr  <= NOT dslot & B"000_0000";
+              next_null_sr  <= dslot_null & B"000_0000";
 
             elsif (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) then
               next_pc       <= rsp_pc;
@@ -1000,12 +1032,12 @@ begin
               --   Otherwise an interrupted branch delay slot won't work.
               --
 
-              -- ??  load next_null sr with dslot & stacked bits of saved null 
+              -- ??  load next_null sr with dslot_null & stacked bits of saved null 
               -- state for an rti ( was top bit was already used when stacked ) ??
               if ( ret_type = '1' ) then 
-                next_null_sr  <= NOT dslot & rsp_sr(SR_MSB-1 downto SR_MSB-7);
+                next_null_sr  <= dslot_null & rsp_sr(SR_MSB-1 downto SR_MSB-7);
               else
-                next_null_sr  <= NOT dslot & B"000_0000";
+                next_null_sr  <= dslot_null & B"000_0000";
               end if;
 
 --            -- this pops ex_null too early: pops old SR while executing RTI branch slot,

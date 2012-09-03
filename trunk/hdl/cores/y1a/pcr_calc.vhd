@@ -37,7 +37,7 @@ entity pcr_calc is
     (   
       inst_fld       : in  std_logic_vector(ID_MSB downto 0);
 
-      dslot          : in  std_logic;
+      dslot_null     : in  std_logic;
 
       call_type      : in  std_logic;
       ext_bit        : in  std_logic;
@@ -75,10 +75,10 @@ begin
 
   --
   -- return address calculation:
-  --   add 2 ( one instruction  ) when dslot = 0  ( return to instruction in delay slot )
-  --   add 4 ( two instructions ) when dslot = 1  ( return to instruction after delay slot )
+  --   add 2 ( one instruction  ) when dslot_null = 1  ( return to instruction in delay slot )
+  --   add 4 ( two instructions ) when dslot_null = 0  ( return to instruction after delay slot )
   --
-  pcr_offset <= ( ALU_MSB downto 3 => '0' ) & dslot & (NOT dslot) & '0'
+  pcr_offset <= ( ALU_MSB downto 3 => '0' ) & (NOT dslot_null) & dslot_null  & '0'
     when  dcd_CALL
 
     else  ( others => '0')
