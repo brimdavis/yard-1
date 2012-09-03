@@ -123,7 +123,26 @@ package y1a_comps is
       );
   end component;
 
-  
+
+  component reg_extend  is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+    port 
+      (   
+        inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+
+        mem_size   : in  std_logic_vector(1 downto 0);
+        mem_sign   : in  std_logic;
+                  
+        din        : in  std_logic_vector(ALU_MSB downto 0);
+                  
+        ext_out    : out std_logic_vector(ALU_MSB downto 0)
+      );
+  end component;
+
+
   component flip is
     port 
       (   
@@ -158,16 +177,16 @@ package y1a_comps is
   component pcr_calc is
      port
        (   
-         inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+         inst_fld   : in  std_logic_vector(ID_MSB downto 0);
 
-         dslot     : in  std_logic;
-         call_type : in  std_logic;
-         ext_bit   : in  std_logic;
-         ext_grp   : in  std_logic_vector(3 downto 0);
+         dslot_null : in  std_logic;
+         call_type  : in  std_logic;
+         ext_bit    : in  std_logic;
+         ext_grp    : in  std_logic_vector(3 downto 0);
 
-         pc_reg_p1 : in  std_logic_vector(PC_MSB downto 0);
+         pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
        
-         pcr_addr  : out std_logic_vector(ALU_MSB downto 0)
+         pcr_addr   : out std_logic_vector(ALU_MSB downto 0)
        );
 
   end component;

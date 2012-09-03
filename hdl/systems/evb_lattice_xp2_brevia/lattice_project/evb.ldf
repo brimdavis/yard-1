@@ -2,7 +2,7 @@
 <BaliProject version="1.3" title="evb" device="LFXP2-5E-6TN144C" default_implementation="impl_1">
     <Options/>
     <Implementation title="impl_1" dir="impl_1" description="impl_1" default_strategy="Strategy1">
-        <Options def_top="evb"/>
+        <Options/>
         <Source name="../../../cores/m_uart/m_uart_pkg.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -88,6 +88,9 @@
             <Options/>
         </Source>
         <Source name="../../../cores/y1a/pcr_calc.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="../../../cores/y1a/reg_extend.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../evb.lpf" type="Logic Preference" type_short="LPF">

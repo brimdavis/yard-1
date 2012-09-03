@@ -6,7 +6,12 @@ call v control\bra1
 call v control\bsr1
 call v control\jmp1
 call v control\jsr1
+
+:: 
+:: lbra address calculation prefix instruction not implemented yet
+:: 
 ::call v control\lbra1
+
 call v control\skip1
 call v control\skip2
 call v control\skip3
@@ -17,8 +22,15 @@ call v control\spam1
 call v control\when
 
 call v alu\addsub1
-call v alu\bitsy1
-call v alu\bitsy2
+
+::
+:: ff1 & cnt1 are currently broken during ext addition
+::
+::call v alu\bitsy1
+::call v alu\bitsy2
+
+call v alu\ext1
+
 call v alu\flip
 call v alu\logic1
 call v alu\mov1
