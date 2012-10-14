@@ -1,7 +1,6 @@
 --
--- <debounce_tick.vhd>
+-- <bouncify.vhd>
 --
-
 ---------------------------------------------------------------
 --
 -- YARD-1 Design Files copyright (c) 2000-2012, Brian Davis
@@ -32,10 +31,7 @@
 -----------------------------------------------------------------
 
 --
--- tick generator for switch/button debouncer
---
---   - generates internal clock enable, typically 100 Hz, used as debounce timing source
---   - creates closest power-of-two divider equal to or slower than the requested frequency
+-- simulate switch bounce by XORing data with noise during bounce time
 --
 
 library ieee;
@@ -44,68 +40,61 @@ library ieee;
   use ieee.math_real.all;
                                 
 
-entity debounce_tick is
+entity bouncify is
   generic
     (
-      CLK_FREQ  : real := 50_000_000.0;
-      TICK_FREQ : real :=        100.0
+      BOUNCE_DURATION : time;
+      NOISE_MIN_TIME  : time;
+      NOISE_MAX_TIME  : time;
+      SEED            : positive
     );
 
   port 
-    (        
-      clk       : in   std_logic;
-      tick_en   : out  std_logic
+    ( 
+      signal din      : in  std_logic; 
+      signal dout     : out std_logic
     );
 
-end debounce_tick;
+end bouncify;
 
 
+architecture arch1 of bouncify is
 
-architecture arch1 of debounce_tick is
-
-  --
-  -- compute counter length to get near desired tick frequency 
-  -- ( closest power-of-two division having frequency <= TICK_FREQ )
-  --
-  constant CNT_BITS : natural := natural( ceil( log2( CLK_FREQ / TICK_FREQ ) ) );
-
-  --
-  -- sum field is one bit wider than the counter to allow extraction of the MSB carry out
-  --
-  constant CNT_MSB  : natural := CNT_BITS - 1;
-  constant SUM_MSB  : natural := CNT_BITS;
-
-  --
-  -- tick counter and sum signals used to generate tick enable output
-  --
-  signal tick_cnt   : unsigned(CNT_MSB downto 0) := ( others => 'L');
-  signal tick_sum   : unsigned(SUM_MSB downto 0);
-
-  signal tick_carry : std_logic := 'L';
-
+signal noise      : std_logic := 'L'; 
+signal noise_gate : std_logic := 'L'; 
 
 begin
 
-  --
-  -- tick counter and clock enable
-  --
-  process
+  dout <= din XOR ( noise_gate AND noise );
+
+  P_gate : process (din)
     begin
-
-      wait until rising_edge(clk);
-
-      tick_cnt   <= tick_sum(tick_cnt'left downto 0);
-      tick_carry <= tick_sum(tick_sum'left);
-
-      -- extra register on output
-      tick_en  <= tick_carry;
-
+      if rising_edge(din) OR falling_edge(din) then
+        noise_gate  <= '1', '0' after BOUNCE_DURATION;
+      end if;
     end process;
 
   --
-  -- sum coded separately from register in order to pull out MSB carry
+  -- generate bounded random noise as a stand-in for switch bounce ( not a good physical model of bounce )
   --
-  tick_sum <= ( '0' & tick_cnt ) + 1;
+  P_noise : process
+    variable seed1        : positive := SEED;
+    variable seed2        : positive;
+    variable noise_scale  : real;
+
+    begin
+
+      loop
+
+        uniform( seed1 => seed1, seed2 => seed2, x => noise_scale );
+
+        wait for noise_scale * (NOISE_MAX_TIME - NOISE_MIN_TIME) + NOISE_MIN_TIME;        
+
+        noise <= NOT noise;
+
+      end loop;
+
+    end process;
 
 end arch1;
 
