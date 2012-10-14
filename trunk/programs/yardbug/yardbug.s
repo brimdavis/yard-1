@@ -98,6 +98,8 @@ FLAG_RX_AVAIL   equ 14
     org     $0
 
 start:
+; put NOP back in to diagnose intermittent HW reset problem
+    nop
 
 ; UART addresses
     mov     r9, #UART    

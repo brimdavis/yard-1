@@ -1,24 +1,38 @@
 [timestart] 0
-[size] 1600 1144
+[size] 1419 1040
 [pos] -1 -1
-*-46.285427 213100000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-46.481255 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.testbench.
 @28
-top.testbench.tick_en
 top.testbench.clk
-@800023
-#{top.testbench.sw[7:0]} top.testbench.sw[7] top.testbench.sw[6] top.testbench.sw[5] top.testbench.sw[4] top.testbench.sw[3] top.testbench.sw[2] top.testbench.sw[1] top.testbench.sw[0]
 @29
-top.testbench.sw[7]
-top.testbench.sw[6]
-top.testbench.sw[5]
-top.testbench.sw[4]
-top.testbench.sw[3]
-top.testbench.sw[2]
-top.testbench.sw[1]
-top.testbench.sw[0]
-@1001201
+top.testbench.tick_en
+@800022
+#{top.testbench.sws[7:0]} top.testbench.sws[7] top.testbench.sws[6] top.testbench.sws[5] top.testbench.sws[4] top.testbench.sws[3] top.testbench.sws[2] top.testbench.sws[1] top.testbench.sws[0]
+@28
+top.testbench.sws[7]
+top.testbench.sws[6]
+top.testbench.sws[5]
+top.testbench.sws[4]
+top.testbench.sws[3]
+top.testbench.sws[2]
+top.testbench.sws[1]
+top.testbench.sws[0]
+@1001200
+-group_end
+@800022
+#{top.testbench.swb[7:0]} top.testbench.swb[7] top.testbench.swb[6] top.testbench.swb[5] top.testbench.swb[4] top.testbench.swb[3] top.testbench.swb[2] top.testbench.swb[1] top.testbench.swb[0]
+@28
+top.testbench.swb[7]
+top.testbench.swb[6]
+top.testbench.swb[5]
+top.testbench.swb[4]
+top.testbench.swb[3]
+top.testbench.swb[2]
+top.testbench.swb[1]
+top.testbench.swb[0]
+@1001200
 -group_end
 @800022
 #{top.testbench.sw_press[7:0]} top.testbench.sw_press[7] top.testbench.sw_press[6] top.testbench.sw_press[5] top.testbench.sw_press[4] top.testbench.sw_press[3] top.testbench.sw_press[2] top.testbench.sw_press[1] top.testbench.sw_press[0]
@@ -57,19 +71,18 @@ top.testbench.sw_state[3]
 top.testbench.sw_state[2]
 top.testbench.sw_state[1]
 top.testbench.sw_state[0]
-@800200
+@c00200
 -tb_sw5
 @28
 top.testbench.tb_sw5.sw_in
 top.testbench.tb_sw5.sw_x0
 top.testbench.tb_sw5.sw_x1
-top.testbench.tb_sw5.sw_x2
 top.testbench.tb_sw5.sw_dat
-top.testbench.tb_sw5.sw_dat_z0
+top.testbench.tb_sw5.sw_stable
 top.testbench.tb_sw5.sw_press
 top.testbench.tb_sw5.sw_release
 top.testbench.tb_sw5.sw_state
-@1000200
+@1401200
 -tb_sw5
 @c00200
 -tb_sw6
@@ -77,9 +90,8 @@ top.testbench.tb_sw5.sw_state
 top.testbench.tb_sw6.sw_in
 top.testbench.tb_sw6.sw_x0
 top.testbench.tb_sw6.sw_x1
-top.testbench.tb_sw6.sw_x2
 top.testbench.tb_sw6.sw_dat
-top.testbench.tb_sw6.sw_dat_z0
+top.testbench.tb_sw6.sw_stable
 top.testbench.tb_sw6.sw_press
 top.testbench.tb_sw6.sw_release
 top.testbench.tb_sw6.sw_state

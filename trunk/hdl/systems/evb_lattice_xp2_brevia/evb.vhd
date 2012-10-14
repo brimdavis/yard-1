@@ -144,16 +144,16 @@ begin
   begin
 
     I_tick : debounce_tick 
-      port map ( clk => clk, tick_en => tick_en );
+      generic map ( CLK_FREQ => 50_000_000.0, TICK_FREQ => 100.0 )
+      port map    ( clk => clk, tick_en => tick_en );
 
     I_rst_sw: debounce 
-      generic map ( SW_INVERT => '1' )
+      generic map ( SW_ACTIVE_SENSE => '0' )
       port map ( clk => clk, tick_en => tick_en, sw_in => pb(3), sw_press => open, sw_release => open, sw_state => pb3_debounce);
 
     I_irq_sw: debounce 
-      generic map ( SW_INVERT => '0' )
+      generic map ( SW_ACTIVE_SENSE => '0' )
       port map ( clk => clk, tick_en => tick_en, sw_in => pb(2), sw_press => pb2_pulse, sw_release => open, sw_state => open );
-
 
     rst_l <= NOT pb3_debounce;
     irq_l <= NOT pb2_pulse;
