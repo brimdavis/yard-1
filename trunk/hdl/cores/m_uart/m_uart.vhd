@@ -4,10 +4,30 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- YARD-1 Design Files copyright (c) 2000-2012, Brian Davis
+-- All rights reserved.
 --
--- Code released under the terms of the BSD 2-clause license
--- see license/bsd_2-clause.txt
+-- Redistribution and use in source and binary forms, with or without
+-- modification, are permitted provided that the following conditions are met:
+--
+--    * Redistributions of source code must retain the above copyright
+--      notice, this list of conditions and the following disclaimer.
+--
+--    * Redistributions in binary form must reproduce the above copyright 
+--      notice, this list of conditions and the following disclaimer in the 
+--      documentation and/or other materials provided with the distribution.
+--
+-- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+-- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+-- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+-- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+-- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+-- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+-- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+-- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+-- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+-- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+-- POSSIBILITY OF SUCH DAMAGE.
 --
 -----------------------------------------------------------------
 
@@ -33,7 +53,6 @@
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
-  use ieee.std_logic_unsigned."+";
                                 
 
 entity m_uart is
@@ -88,7 +107,7 @@ architecture arch1 of m_uart is
   -- rx shift registers & control
   --
   signal rx_sr         : std_logic_vector(10 downto 0) := ( others => '1');
-  alias  rx_done       : std_logic is rx_sr(0);
+  signal rx_done       : std_logic;
 
   signal rx_rdy_local  : std_logic := '0'; 
 
@@ -105,10 +124,20 @@ architecture arch1 of m_uart is
   --
   -- baud phase 
   --
-  signal baud_phase     : std_logic_vector(3 downto 0) := ( others => '0');
-  signal rx_mid_phase   : std_logic_vector(3 downto 0);
+  signal baud_phase     : unsigned(3 downto 0) := ( others => '0');
+  signal rx_mid_phase   : unsigned(3 downto 0);
 
-  signal en_1x         : std_logic;	
+  signal en_1x         : std_logic;
+
+  --
+  -- synthesis attribute to keep the synchronizer registers
+  -- hopefully, this will prevent the synchronizer from being 'optimized' into an SRL
+  --
+  -- syn_keep should be recognized by both XST and Synplify ( unconfirmed )
+  --
+  attribute syn_keep : boolean;
+  attribute syn_keep of rx_x0 : signal is TRUE;
+  attribute syn_keep of rx_x1 : signal is TRUE;
 
 
 begin
@@ -216,7 +245,7 @@ begin
 
       --
       -- two stage synchronizer
-      --  reset to avoid srl inference
+      --  reset to avoid srl inference ( doesn't always work with newer versions of XST, added attributes )
       --
       if (s_rst = '1')  then
         rx_x0 <= '1';
@@ -274,11 +303,14 @@ begin
 
       elsif (en_16x = '1') AND (rx_done = '1') then
         --
-        -- falling edge:
-        --   set sample phase to current baud phase + 8 
-        --   set MSB of shift register (used as done flag when shifted to LSB)
+        -- not receiving: look for a start bit
         --
         if ( ( rx_dat_z1 = '1' ) AND ( rx_dat_z0 = '0' ) ) then
+          --
+          -- falling edge:
+          --   set sample phase to current baud phase + 8 
+          --   set MSB of shift register (used as done flag when shifted to LSB)
+          --
           rx_mid_phase <= baud_phase XOR X"8";
           rx_sr  <= ( rx_sr'left => '1',  others => '0' );
         end if;
@@ -292,7 +324,7 @@ begin
 
       elsif (rx_rdy_local = '0') AND (rx_done = '1') AND (rx_sr(10) = '1') AND (rx_sr(1) = '0') then
         --
-        -- if rdy flag not already set AND finished shifting AND have valid start/stop framing bits :
+        -- rdy flag not already set AND finished shifting AND have valid start/stop framing bits :
         --    set rx flag 
         --    copy rx shift register to read data register
         --
@@ -306,9 +338,14 @@ begin
 
     end process;
 
- --
- -- connect local version of rx_rdy to output port
- --
- rx_rdy <= rx_rdy_local;
+  --
+  -- shift register LSB doubles as done flag 
+  --
+  rx_done <= rx_sr(0);
+
+  --
+  -- connect local version of rx_rdy to output port
+  --
+  rx_rdy <= rx_rdy_local;
 
 end arch1;

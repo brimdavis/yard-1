@@ -1,5 +1,5 @@
 --
--- <debounce_tick.vhd>
+-- <simple_baud_gen.vhd>
 --
 
 ---------------------------------------------------------------
@@ -32,69 +32,66 @@
 -----------------------------------------------------------------
 
 --
--- tick generator for switch/button debouncer
---
---   - generates internal clock enable, typically 100 Hz, used as debounce timing source
---   - creates closest power-of-two divider equal to or slower than the requested frequency
+-- simple fixed baud rate generator (counter based) 
+-- generates output enable at 16x BAUD_RATE
 --
 
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
   use ieee.math_real.all;
-                                
 
-entity debounce_tick is
+entity simple_baud_gen is
   generic
     (
       CLK_FREQ  : real := 50_000_000.0;
-      TICK_FREQ : real :=        100.0
+      BAUD_RATE : real :=     19_200.0
     );
 
   port 
     (        
-      clk       : in   std_logic;
-      tick_en   : out  std_logic
+      clk       : in  std_logic;
+      en_16x    : out std_logic
     );
 
-end debounce_tick;
+end simple_baud_gen;
 
 
-architecture arch1 of debounce_tick is
+architecture arch1 of simple_baud_gen is
 
   --
-  -- compute counter length to get near desired tick frequency 
-  -- ( closest power-of-two division having frequency <= TICK_FREQ )
+  -- compute required counter length and init value
   --
-  constant CNT_BITS : natural := natural( ceil( log2( CLK_FREQ / TICK_FREQ ) ) );
+  -- example calc:
+  --
+  --  50 MHz / ( 16 x 19,200 ) => 162.7 ~= 163 
+  --  counter counts from N-1 .. 0, so init value is 162 => X"A2" 
+  --
+  constant CLK_DIVIDER  : real     := CLK_FREQ / ( 16.0 * BAUD_RATE ) ;
 
-  --
-  -- sum field is one bit wider than the counter to allow extraction of the MSB carry out
-  --
-  constant CNT_MSB  : natural := CNT_BITS - 1;
-  constant SUM_MSB  : natural := CNT_BITS;
+  constant CNT_BITS     : natural  := natural( ceil( log2(CLK_DIVIDER) ) );
+  constant CNT_INIT     : unsigned := to_unsigned( integer(round(CLK_DIVIDER-1.0)), CNT_BITS);
 
-  --
-  -- tick register 
-  --
-  signal tick_reg   : unsigned(SUM_MSB downto 0) := ( others => 'L');
-
+  signal   baud_cnt     : unsigned(CNT_BITS-1 downto 0) := ( others => 'L');
 
 begin
 
-  process
+  P_bc: process
     begin
       wait until rising_edge(clk);
 
       --
-      -- registered carry & counter
+      -- down counter with auto reload at zero
       --
-      tick_reg <= ( '0' & tick_reg(CNT_MSB downto 0) ) + 1;
+      if ( baud_cnt = ( baud_cnt'range => '0') ) then
+        baud_cnt  <= CNT_INIT;
+        en_16x    <= '1';
 
-      --
-      -- registered output signal
-      --
-      tick_en  <= tick_reg(tick_reg'left);
+      else
+        baud_cnt  <= baud_cnt - 1;
+        en_16x    <= '0';
+
+      end if;
 
     end process;
 
