@@ -106,7 +106,6 @@ architecture evb1 of evb is
   --
   -- uart support signals
   --
-  signal baud_div : std_logic_vector(7 downto 0) := ( others => '0');
   signal baud_16x : std_logic;  
 
   signal tx_rdy   : std_logic;  
@@ -290,27 +289,19 @@ begin
   dcd_uart_rd_done <= dcd_uart_rd;
 
   --
-  -- TODO: add programmable baud rate generator w/automated clock-to-baud counter calculation
+  -- instantiate simple baud rate divider
   --
-  -- fixed rate clock divider for UART baud rate
-  -- runs at 16x desired 19200 baud 
-  --
-  --  50 MHz / ( 19,200 x 16 ) => 162.7 ~= 163 
-  --  counter counts from N-1 .. 0, so load value is 162 => X"A2" 
-  --
-  P_bc: process
-    begin
-      wait until rising_edge(clk);
- 
-      if ( baud_div = X"00" ) then
-        baud_div  <= X"a2";
-        baud_16x  <= '1';
-      else
-        baud_div  <= baud_div - 1;
-        baud_16x  <= '0';
-      end if;
- 
-    end process;
+  E_baud_gen: entity work.simple_baud_gen
+    generic map
+      (
+        CLK_FREQ  => 50_000_000.0,
+        BAUD_RATE =>     19_200.0
+      )
+    port map
+      (        
+        clk       => clk,
+        en_16x    => baud_16x
+      );
 
 
   ---------------------------------------------------------------
