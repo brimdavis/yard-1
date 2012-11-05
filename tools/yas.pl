@@ -523,20 +523,24 @@ sub init_label
 #
 sub process_label
   {
+
+    # remove any trailing ':'
+    if ($label_field  =~ /:$/) 
+      {
+        chop $label_field;
+      }
+
     # TODO: add a check for any illegal characters in label name
+    if ( $label_field =~ tr/_.0-9A-Za-z//cd ) 
+      {
+        do_error("Illegal characters in label name");
+      }
 
     # local label : add prefix to label
     if ($label_field  =~ /^\./) 
       {
         $label_field = $label_prefix . $label_field; 
       } 
-
-    # global label: remove colon, set prefix 
-    elsif ($label_field  =~ /:$/) 
-      {
-        chop $label_field;
-        $label_prefix = $label_field;
-      }
 
     # normal label : set prefix
     else
@@ -681,17 +685,28 @@ sub emit_op
 # directive hash
 #  for use with new directive dispatch code 
 #
-
 my %directive_defs =
   (
-    'org'    =>  { type => 'DIRECTIVE' , ps => \&ps_org,    name => "ORiGin",  blab => "location counter set to address N"  },
-    'align'  =>  { type => 'DIRECTIVE' , ps => \&ps_align,  name => "ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
- 
-    'end'    =>  { type => 'DIRECTIVE' , ps => \&ps_end,    name => "END",     blab => "end assembly"  },
- 
-    'equ'    =>  { type => 'DIRECTIVE' , ps => \&ps_equ,    name => "EQUate",  blab => "equate symbol = value"  },
+    'org'      =>  { type => 'DIRECTIVE' , ps => \&ps_org,     name => "ORiGin",   blab => "location counter set to address N"  },
+    '.org'     =>  { type => 'DIRECTIVE' , ps => \&ps_org,     name => ".ORiGin",  blab => "location counter set to address N"  },
 
-    '.verify' => { type => 'DIRECTIVE' , ps => \&ps_verify, name => ".VERIFY", blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
+    'align'    =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => "ALIGN",    blab => "location counter forced to next modulo N byte boundary"  },
+    '.align'   =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => ".ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
+ 
+    'end'      =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => "END",      blab => "end assembly"  },
+ 
+    'equ'      =>  { type => 'DIRECTIVE' , ps => \&ps_equ,     name => "EQUate",   blab => "equate symbol = value"  },
+
+    '.global'  =>  { type => 'DIRECTIVE' , ps => \&ps_global,  name => ".SECTION", blab => "stub: global directive"  },
+
+    '.section' =>  { type => 'DIRECTIVE' , ps => \&ps_section, name => ".SECTION", blab => "stub: section control directive"  },
+
+    '.set'     =>  { type => 'DIRECTIVE' , ps => \&ps_set,     name => ".SET",     blab => "stub: assembler settings"  },
+
+    '.verify'  =>  { type => 'DIRECTIVE' , ps => \&ps_verify,  name => ".VERIFY",  blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
+
+    '.error'   =>  { type => 'DIRECTIVE' , ps => \&ps_error,   name => ".ERROR",   blab => "user error message"  },
+    '.warn'    =>  { type => 'DIRECTIVE' , ps => \&ps_warn,    name => ".WARN",    blab => "user warning message"  },
 
   );
 
@@ -790,6 +805,62 @@ sub ps_equ
       }
   }
 
+sub ps_global
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: stub for .section directive
+    #
+    do_warn("directive stub: .global not implemented yet");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+sub ps_section
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: stub for .section directive
+    #
+    do_warn("directive stub: .section not implemented yet");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+sub ps_set
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: stub for .set directive
+    #
+    do_warn("directive stub: .set not implemented yet");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
 
 sub ps_verify
   {
@@ -862,6 +933,49 @@ sub ps_verify
       } 
   }
 
+
+sub ps_error
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: parse user error string from raw line and include it in the error message
+    #
+    do_error("User error");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+sub ps_warn
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: parse user warning string from raw line and include it in the warning message
+    #
+    do_warn("User warning");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+
+#                 
+# old-style directives using original parser fields
+#                 
 my %old_directive_defs = 
   (
     "dc.s"    => { type => 'DIRECTIVE' },
@@ -870,7 +984,6 @@ my %old_directive_defs =
     "dc.w"    => { type => 'DIRECTIVE' },
     "dc.q"    => { type => 'DIRECTIVE' },
   );
-
 
 #                 
 # old directives parser
