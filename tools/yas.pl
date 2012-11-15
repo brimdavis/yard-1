@@ -1169,7 +1169,7 @@ sub parse_args
     my $k                 = 0;
 
 
-    my $usage = "\nUsage: yas.pl {-h|--help} {-o|--output output_base_filename} asm_file_name[.asm|.s] {another_asm_file[.asm|.s]}\n";
+    my $usage = "\nUsage: yas.pl {-h|--help} {-o|--output output_base_filename} asm_file_name[.s|.asm] {another_asm_file[.s|.asm]}\n";
     
     my $help2 = "
     Additional help options : 
