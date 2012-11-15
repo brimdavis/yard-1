@@ -772,77 +772,6 @@ sub ps_ori
   }
 
 
-#--------------------------
-# IMM12: IMM12 #imm12
-#--------------------------
-%ops_imm12 = 
-  (
-    'imm12'   =>  { type =>  'IMM12' , opc => '1011iiiiiiiiiiii' , ps => \&ps_imm12, name => "IMMediate, 12 bit" }
-  );
-
-
-# add to HOH opcode table
-@ops{keys %ops_imm12} = values %ops_imm12;
-
-# ORI parser
-sub ps_imm12
-  {
-    my ( $pass      ) = shift;
-    my ( $label     ) = shift;
-    my ( $operation ) = shift;
-    my ( @operands  ) = @_;
-
-    my $status;
-    my $offset;
-    my $imm;
-
-    my $opcode = $ops{$operation}{opc};
-
-    check_argument_count( $#operands, 1 );
-
-    if ($pass == 2)
-      {
-        # check if opb is an immediate constant
-        if ( $operands[0] =~ /^#(.+)$/ )
-          { 
-            ($status, $offset) = extract_word($1);
-          }
-    
-        else
-          {
-            do_error("Expecting immediate constant");
-            $status = -1;
-          }
-    
-        if ( ($pass == 2) & ($status != 0 ) )
-          {
-            do_error("Undefined immediate constant");
-
-            $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
-          }
-
-        else
-          {
-            $imm = sprintf "%012b", $offset;
-
-            #
-            # %012b format overflows format field for negative integers, truncate string to 12 bits
-            # FIXME: should check for overflow here
-            #
-            $imm = substr( $imm, length($imm)-12, 12);
-
-            $opcode = stuff_op_field( $opcode, 'i', $imm );
-    
-            if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
-     
-          }
-      }
-
-    emit_op($opcode);
-    
-   }
-
-
 #----------------------
 # MEM: OP Ra {.imm}(Rb)
 #----------------------
@@ -1019,6 +948,78 @@ sub ps_mem
 
 
 
+#--------------------------
+# IMM12: IMM12 #imm12
+#--------------------------
+%ops_imm12 = 
+  (
+    'imm12'   =>  { type =>  'IMM12' , opc => '1011iiiiiiiiiiii' , ps => \&ps_imm12, name => "IMMediate, 12 bit" }
+  );
+
+
+# add to HOH opcode table
+@ops{keys %ops_imm12} = values %ops_imm12;
+
+# ORI parser
+sub ps_imm12
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $status;
+    my $offset;
+    my $imm;
+
+    my $opcode = $ops{$operation}{opc};
+
+    check_argument_count( $#operands, 1 );
+
+    if ($pass == 2)
+      {
+        # check if opb is an immediate constant
+        if ( $operands[0] =~ /^#(.+)$/ )
+          { 
+            ($status, $offset) = extract_word($1);
+          }
+    
+        else
+          {
+            do_error("Expecting immediate constant");
+            $status = -1;
+          }
+    
+        if ( ($pass == 2) & ($status != 0 ) )
+          {
+            do_error("Undefined immediate constant");
+
+            $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
+          }
+
+        else
+          {
+            $imm = sprintf "%012b", $offset;
+
+            #
+            # %012b format overflows format field for negative integers, truncate string to 12 bits
+            # FIXME: should check for overflow here
+            #
+            $imm = substr( $imm, length($imm)-12, 12);
+
+            $opcode = stuff_op_field( $opcode, 'i', $imm );
+    
+            if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
+     
+          }
+      }
+
+    emit_op($opcode);
+    
+   }
+
+
+
 #----------------------
 # LDI: LDI EA
 #----------------------
@@ -1090,8 +1091,175 @@ sub ps_ldi
     emit_op($opcode);
     
   }
-     
 
+
+#--------------------------
+# IMM: IMM #immediate
+#
+#  macro-like mnemonic picks best constant encoding
+#
+#  TODO: LDI variant ( needs to record pass one size decision, also requires auto LDI tables )
+#
+#--------------------------
+%ops_imm = 
+  (
+    'imm'   =>  { type =>  'IMM' , opc => 'xxxxxxxxxxxxxxxx' , ps => \&ps_imm, name => "IMMediate, choose best encoding" }
+  );
+
+
+# add to HOH opcode table
+@ops{keys %ops_imm} = values %ops_imm;
+
+# ORI parser
+sub ps_imm
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $status;
+    my $offset;
+    my $imm;
+
+    my $opcode = $ops{$operation}{opc};
+
+    check_argument_count( $#operands, 1 );
+
+    if ($pass == 2)
+      {
+        # check if opb is an immediate constant
+        if ( $operands[0] =~ /^#(.+)$/ )
+          { 
+            ($status, $offset) = extract_word($1);
+          }
+    
+        else
+          {
+            do_error("Expecting immediate constant");
+            $status = -1;
+          }
+    
+        if ( ($pass == 2) & ($status != 0 ) )
+          {
+            do_error("Undefined immediate constant");
+
+            $opcode = $ops{'imm12'}{opc};
+            $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
+          }
+
+        #
+        # pass1 cases
+        #
+        if ( $pass == 1 )
+          {
+            if ( $status != 0 )
+              {
+                # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
+              }
+            else
+              {
+                # TODO: set flag based on value ( IMM5, IMM12, LDI )
+              }
+          }
+
+        #
+        # pass2 cases
+        #
+        if ( ($pass == 2) & ($status == 0 ) ) 
+          {
+
+           ###########
+           #
+           # five bit constant check, should make this a function
+           #
+
+           #
+           # look up offset in imm5 encoding hash
+           #
+           $invert_opb = 0;
+           $imm = $imm5_encode{sprintf("%08lx",$offset)};
+
+           #
+           # if that failed, look up NOT offset
+           #
+           if ( !$imm  ) 
+             {
+               $imm = $imm5_encode{sprintf("%08lx",~$offset)};
+               $invert_opb = 1;
+             }
+      
+           if ($D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
+
+           #
+           ###########
+
+           if ( $imm  )
+             #
+             # encoded 5 bit immediate
+             #
+             {
+               $opcode = $ops{'mov'}{opc};
+
+               #
+               # flip the NOT bit in opcode as needed
+               #   this should be another opcode field if parser is 
+               #   changed to split mnemonic into op & sub-op ( e.g. "mov", ".not" )
+               #
+               if ( $invert_opb )
+                 {
+                   if ( substr( $opcode, 4, 1 ) eq '0' )
+                     { substr( $opcode, 4, 1 ) = '1'; }
+                   else
+                     { substr( $opcode, 4, 1 ) = '0'; }                 
+                 }
+          
+               $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 )  );
+               $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
+               $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{'imm'}   );
+
+               if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
+             }
+
+           #
+           # imm12
+           #
+           elsif ( ($offset <= 4095) && ($offset >= -4096) )
+             {
+               $opcode = $ops{'imm12'}{opc};
+
+               $imm = sprintf "%012b", $offset;
+
+               #
+               # %012b format overflows format field for negative integers, truncate string to 12 bits
+               # FIXME: should check for overflow here
+               #
+               $imm = substr( $imm, length($imm)-12, 12);
+
+               $opcode = stuff_op_field( $opcode, 'i', $imm );
+       
+               if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
+     
+             }
+
+           #
+           # auto LDI entry
+           #
+           else
+             {
+               $opcode = $ops{'ldi'}{opc};
+               $opcode = stuff_op_field( $opcode, 'r', '000000000000' );
+   
+               do_error("Automatic generation of LDI table entry from \'imm\' is not implemented yet.");
+             }
+          }
+      }
+
+    emit_op($opcode);
+
+   }
+
+     
 
 #------------------------------------------------------------------------------
 # BRI: OP  ea9 | ea21
