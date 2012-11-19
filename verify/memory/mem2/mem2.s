@@ -130,10 +130,12 @@
 ;
 
 ;
-; store long 
+; store quad
 ;
 
-; read the first test word
+;
+; read the first test quad
+;
     ld      r0, 0(sp)   
 
 ; complement & write it back
@@ -144,6 +146,22 @@
     ld      r0, 0(sp)   
     nop
     .verify r0,#$aaaa_ffff
+
+;
+; read the third test quad
+;
+    ld      r0, 40(sp)   
+    nop
+    .verify r0,#$5555_000a
+
+; complement & write it back
+    not     r0
+    st      r0, 40(sp)
+
+; then read it back 
+    ld      r0, 40(sp)   
+    nop
+    .verify r0,#$aaaa_fff5
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;

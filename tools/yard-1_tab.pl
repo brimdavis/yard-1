@@ -1126,138 +1126,135 @@ sub ps_imm
 
     check_argument_count( $#operands, 1 );
 
-    if ($pass == 2)
-      {
-        # check if opb is an immediate constant
-        if ( $operands[0] =~ /^#(.+)$/ )
-          { 
-            ($status, $offset) = extract_word($1);
-          }
+    # check if opb is an immediate constant
+    if ( $operands[0] =~ /^#(.+)$/ )
+      { 
+        ($status, $offset) = extract_word($1);
+      }
     
+    else
+      {
+        do_error("Expecting immediate constant");
+        $status = -1;
+      }
+    
+    if ( ($pass == 2) & ($status != 0 ) )
+      {
+        do_error("Undefined immediate constant");
+
+        $opcode = $ops{'imm12'}{opc};
+        $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
+      }
+
+    #
+    # pass1 cases
+    #
+    if ( $pass == 1 )
+      {
+        if ( $status != 0 )
+          {
+            # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
+          }
         else
           {
-            do_error("Expecting immediate constant");
-            $status = -1;
-          }
-    
-        if ( ($pass == 2) & ($status != 0 ) )
-          {
-            do_error("Undefined immediate constant");
-
-            $opcode = $ops{'imm12'}{opc};
-            $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
-          }
-
-        #
-        # pass1 cases
-        #
-        if ( $pass == 1 )
-          {
-            if ( $status != 0 )
-              {
-                # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
-              }
-            else
-              {
-                # TODO: set flag based on value ( IMM5, IMM12, LDI )
-              }
-          }
-
-        #
-        # pass2 cases
-        #
-        if ( ($pass == 2) & ($status == 0 ) ) 
-          {
-
-           ###########
-           #
-           # five bit constant check, should make this a function
-           #
-
-           #
-           # look up offset in imm5 encoding hash
-           #
-           $invert_opb = 0;
-           $imm = $imm5_encode{sprintf("%08lx",$offset)};
-
-           #
-           # if that failed, look up NOT offset
-           #
-           if ( !$imm  ) 
-             {
-               $imm = $imm5_encode{sprintf("%08lx",~$offset)};
-               $invert_opb = 1;
-             }
-      
-           if ($D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
-
-           #
-           ###########
-
-           if ( $imm  )
-             #
-             # encoded 5 bit immediate
-             #
-             {
-               $opcode = $ops{'mov'}{opc};
-
-               #
-               # flip the NOT bit in opcode as needed
-               #   this should be another opcode field if parser is 
-               #   changed to split mnemonic into op & sub-op ( e.g. "mov", ".not" )
-               #
-               if ( $invert_opb )
-                 {
-                   if ( substr( $opcode, 4, 1 ) eq '0' )
-                     { substr( $opcode, 4, 1 ) = '1'; }
-                   else
-                     { substr( $opcode, 4, 1 ) = '0'; }                 
-                 }
-          
-               $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 )  );
-               $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
-               $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{'imm'}   );
-
-               if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
-             }
-
-           #
-           # imm12
-           #
-           elsif ( ($offset <= 4095) && ($offset >= -4096) )
-             {
-               $opcode = $ops{'imm12'}{opc};
-
-               $imm = sprintf "%012b", $offset;
-
-               #
-               # %012b format overflows format field for negative integers, truncate string to 12 bits
-               # FIXME: should check for overflow here
-               #
-               $imm = substr( $imm, length($imm)-12, 12);
-
-               $opcode = stuff_op_field( $opcode, 'i', $imm );
-       
-               if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
-     
-             }
-
-           #
-           # auto LDI entry
-           #
-           else
-             {
-               $opcode = $ops{'ldi'}{opc};
-               $opcode = stuff_op_field( $opcode, 'r', '000000000000' );
-   
-               do_error("Automatic generation of LDI table entry from \'imm\' is not implemented yet.");
-             }
+            # TODO: set flag based on value ( IMM5, IMM12, LDI )
           }
       }
 
-    emit_op($opcode);
+    #
+    # pass2 cases
+    #
+    if ( ($pass == 2) & ($status == 0 ) ) 
+      {
 
-   }
+        ###########
+        #
+        # five bit constant check, should make this a function
+        #
+
+        #
+        # look up offset in imm5 encoding hash
+        #
+        $invert_opb = 0;
+        $imm = $imm5_encode{sprintf("%08lx",$offset)};
+
+        #
+        # if that failed, look up NOT offset
+        #
+        if ( !$imm  ) 
+          {
+            $imm = $imm5_encode{sprintf("%08lx",~$offset)};
+            $invert_opb = 1;
+          }
+     
+        if ($D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
+
+        #
+        ###########
+
+        if ( $imm  )
+          #
+          # encoded 5 bit immediate
+          #
+          {
+            $opcode = $ops{'mov'}{opc};
+
+            #
+            # flip the NOT bit in opcode as needed
+            #   this should be another opcode field if parser is 
+            #   changed to split mnemonic into op & sub-op ( e.g. "mov", ".not" )
+            #
+            if ( $invert_opb )
+              {
+                if ( substr( $opcode, 4, 1 ) eq '0' )
+                  { substr( $opcode, 4, 1 ) = '1'; }
+                else
+                  { substr( $opcode, 4, 1 ) = '0'; }                 
+              }
+       
+            $opcode = stuff_op_field( $opcode, 't', substr( $imm, 0, 2 )  );
+            $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
+            $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{'imm'}   );
+
+            if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
+          }
+
+        #
+        # imm12
+        #
+        elsif ( ($offset <= 2047) && ($offset >= -2048) )
+          {
+            $opcode = $ops{'imm12'}{opc};
+
+            $imm = sprintf "%012b", $offset;
+
+            #
+            # %012b format overflows format field for negative integers, truncate string to 12 bits
+            # FIXME: should check for overflow here
+            #
+            $imm = substr( $imm, length($imm)-12, 12);
+
+            $opcode = stuff_op_field( $opcode, 'i', $imm );
+     
+            if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
+     
+          }
+
+        #
+        # auto LDI entry
+        #
+        else
+          {
+            $opcode = $ops{'ldi'}{opc};
+            $opcode = stuff_op_field( $opcode, 'r', '000000000000' );
+    
+            do_error("Automatic generation of LDI table entry from \'imm\' is not implemented yet.");
+          }
+
+     }
+
+    emit_op($opcode);
+  }
 
      
 
@@ -1298,8 +1295,9 @@ sub ps_bri
 
     my $status;
     my $offset;
-    my $offset_str;
-    my $imm;
+
+    my $pcr_offset;
+    my $pcr_offset_str;
 
     my $opcode = $ops{$operation}{opc};
 
@@ -1315,59 +1313,68 @@ sub ps_bri
       }
     
 
-    # parsing hack, check for leading @+
-    if($operands[0] =~ /^\@\+(.+)$/)   
-      {
-        ($status, $offset) = extract_word($1);
-      }
-
-    # parsing hack, check for leading @-
-    elsif($operands[0] =~ /^\@\-(.+)$/)  
-      {
-        ($status, $offset) = extract_word($1);
-        $offset = -$offset;
-      }
-    # otherwise, calculate offset from current PC to address
-    else 
-      {
-        ($status, $offset) = extract_word($operands[0]);
-        $offset = $offset - get_address();
-      }
-
     if ($pass == 2)
       {
+
+        # parsing hack, check for leading @+
+        if($operands[0] =~ /^\@\+(.+)$/)   
+          {
+            ($status, $offset) = extract_word($1);
+            $pcr_offset = $offset;
+            if ($D1) { printf $JNK_F ("br target: @+ detected\n"); }
+            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+          }
+
+        # parsing hack, check for leading @-
+        elsif($operands[0] =~ /^\@\-(.+)$/)  
+          {
+            ($status, $offset) = extract_word($1);
+            $pcr_offset = -$offset;
+            if ($D1) { printf $JNK_F ("br target: @- detected\n"); }
+            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+          }
+        # otherwise, calculate offset from current PC to address
+        else 
+          {
+            ($status, $offset) = extract_word($operands[0]);
+            $pcr_offset = $offset - get_address();
+            if ($D1) { printf $JNK_F ("br target: label detected\n"); }
+            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+          }
+
+
         if ($status != 0 )
           {
             do_error("Undefined branch target");
-            $offset = 0;
+            $pcr_offset = 0;
           }
 
         else
           {
-            # check for word aligned target address before truncating offset
-            if ( ( $offset % 2 ) > 0 )
+            # check for word aligned target address before truncating pcr_offset
+            if ( ( $pcr_offset % 2 ) > 0 )
               {
                 do_error("Unaligned branch target");
               }
 
-            # check if within range of signed 9 bit offset field
-            if ( ( $offset > 510 ) || ( $offset < -512 ) )
+            # check if within range of signed 9 bit pcr_offset field
+            if ( ( $pcr_offset > 510 ) || ( $pcr_offset < -512 ) )
               {
                 do_error("Branch offset out of range");
-                $offset = 0;
+                $pcr_offset = 0;
               }
 
             # convert to word offset
-            $offset = $offset >> 1;
+            $pcr_offset = $pcr_offset >> 1;
 
 
             # %09b format overflows format field for negative integers, truncate string to 9 bits after sprintf
-            $offset_str = sprintf("%09b", $offset);
-            $offset_str = substr( $offset_str, length($offset_str)-9, 9);
+            $pcr_offset_str = sprintf("%09b", $pcr_offset);
+            $pcr_offset_str = substr( $pcr_offset_str, length($pcr_offset_str)-9, 9);
 
-            $opcode = stuff_op_field( $opcode, 'r', $offset_str );
+            $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str );
 
-            if ($D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $offset,  $offset_str, substr($opcode,7,9) ); }
+            if ($D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $pcr_offset,  $pcr_offset_str, substr($opcode,7,9) ); }
           }
       }
 
