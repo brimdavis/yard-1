@@ -625,7 +625,7 @@ sub extract_word
     elsif ( label_exists($tmp) ) 
       { 
         $tmp = label_value($tmp);
-        if ($D1) { printf $JNK_F ("extract_word label=%s\n", $tmp); }
+        if ($D1) { printf $JNK_F ("extract_word label=%d\n", $tmp); }
         return (0, $tmp);
       }
 

@@ -24,6 +24,8 @@
 #   - confused by pipeline load stalls, need to monitor stall bit
 #     workaround: stick NOP between load and verify in test code
 #
+#   - doesn't understand alternate register names, use only r0..r15 in verify statements
+#
 #-------------------------------------------------------------------------------
 
 my $VERSION = "0.2-alpha";
@@ -171,7 +173,13 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
 
              if ( $v_type eq 'REG'  )
                {
-                 if ( $sim_regs{$v_reg} == $v_value )
+
+                 if ( !exists($sim_regs{$v_reg}) )
+                   {
+                     $errors++;
+                     printf VRF_F (" Unknown verify register: %s   %s\n", $v_reg, $v_line_num );
+                   }
+                 elsif ( $sim_regs{$v_reg} == $v_value )
                    {
                      printf VRF_F (" Passed test @ %08x   %s\n", $address, $v_line_num );
                    }
