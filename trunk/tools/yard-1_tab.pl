@@ -333,7 +333,7 @@ sub ps_lrri
         # check if opb is an immediate constant
         if ( $operands[1] =~ /^#(.+)$/ )
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
    
             #
             # look up offset in imm5 encoding hash
@@ -445,7 +445,7 @@ sub ps_arri
         # check if opb is an immediate constant
         if ( $operands[1] =~ /^#(.+)$/ )
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
     
             $imm = $imm5_encode{sprintf("%08lx",$offset)};
 
@@ -525,7 +525,7 @@ sub ps_sr
             # look for  an immediate constant
             if ( $operands[1] =~ /^#(.+)$/ )
               { 
-                ($status, $offset) = extract_word($1);
+                ($status, $offset) = parse_expression($1);
 
                 if ( $offset != 1 ) 
                   {
@@ -748,7 +748,7 @@ sub ps_ori
         # check if opb is an immediate constant
         if ( $operands[1] =~ /^#(.+)$/ )
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
 
             # FIXME: need mask or field overflow test
             $imm = sprintf("%05b", $offset);
@@ -876,7 +876,7 @@ sub ps_mem
                 #
                 # check that offset is within valid range and quad aligned
                 #
-                ($status, $offset) = extract_word($1);
+                ($status, $offset) = parse_expression($1);
 
                 if ( $status == 0 ) 
                   {
@@ -981,7 +981,7 @@ sub ps_imm12
         # check if opb is an immediate constant
         if ( $operands[0] =~ /^#(.+)$/ )
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
           }
     
         else
@@ -1054,7 +1054,7 @@ sub ps_ldi
     #
 
     # calculate offset from current PC (quad aligned) to address
-    ($status, $offset) = extract_word($operands[0]);
+    ($status, $offset) = parse_expression($operands[0]);
     $offset = $offset - ( (get_address() >> 2 ) << 2);
 
     if ($pass == 2)
@@ -1129,7 +1129,7 @@ sub ps_imm
     # check if opb is an immediate constant
     if ( $operands[0] =~ /^#(.+)$/ )
       { 
-        ($status, $offset) = extract_word($1);
+        ($status, $offset) = parse_expression($1);
       }
     
     else
@@ -1316,6 +1316,10 @@ sub ps_bri
     if ($pass == 2)
       {
 
+        #
+        # FIXME: remove @+ @- parsing hack, use expression parser instead
+        #
+
         # parsing hack, check for leading @+
         if($operands[0] =~ /^\@\+(.+)$/)   
           {
@@ -1336,7 +1340,7 @@ sub ps_bri
         # otherwise, calculate offset from current PC to address
         else 
           {
-            ($status, $offset) = extract_word($operands[0]);
+            ($status, $offset) = parse_expression($operands[0]);
             $pcr_offset = $offset - get_address();
             if ($D1) { printf $JNK_F ("br target: label detected\n"); }
             if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
@@ -1613,7 +1617,7 @@ sub ps_skip
         # check if first operand is an immediate constant
         if($operands[0] =~ /^#(.+)$/) 
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
 
             # check for valid flag index 
             if ( ( $offset > 15 ) || ( $offset < 0 ) )
@@ -1659,7 +1663,7 @@ sub ps_skip
         # check if second operand is an immediate constant
         if($operands[1] =~ /^#(.+)$/) 
           { 
-            ($status, $offset) = extract_word($1);
+            ($status, $offset) = parse_expression($1);
 
             # check for bit number out of range 
             if ( ( $offset > 31 ) || ( $offset < 0 ) )
@@ -1739,7 +1743,7 @@ sub ps_spam
         check_argument_count( $#operands, 1 );
 
         $operands[0] =~ /^#(.+)$/ or do_error("Expecting immediate skip mask");
-        ($status, $mask) = extract_word($1);
+        ($status, $mask) = parse_expression($1);
 
         $length = 7;
       }
@@ -1750,10 +1754,10 @@ sub ps_spam
         check_argument_count( $#operands, 2 );
                                                                         
         $operands[0] =~ /^#(.+)$/ or do_error("Expecting immediate skip mask");
-        ($status, $mask)   = extract_word($1);
+        ($status, $mask)   = parse_expression($1);
 
         $operands[1] =~ /^#(.+)$/ or do_error("Expecting immediate skip mask length");
-        ($status, $length) = extract_word($1);
+        ($status, $length) = parse_expression($1);
 
         # check for valid flag index 
         if ( ( $length > 8 ) || ( $length < 2 ) )
