@@ -638,6 +638,69 @@ sub extract_word
 
   }
 
+#
+# rudimentary expression parser:  a {+/- b} {+/- c} ...
+#
+# splits input string on +/-, calling extract_word for each argument
+#
+# returns 
+#   ( 0, integer )      for defined expression
+#   ( 2, name_string )  if undefined label encountered
+#
+sub parse_expression
+  {
+    my ($exp) = @_; 
+    my $code;
+    my $value;
+
+    my $op  = '+';
+    my $sum = 0;
+
+    my @args;
+
+    if ($D1) { printf $JNK_F ("exp: $exp\n"); }
+
+    #
+    # split pattern returns alternating array of ( {match}, value, match, value )
+    # if leading operator, then match will be first
+    #
+    @args   = split(/(\+|-)/, $exp); 
+
+    foreach my $arg (@args)
+      {
+        if ( ($arg eq '-') || ( $arg eq '+' ) )
+          {
+            $op = $arg;
+            if ($D1) { printf $JNK_F ("exp.op: $arg\n"); }
+          }
+
+        elsif ( $arg ne '' )
+          {
+            ($code, $value) = extract_word($arg);
+
+            if ($D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
+
+            if ( $code == 0 )
+              {
+                if ( $op eq '+' )
+                  {
+                    $sum = $sum + $value;
+                  }
+                elsif ( $op eq '-' )
+                  {
+                    $sum = $sum - $value;
+                  }
+              }
+            else
+              {
+                return($code,$value);  # return unknown label
+              }
+          }
+      }
+
+    if ($D1) { printf $JNK_F ("exp.sum  :$sum\n"); }
+    return($code,$sum);
+  }
 
 # 
 # output opcode data to both listing and object files
@@ -694,14 +757,19 @@ my %directive_defs =
     '.align'   =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => ".ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
  
     'end'      =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => "END",      blab => "end assembly"  },
+    '.end'     =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => ".END",     blab => "end assembly"  },
  
     'equ'      =>  { type => 'DIRECTIVE' , ps => \&ps_equ,     name => "EQUate",   blab => "equate symbol = value"  },
+    '.equ'     =>  { type => 'DIRECTIVE' , ps => \&ps_equ,     name => ".EQUate",  blab => "equate symbol = value"  },
 
     '.global'  =>  { type => 'DIRECTIVE' , ps => \&ps_global,  name => ".SECTION", blab => "stub: global directive"  },
 
     '.section' =>  { type => 'DIRECTIVE' , ps => \&ps_section, name => ".SECTION", blab => "stub: section control directive"  },
 
     '.set'     =>  { type => 'DIRECTIVE' , ps => \&ps_set,     name => ".SET",     blab => "stub: assembler settings"  },
+
+    '.type'    =>  { type => 'DIRECTIVE' , ps => \&ps_type,    name => ".TYPE",    blab => "stub: object type"  },
+    '.size'    =>  { type => 'DIRECTIVE' , ps => \&ps_size,    name => ".SIZE",    blab => "stub: object size"  },
 
     '.verify'  =>  { type => 'DIRECTIVE' , ps => \&ps_verify,  name => ".VERIFY",  blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
 
@@ -857,6 +925,44 @@ sub ps_set
     # TODO: stub for .set directive
     #
     do_warn("directive stub: .set not implemented yet");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+sub ps_type
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: stub for .type directive
+    #
+    do_warn("directive stub: .type not implemented yet");
+
+    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+
+  }
+
+sub ps_size
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $arg;
+    my $status;
+
+    #
+    # TODO: stub for .size directive
+    #
+    do_warn("directive stub: .size not implemented yet");
 
     if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
 
