@@ -155,9 +155,11 @@ my $help_syntax=<<END_SYNTAX;
       enclose dc.s strings within " " 
        dc.s "hello"
 
-  - no constant expression parser yet (i.e., + - * / )
-     - kludge for bra targets allows @+offset or @-offset (for bra/bsr only)
-     - unary minus works only for decimal constants
+  - simple constant expression parser supports only + and - 
+
+    FIXME: verify previous limitations are gone:
+       - kludge for bra targets allows @+offset or @-offset (for bra/bsr only)
+       - unary minus works only for decimal constants
 
 END_SYNTAX
 #"
@@ -189,7 +191,7 @@ END_BUGS
 #
 #  - implement all opcodes
 #
-#  - inline constant tables for LDC
+#  - inline constant tables for LDI
 #
 #  - IMM built-in macro for constants
 #
@@ -395,10 +397,7 @@ sub check_data_register
         do_error("Invalid data register \"" . $reg . "\"");
         return '0000';
       }
-
-
   }
-
 
 #-------------------------------------------------------------
 # Check for valid address register 
@@ -440,7 +439,6 @@ sub check_ctl_register
       }
   }
 
-
 #-------------------------------------------------------------
 # Label code (adopted from P65)
 #-------------------------------------------------------------
@@ -455,6 +453,9 @@ sub label_exists
     return ((exists $labels{$label}) || ($label eq "@"));
   }
 
+#
+#
+#
 sub label_value 
   {
     my $label = shift;
@@ -478,7 +479,9 @@ sub label_value
       }
   }
 
+#
 # set_label is used by "equ" directive to overwrite the original label value
+#
 sub set_label 
   {
     my ($label, $value) = @_;
@@ -487,6 +490,9 @@ sub set_label
     $labels{$label} = $value;
   }
 
+#
+#
+#
 sub init_label 
   {
     my $label = shift;
@@ -530,7 +536,7 @@ sub process_label
         chop $label_field;
       }
 
-    # TODO: add a check for any illegal characters in label name
+    # TODO: remove/substitute illegal characters in label name
     if ( $label_field =~ tr/_.0-9A-Za-z//cd ) 
       {
         do_error("Illegal characters in label name");
@@ -569,7 +575,20 @@ sub extract_word
     #
     # leading $ for hex
     #
-    if($tmp =~ /^\$(.+)$/)   
+    if ($tmp =~ /^\$(.+)$/)   
+      {
+        $tmp = $1;
+        $tmp =~ s/_//g; # strip underscores
+        $tmp = oct ("0x" . $tmp);  
+        if ($D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
+        if ($D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
+        return (0, $tmp);
+      }
+
+    #
+    # alternate leading 0x for hex
+    #
+    elsif ($tmp =~ /^0x(.+)$/)   
       {
         $tmp = $1;
         $tmp =~ s/_//g; # strip underscores
@@ -582,7 +601,7 @@ sub extract_word
     #
     # leading % for binary
     #
-    elsif($tmp =~ /^%(.+)$/)  
+    elsif ($tmp =~ /^%(.+)$/)  
       {
         $tmp = $1;
         $tmp =~ s/_//g;  # strip underscores
@@ -644,7 +663,7 @@ sub extract_word
 # splits input string on +/-, calling extract_word for each argument
 #
 # returns 
-#   ( 0, integer )      for defined expression
+#   ( 0, integer )      for fully defined expression
 #   ( 2, name_string )  if undefined label encountered
 #
 sub parse_expression
@@ -755,6 +774,8 @@ my %directive_defs =
 
     'align'    =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => "ALIGN",    blab => "location counter forced to next modulo N byte boundary"  },
     '.align'   =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => ".ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
+
+    '.common'  =>  { type => 'DIRECTIVE' , ps => \&ps_common,  name => ".COMMON",  blab => "common block: .common size, alignment"  },
  
     'end'      =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => "END",      blab => "end assembly"  },
     '.end'     =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => ".END",     blab => "end assembly"  },
@@ -830,6 +851,45 @@ sub ps_align
 
     $address = int ( ( $address + $align - 1) / $align ) * $align;
     $next_address = $address;
+
+    if ($pass == 2)
+      {
+        printf $OBJ_F ("@%X\n", $address);
+        printf $LST_F ("  %08X           %s\n", $address, $raw_line );
+      }
+  }
+
+sub ps_common
+  {
+    my ( $pass      ) = shift;
+    my ( $label     ) = shift;
+    my ( $operation ) = shift;
+    my ( @operands  ) = @_;
+
+    my $align;
+    my $size;
+    my $status;
+
+    check_argument_count($#operands, 2);
+    ($status, $size )  = extract_word($operands[0]);
+    ($status, $align ) = extract_word($operands[1]);
+
+    if ( $size <= 0 )
+      {
+        do_error(".common alignment,size  requires a positive, non-zero size");
+        $size = 1;
+      }
+
+    if ( $align <= 0 )
+      {
+        do_error(".common alignment,size  requires a positive, non-zero alignment");
+        $align = 1;
+      }
+
+    # TODO: add to symbol info hash (once it exists)
+
+    $address = int ( ( $address + $align - 1) / $align ) * $align;
+    $next_address = $address + $size;
 
     if ($pass == 2)
       {
