@@ -82,8 +82,7 @@ begin
   I_prb: entity work.y1a_probe
     port map
       (
-        clk   => clk,
-        rst_l => rst_l
+        clk   => clk
       );
   
   --

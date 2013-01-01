@@ -32,17 +32,17 @@ library work;
 entity rstack is
   port
     (   
-      clk    : in std_logic;
-      rst_l  : in std_logic;
+      clk      : in std_logic;
+      sync_rst : in std_logic;
 
-      push   : in std_logic;
-      pop    : in std_logic;
+      push     : in std_logic;
+      pop      : in std_logic;
 
-      pc_in  : in std_logic_vector  (PC_MSB downto 0);
-      sr_in  : in std_logic_vector  (SR_MSB downto 0);
+      pc_in    : in std_logic_vector  (PC_MSB downto 0);
+      sr_in    : in std_logic_vector  (SR_MSB downto 0);
 
-      pc_stk : out std_logic_vector (PC_MSB downto 0);
-      sr_stk : out std_logic_vector (SR_MSB downto 0)
+      pc_stk   : out std_logic_vector (PC_MSB downto 0);
+      sr_stk   : out std_logic_vector (SR_MSB downto 0)
     );
 
 end rstack;
@@ -79,24 +79,21 @@ begin
   --
   -- registered stack pointer 
   --
-  rsp_ctl: process (clk,rst_l)
+  rsp_ctl: process
     begin
+      wait until rising_edge(clk);
 
-      if  rst_l = '0' then
+      if  sync_rst = '1' then
         rsp_last <= ( others => '0');
 
-      elsif rising_edge(clk) then
+      elsif push = '1' then
+        rsp_last <= rsp_last+1;
 
-        if push = '1' then
-          rsp_last <= rsp_last+1;
+      elsif pop = '1' then
+        rsp_last <= rsp_last-1;
 
-        elsif pop = '1' then
-          rsp_last <= rsp_last-1;
-
-        else
-          rsp_last <= rsp_last;
-
-        end if;
+      else
+        rsp_last <= rsp_last;
 
       end if;
 
@@ -132,31 +129,28 @@ begin
   --  load registers from stack on a pop 
   --  creates memory read port followed by registered data output mux
   --
-  rsp_regs: process (clk,rst_l)
+  rsp_regs: process
     begin
+      wait until rising_edge(clk);
 
-      if  rst_l = '0' then
+      if  sync_rst = '1' then
         pc_reg <= ( others => '0');
         sr_reg <= ( others => '0');
 
-      elsif rising_edge(clk) then
+      elsif push = '1' then
+        pc_reg <= pc_in;
+        sr_reg <= sr_in;
 
-        if push = '1' then
-          pc_reg <= pc_in;
-          sr_reg <= sr_in;
+      elsif pop = '1' then
+       -- BMD XST use sep. signals for RAM read data so XST finds RAM's
+       -- pc_reg <= rs_pc(to_integer(unsigned(rsp_adr));
+       -- sr_reg <= rs_sr(to_integer(unsigned(rsp_adr));
+        pc_reg <= rs_pc_dat;
+        sr_reg <= rs_sr_dat;
 
-        elsif pop = '1' then
-         -- BMD XST use sep. signals for RAM read data so XST finds RAM's
-         -- pc_reg <= rs_pc(to_integer(unsigned(rsp_adr));
-         -- sr_reg <= rs_sr(to_integer(unsigned(rsp_adr));
-          pc_reg <= rs_pc_dat;
-          sr_reg <= rs_sr_dat;
-
-        else
-          pc_reg <= pc_reg;
-          sr_reg <= sr_reg;
-
-        end if;
+      else
+        pc_reg <= pc_reg;
+        sr_reg <= sr_reg;
 
       end if;
 
