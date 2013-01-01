@@ -61,6 +61,9 @@ entity evb is
   
 architecture evb1 of evb is
 
+
+  signal sync_rst    : std_logic; 
+
   signal i_en_l      : std_logic;
   signal i_rd_l      : std_logic;
   
@@ -106,6 +109,15 @@ architecture evb1 of evb is
   
 begin
 
+  process
+    begin
+      wait until rising_edge(clk);
+
+      sync_rst <= NOT rst_l;
+
+    end process;
+
+
   evb_core: entity work.y1a_core
     generic map
       (
@@ -114,7 +126,7 @@ begin
     port map
       (
         clk       =>  clk,
-        rst_l     =>  rst_l,
+        sync_rst  =>  sync_rst,
   
         irq_l     =>  irq_l,
   

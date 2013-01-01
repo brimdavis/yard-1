@@ -59,7 +59,10 @@ architecture evb1 of evb is
   -- clock and control 
   --
   signal clk   : std_logic; 
-  signal rst_l : std_logic; 
+
+  signal sync_rst : std_logic; 
+  signal rst_l    : std_logic; 
+
   signal irq_l : std_logic; 
   
   --
@@ -154,8 +157,10 @@ begin
       generic map ( SW_ACTIVE_SENSE => '0' )
       port map ( clk => clk, tick_en => tick_en, sw_in => pb(2), sw_press => pb2_pulse, sw_release => open, sw_state => open );
 
-    rst_l <= NOT pb3_debounce;
-    irq_l <= NOT pb2_pulse;
+    sync_rst <=     pb3_debounce;
+    rst_l    <= NOT pb3_debounce;
+
+    irq_l    <= NOT pb2_pulse;
 
   end block;
 
@@ -172,7 +177,7 @@ begin
     port map
       ( 
         clk        => clk,
-        rst_l      => rst_l,
+        sync_rst   => sync_rst,
 
         irq_l      => irq_l,
 

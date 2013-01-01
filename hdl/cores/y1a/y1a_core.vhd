@@ -112,7 +112,7 @@ entity y1a_core is
       -- clock and control
       --
       clk        : in  std_logic;
-      rst_l      : in  std_logic;
+      sync_rst   : in  std_logic;
                       
       irq_l      : in  std_logic;
                 
@@ -156,7 +156,7 @@ architecture arch1 of y1a_core is
   --
   -- declare synthesis attributes
   --
-  attribute keep : boolean;
+  attribute syn_keep : boolean;
 
 
   -- 
@@ -169,6 +169,21 @@ architecture arch1 of y1a_core is
   --
   -- signals
   --
+
+  --
+  -- reset fanout
+  --
+  signal rst_a : std_logic;
+  signal rst_b : std_logic;
+  signal rst_c : std_logic;
+  signal rst_d : std_logic;
+  signal rst_e : std_logic;
+
+  attribute syn_keep of rst_a : signal is true;
+  attribute syn_keep of rst_b : signal is true;
+  attribute syn_keep of rst_c : signal is true;
+  attribute syn_keep of rst_d : signal is true;
+  attribute syn_keep of rst_e : signal is true;
   
   --
   -- register file outputs
@@ -446,6 +461,22 @@ constant CFG_REG_I_ADDR : boolean := TRUE;
 
 begin
 
+  --
+  -- reset fanout
+  --
+  process
+    begin
+      wait until rising_edge(clk);
+
+      rst_a <= sync_rst;
+      rst_b <= sync_rst;
+      rst_c <= sync_rst;
+      rst_d <= sync_rst;
+      rst_e <= sync_rst;
+
+    end process;
+
+
   ------------------------------------------------------------------------------
   --
   -- register file
@@ -490,7 +521,7 @@ begin
                             ) 
             else  '0';
 
-      wb_en <= wb_dcd AND (NOT ex_null) AND rst_l;
+      wb_en <= wb_dcd AND (NOT ex_null) AND (NOT rst_a);
 
     end block wb_ctl1;
 
@@ -501,17 +532,15 @@ begin
   --   register file accesses
   --
 
-  snoop_reg: process (clk,rst_l)
+  snoop_reg: process
     begin
+      wait until rising_edge(clk);
 
-      if  rst_l = '0' then
+      if rst_b = '1' then
         imm_reg <= ( others => '0');
 
-      elsif rising_edge(clk) then
-
-        if ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
-          imm_reg <= wb_bus;
-        end if;
+      elsif ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
+        imm_reg <= wb_bus;
 
       end if;
 
@@ -788,8 +817,8 @@ begin
     signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
     signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
-    attribute keep of wb_muxa  : signal is true;
-    attribute keep of wb_muxb  : signal is true;
+    attribute syn_keep of wb_muxa  : signal is true;
+    attribute syn_keep of wb_muxb  : signal is true;
 
     begin
 
@@ -876,21 +905,24 @@ begin
   irq_enable <= '0';
 
   -- register inputs 
-  process (clk,rst_l)
+  process 
     begin
-      if  rst_l = '0' then
+      wait until rising_edge(clk);
+
+      if rst_b = '1' then
         irq_p0   <= '1';
         irq_p1   <= '1';
         irq_p2   <= '1';
         irq_edge <= '0';
 
-      elsif rising_edge(clk) then
+      else
         irq_p0   <= irq_l;
         irq_p1   <= irq_p0;
         irq_p2   <= irq_p1;
         irq_edge <= ( NOT irq_p1 AND irq_p2 ) AND irq_enable;
 
       end if;
+
     end process;
 
   --
@@ -906,21 +938,19 @@ begin
   --        - especially the interrupt enables for single level interrupt code
   --          ( disable interrupts on irq after pushing old SR to stack )
   --
-  sr1:  process (clk,rst_l)
+  sr1:  process 
     begin
+      wait until rising_edge(clk);
   
-      if  rst_l = '0' then
+      if  rst_b = '1' then
         st_reg(SR_MSB-8 downto 0) <= ( others => '0');
   
-      elsif rising_edge(clk) then
-  
-        -- FIXME: this is one cycle too early for SR restore
-        if ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
-          st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
-        end if;
-   
+      -- FIXME: this is one cycle too early for SR restore
+      elsif ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
+        st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
+
       end if;
-  
+   
     end process sr1;
 
   --
@@ -1086,14 +1116,15 @@ begin
   --
   --   register next_pc
   --
-  pcr1: process (clk,rst_l)
+  pcr1: process 
     begin
+      wait until rising_edge(clk);
   
-      if rst_l = '0' then
+      if rst_c = '1' then
         pc_reg   <= PC_RST_VEC;
         null_sr  <= B"1000_0000";
   
-      elsif rising_edge(clk) then
+      else
         pc_reg   <= next_pc;
         null_sr  <= next_null_sr;
 
@@ -1108,25 +1139,22 @@ begin
   --   instruction register
   --   pipelined copy of PC for EX stage
   --
-  P_pipe_reg: process (clk,rst_l)
+  P_pipe_reg: process
     begin
+      wait until rising_edge(clk);
  
-      if  rst_l = '0' then
+      if rst_c = '1' then
         pc_reg_p1     <= PC_RST_VEC;
         ireg          <= ( others => '0');
  
-      elsif rising_edge(clk) then
-
-        if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
-          pc_reg_p1     <= pc_reg_p1;
-          ireg          <= ireg;
+      elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+        pc_reg_p1     <= pc_reg_p1;
+        ireg          <= ireg;
   
-        else
-          pc_reg_p1 <= pc_reg;
-          ireg      <= i_dat;
+      else
+        pc_reg_p1 <= pc_reg;
+        ireg      <= i_dat;
 
-        end if;
- 
       end if;
  
    end process;
@@ -1140,16 +1168,17 @@ begin
   --    
   -- early decodes - moved ahead of instruction register to improve critical path timing
   --    
-  P_early_dcd: process (clk,rst_l)
+  P_early_dcd: process
     begin
+      wait until rising_edge(clk);
  
-      if  rst_l = '0' then
+      if  rst_d = '1' then
         force_sel_opa  <= ( others => '0');
         force_sel_opb  <= ( others => '0');
 
         dcd_mem_ld     <= FALSE;
 
-      elsif rising_edge(clk) then
+      else
 
         if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
           force_sel_opa  <= force_sel_opa;
@@ -1210,20 +1239,20 @@ begin
   I_stack: rstack
     port map
       (
-        clk    => clk, 
-        rst_l  => rst_l,
+        clk      => clk, 
+        sync_rst => rst_e,
 
-        push   => dcd_push, 
-        pop    => dcd_pop,
+        push     => dcd_push, 
+        pop      => dcd_pop,
 
         --
         -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
         --
-        pc_in  => pcr_addr(PC_MSB downto 0), 
-        sr_in  => st_reg,
+        pc_in    => pcr_addr(PC_MSB downto 0), 
+        sr_in    => st_reg,
 
-        pc_stk => rsp_pc, 
-        sr_stk => rsp_sr
+        pc_stk   => rsp_pc, 
+        sr_stk   => rsp_sr
       );
 
 

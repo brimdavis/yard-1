@@ -37,9 +37,7 @@ library work;
 entity y1a_probe is
   port
     (   
-      clk     : in std_logic;
-
-      rst_l   : in std_logic
+      clk      : in std_logic
     );
 
 end y1a_probe;

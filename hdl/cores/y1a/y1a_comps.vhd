@@ -220,17 +220,17 @@ package y1a_comps is
   component rstack is
     port
       (
-        clk    : in  std_logic;
-        rst_l  : in  std_logic;
+        clk      : in  std_logic;
+        sync_rst : in  std_logic;
   
-        push   : in  std_logic;
-        pop    : in  std_logic;
+        push     : in  std_logic;
+        pop      : in  std_logic;
   
-        pc_in  : in  std_logic_vector(PC_MSB downto 0);
-        sr_in  : in  std_logic_vector(SR_MSB downto 0);
+        pc_in    : in  std_logic_vector(PC_MSB downto 0);
+        sr_in    : in  std_logic_vector(SR_MSB downto 0);
   
-        pc_stk : out std_logic_vector(PC_MSB downto 0);
-        sr_stk : out std_logic_vector(SR_MSB downto 0)
+        pc_stk   : out std_logic_vector(PC_MSB downto 0);
+        sr_stk   : out std_logic_vector(SR_MSB downto 0)
       );
   end component;
 
