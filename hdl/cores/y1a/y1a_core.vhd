@@ -171,21 +171,6 @@ architecture arch1 of y1a_core is
   --
 
   --
-  -- reset fanout
-  --
-  signal rst_a : std_logic;
-  signal rst_b : std_logic;
-  signal rst_c : std_logic;
-  signal rst_d : std_logic;
-  signal rst_e : std_logic;
-
-  attribute syn_keep of rst_a : signal is true;
-  attribute syn_keep of rst_b : signal is true;
-  attribute syn_keep of rst_c : signal is true;
-  attribute syn_keep of rst_d : signal is true;
-  attribute syn_keep of rst_e : signal is true;
-  
-  --
   -- register file outputs
   --
   signal ar      : std_logic_vector(ALU_MSB downto 0);
@@ -461,21 +446,6 @@ constant CFG_REG_I_ADDR : boolean := TRUE;
 
 begin
 
-  --
-  -- reset fanout
-  --
-  process
-    begin
-      wait until rising_edge(clk);
-
-      rst_a <= sync_rst;
-      rst_b <= sync_rst;
-      rst_c <= sync_rst;
-      rst_d <= sync_rst;
-      rst_e <= sync_rst;
-
-    end process;
-
 
   ------------------------------------------------------------------------------
   --
@@ -521,22 +491,22 @@ begin
                             ) 
             else  '0';
 
-      wb_en <= wb_dcd AND (NOT ex_null) AND (NOT rst_a);
+      wb_en <= wb_dcd AND (NOT ex_null) AND (NOT sync_rst);
 
     end block wb_ctl1;
 
   --
-  -- stack, frame, and IMM register snooping
-  --   these registers all live outside of register file RAM
+  -- IMM register snooping
+  --   registers found here live outside of register file RAM,
   --   to allow reads & updates independent of normal two port 
   --   register file accesses
   --
 
-  snoop_reg: process
+  P_snoop_reg: process
     begin
       wait until rising_edge(clk);
 
-      if rst_b = '1' then
+      if sync_rst = '1' then
         imm_reg <= ( others => '0');
 
       elsif ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
@@ -909,7 +879,7 @@ begin
     begin
       wait until rising_edge(clk);
 
-      if rst_b = '1' then
+      if sync_rst = '1' then
         irq_p0   <= '1';
         irq_p1   <= '1';
         irq_p2   <= '1';
@@ -942,7 +912,7 @@ begin
     begin
       wait until rising_edge(clk);
   
-      if  rst_b = '1' then
+      if  sync_rst = '1' then
         st_reg(SR_MSB-8 downto 0) <= ( others => '0');
   
       -- FIXME: this is one cycle too early for SR restore
@@ -1120,7 +1090,7 @@ begin
     begin
       wait until rising_edge(clk);
   
-      if rst_c = '1' then
+      if sync_rst = '1' then
         pc_reg   <= PC_RST_VEC;
         null_sr  <= B"1000_0000";
   
@@ -1143,7 +1113,7 @@ begin
     begin
       wait until rising_edge(clk);
  
-      if rst_c = '1' then
+      if sync_rst = '1' then
         pc_reg_p1     <= PC_RST_VEC;
         ireg          <= ( others => '0');
  
@@ -1172,7 +1142,7 @@ begin
     begin
       wait until rising_edge(clk);
  
-      if  rst_d = '1' then
+      if  sync_rst = '1' then
         force_sel_opa  <= ( others => '0');
         force_sel_opb  <= ( others => '0');
 
@@ -1240,7 +1210,7 @@ begin
     port map
       (
         clk      => clk, 
-        sync_rst => rst_e,
+        sync_rst => sync_rst,
 
         push     => dcd_push, 
         pop      => dcd_pop,
