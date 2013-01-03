@@ -886,10 +886,28 @@ sub ps_common
         $align = 1;
       }
 
-    # TODO: add to symbol info hash (once it exists)
-
+    #
+    # adjust address, next_address for alignment and size
+    #
     $address = int ( ( $address + $align - 1) / $align ) * $align;
     $next_address = $address + $size;
+
+    #
+    # TODO: add to symbol info hash (once it exists)
+    #
+
+    #
+    # update label value
+    #
+    if ( $label_field )
+      {
+        set_label($label_field, $address); 
+      }
+    else 
+      {
+        do_error(".common directive requires a label on the same line");
+      }
+
 
     if ($pass == 2)
       {
@@ -905,7 +923,7 @@ sub ps_end
     my ( $operation ) = shift;
     my ( @operands  ) = @_;
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
     last;
   }
 
@@ -948,7 +966,7 @@ sub ps_global
     #
     do_warn("directive stub: .global not implemented yet");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
@@ -986,7 +1004,7 @@ sub ps_set
     #
     do_warn("directive stub: .set not implemented yet");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
@@ -1005,7 +1023,7 @@ sub ps_type
     #
     do_warn("directive stub: .type not implemented yet");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
@@ -1024,7 +1042,7 @@ sub ps_size
     #
     do_warn("directive stub: .size not implemented yet");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
@@ -1115,7 +1133,7 @@ sub ps_error
     #
     do_error("User error");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
@@ -1134,7 +1152,7 @@ sub ps_warn
     #
     do_warn("User warning");
 
-    if ($pass==2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   }
 
