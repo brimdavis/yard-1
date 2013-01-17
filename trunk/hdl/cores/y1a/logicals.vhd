@@ -28,7 +28,8 @@ entity logicals is
 
   port
     (   
-      logic_op   : in  std_logic_vector(OP_MSB downto 0);
+      ireg       : in  std_logic_vector(INST_MSB downto 0);
+--    logic_op   : in  std_logic_vector(OP_MSB downto 0);
 
       ain        : in  std_logic_vector(ALU_MSB downto 0);
       bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -43,6 +44,11 @@ architecture arch1 of logicals is
 
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  --
+  --
+  alias logic_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
 
 begin
 

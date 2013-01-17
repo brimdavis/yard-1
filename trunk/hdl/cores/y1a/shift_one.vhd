@@ -28,9 +28,10 @@ entity shift_one is
 
   port
     (   
-      shift_grp    : in  std_logic;
-      shift_signed : in  std_logic;    
-      shift_dir    : in  std_logic;    
+      ireg       : in  std_logic_vector(INST_MSB downto 0);
+--    shift_grp    : in  std_logic;
+--    shift_signed : in  std_logic;    
+--    shift_dir    : in  std_logic;    
 
       ain          : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -48,6 +49,12 @@ architecture arch1 of shift_one is
   signal shift_msb : std_logic;
   signal shift_lsb : std_logic;
 
+  --
+  --
+  --
+  alias shift_grp    : std_logic is ireg(11);
+  alias shift_signed : std_logic is ireg(10);
+  alias shift_dir    : std_logic is ireg( 9);
 
 begin
 
