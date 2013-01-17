@@ -775,7 +775,7 @@ my %directive_defs =
     'align'    =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => "ALIGN",    blab => "location counter forced to next modulo N byte boundary"  },
     '.align'   =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => ".ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
 
-    '.common'  =>  { type => 'DIRECTIVE' , ps => \&ps_common,  name => ".COMMON",  blab => "common block: .common size, alignment"  },
+    '.common'  =>  { type => 'DIRECTIVE' , ps => \&ps_common,  name => ".COMMON",  blab => "common block:  label .common size, alignment"  },
  
     'end'      =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => "END",      blab => "end assembly"  },
     '.end'     =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => ".END",     blab => "end assembly"  },

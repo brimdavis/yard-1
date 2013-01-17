@@ -33,17 +33,17 @@ entity ea_calc is
 
   port
     (   
-      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
-      mem_size   : in  std_logic_vector(1 downto 0);
-      mem_mode   : in  std_logic;
-      sel_opb    : in  std_logic_vector(3 downto 0);
+      ireg       : in  std_logic_vector(INST_MSB downto 0);
+--    inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+--    mem_size   : in  std_logic_vector(1 downto 0);
+--    mem_mode   : in  std_logic;
+--    sel_opb    : in  std_logic_vector(3 downto 0);
+--    sp_offset  : in  std_logic_vector(3 downto 0);
+--    ldi_offset : in  std_logic_vector(11 downto 0);
 
       bin        : in  std_logic_vector(ALU_MSB downto 0);
       imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
 
-      sp_offset  : in  std_logic_vector(3 downto 0);
-
-      ldi_offset : in  std_logic_vector(11 downto 0);
       pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
     
       ea_dat     : out std_logic_vector(ALU_MSB downto 0)
@@ -66,6 +66,15 @@ architecture arch1 of ea_calc is
   signal mode_SP      : boolean;
   signal src_mux_ctl  : boolean;
 
+  --
+  --
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias mem_mode   : std_logic is ireg(11);
+  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
+  alias sel_opb    : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
+  alias sp_offset  : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
+  alias ldi_offset : std_logic_vector(11 downto 0) is ireg(11 downto 0);
 
 begin
 

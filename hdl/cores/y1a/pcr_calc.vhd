@@ -35,13 +35,12 @@ entity pcr_calc is
 
   port
     (   
-      inst_fld       : in  std_logic_vector(ID_MSB downto 0);
-
-      dslot_null     : in  std_logic;
-
-      call_type      : in  std_logic;
-      ext_bit        : in  std_logic;
-      ext_grp        : in  std_logic_vector(3 downto 0);
+      ireg           : in  std_logic_vector(INST_MSB downto 0);
+--    inst_fld       : in  std_logic_vector(ID_MSB downto 0);
+--    dslot_null     : in  std_logic;
+--    call_type      : in  std_logic;
+--    ext_bit        : in  std_logic;
+--    ext_grp        : in  std_logic_vector(3 downto 0);
 
       pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
     
@@ -61,6 +60,18 @@ architecture arch1 of pcr_calc is
   signal ea_pc_lsbs  : std_logic_vector(1 downto 0);
 
   signal dcd_CALL    : boolean;
+
+  --
+  --
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+
+  alias call_type  : std_logic is ireg(10);
+  alias dslot_null : std_logic is ireg(9);
+
+  alias ext_bit    : std_logic is ireg(11);
+  alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
+
 
 begin
 

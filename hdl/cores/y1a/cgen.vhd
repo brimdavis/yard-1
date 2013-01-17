@@ -32,8 +32,9 @@ entity cgen is
 
   port
     (   
-      opb_ctl   : in std_logic_vector(1 downto 0);
-      opb_const : in std_logic_vector(4 downto 0);
+      ireg      : in  std_logic_vector(INST_MSB downto 0);
+--    opb_ctl   : in std_logic_vector(1 downto 0);
+--    opb_const : in std_logic_vector(4 downto 0);
 
       cg_out    : out std_logic_vector(ALU_MSB downto 0)
     );
@@ -47,6 +48,12 @@ architecture arch1 of cgen is
 
   signal cg_pow2 : std_logic_vector(ALU_MSB downto 0);
   signal cg_mpow : std_logic_vector(ALU_MSB downto 0);
+
+  --
+  --
+  --
+  alias opb_ctl     : std_logic_vector(1 downto 0) is ireg(10 downto 9);
+  alias opb_const   : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
 
 begin
 

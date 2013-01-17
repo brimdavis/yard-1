@@ -234,10 +234,20 @@ architecture arch1 of y1a_core is
   signal ext_bra_offset : std_logic_vector(ALU_MSB downto 0);
   
   --
-  -- instruction register
+  -- instruction register & copies
   --
   signal ireg     : std_logic_vector(INST_MSB downto 0);
+  signal ireg_a   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_b   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_c   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_d   : std_logic_vector(INST_MSB downto 0);
   
+  attribute syn_keep of ireg    : signal is true;
+  attribute syn_keep of ireg_a  : signal is true;
+  attribute syn_keep of ireg_b  : signal is true;
+  attribute syn_keep of ireg_c  : signal is true;
+  attribute syn_keep of ireg_d  : signal is true;
+
   --
   -- stack signals
   --
@@ -448,12 +458,11 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   -- register file
   --
-  ------------------------------------------------------------------------------
-
-  regfile1: regfile
+  I_regfile: regfile
     port map
       (
         clk  => clk, 
@@ -518,26 +527,26 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   -- immediate constant generation
   --
-  ------------------------------------------------------------------------------
   I_cgen: cgen
    port map
      (
-       opb_ctl   => opb_ctl,   
-       opb_const => opb_const, 
+       ireg      => ireg_a,
+--     opb_ctl   => opb_ctl,   
+--     opb_const => opb_const, 
 
        cg_out    => cg_out    
      );
 
  
   ------------------------------------------------------------------------------
+
   --
   -- operand selection
   --
-  ------------------------------------------------------------------------------
-
   op_sel1: block
 
     begin
@@ -573,15 +582,16 @@ begin
     end block op_sel1;
 
   ------------------------------------------------------------------------------
+
   --
   -- arithmetic operations ( add, subtract, reverse subtract )
   --
-  ------------------------------------------------------------------------------
   I_addsub: addsub
     port map
       (
-        inst_fld   => inst_fld,
-        arith_op   => arith_op,
+        ireg       => ireg_b,
+--      inst_fld   => inst_fld,
+--      arith_op   => arith_op,
 
         ain        => ain,
         bin        => mux_inv_bin,
@@ -592,14 +602,15 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   -- logical operations  ( move, and, or, xor )
   --
-  ------------------------------------------------------------------------------
   I_logicals: logicals
     port map
       (   
-        logic_op  => logic_op,   
+        ireg      => ireg_c,
+--      logic_op  => logic_op,   
 
         ain       => ain,        
         bin       => mux_inv_bin,        
@@ -609,14 +620,13 @@ begin
   
 
   ------------------------------------------------------------------------------
+
   --
   -- shifts & rotates
   --
-  ------------------------------------------------------------------------------
+  --  TODO: only 1 bit shift/rotate lengths are currently implemented
+  --
 
-  --
-  --  only 1 bit shift/rotate lengths are currently implemented
-  --
   GT_barrel: if CFG.barrel_shift generate
     begin
 
@@ -633,9 +643,10 @@ begin
       I_shift_one: shift_one
        port map
          (
-           shift_grp    =>  shift_grp,    
-           shift_signed =>  shift_signed, 
-           shift_dir    =>  shift_dir,    
+           ireg         => ireg_c,
+--         shift_grp    =>  shift_grp,    
+--         shift_signed =>  shift_signed, 
+--         shift_dir    =>  shift_dir,    
 
            ain          =>  ain,          
 
@@ -645,13 +656,14 @@ begin
     end generate GF_barrel;
 
   ------------------------------------------------------------------------------
+
   --
   -- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
   --
-  -- bit seek instructions ( find first bit, bit count )
-  --
-  ------------------------------------------------------------------------------
 
+--  --
+--  -- bit seek instructions ( find first bit, bit count )
+--  --
 --   GT_seek: if CFG.bit_seek generate
 --     begin
 -- 
@@ -680,20 +692,19 @@ begin
 --     end generate GF_seek;
 
   ------------------------------------------------------------------------------
+
   --
   -- reg-reg sign/zero extension
   --
-  ------------------------------------------------------------------------------
-
   I_rr_ext: reg_extend
     generic map
       ( CFG          => CFG )
     port map
       (   
-        inst_fld   => inst_fld,  
-
-        mem_size   => mem_size,  
-        mem_sign   => mem_sign,   
+        ireg         => ireg_c,
+--      inst_fld   => inst_fld,  
+--      mem_size   => mem_size,  
+--      mem_sign   => mem_sign,   
 
         din        => bin,
                   
@@ -701,20 +712,20 @@ begin
       );
 
 
-
   ------------------------------------------------------------------------------
+
   --
   -- FLIP instruction  ( universal bit swapper )
   --
-  ------------------------------------------------------------------------------
-
   GT_flip: if CFG.bit_flip generate
     begin
 
       flip1: flip
         port map
          (
-           bsel  => shift_const,
+           ireg  => ireg_c,
+--         bsel  => shift_const,
+
            din   => ain,
            dout  => flip_dat
          );
@@ -730,20 +741,20 @@ begin
 
   
   ------------------------------------------------------------------------------
+
   --
   --   PC Relative address calculation
   --    - now used only for return address calculations
   --
-  ------------------------------------------------------------------------------
   I_pcr_calc: pcr_calc
     port map
       (
-        inst_fld   => inst_fld,  
-
-        dslot_null => dslot_null,
-        call_type  => call_type,
-        ext_bit    => ext_bit,  
-        ext_grp    => ext_grp,  
+        ireg       => ireg_d,
+--      inst_fld   => inst_fld,  
+--      dslot_null => dslot_null,
+--      call_type  => call_type,
+--      ext_bit    => ext_bit,  
+--      ext_grp    => ext_grp,  
 
         pc_reg_p1  => pc_reg_p1, 
                   
@@ -752,24 +763,24 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   --   Effective Address calculation
   --
-  ------------------------------------------------------------------------------
   I_ea_calc: ea_calc
     port map
       (
-        inst_fld   => inst_fld,  
-        mem_size   => mem_size,  
-        mem_mode   => mem_mode,  
-        sel_opb    => sel_opb,
+        ireg       => ireg_d,
+--      inst_fld   => inst_fld,  
+--      mem_size   => mem_size,  
+--      mem_mode   => mem_mode,  
+--      sel_opb    => sel_opb,
+--      sp_offset  => sp_offset, 
+--      ldi_offset => ldi_offset,
 
         bin        => bin,      
         imm_reg    => imm_reg,   
 
-        sp_offset  => sp_offset, 
-
-        ldi_offset => ldi_offset,
         pc_reg_p1  => pc_reg_p1, 
                    
         ea_dat     => ea_dat    
@@ -777,11 +788,11 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   -- writeback mux
   --    replaces old TBUF writeback code with mux cascade
   --
-  ------------------------------------------------------------------------------
   wb_mux : block
 
     signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
@@ -822,12 +833,12 @@ begin
 
     end block wb_mux;
 
+
   ------------------------------------------------------------------------------
+
   --
   -- skip condition logic
   --
-  ------------------------------------------------------------------------------
-
   I_skip_dcd: skip_dcd
     generic map
       ( CFG          => CFG )
@@ -1114,16 +1125,28 @@ begin
       wait until rising_edge(clk);
  
       if sync_rst = '1' then
-        pc_reg_p1     <= PC_RST_VEC;
-        ireg          <= ( others => '0');
+        pc_reg_p1 <= PC_RST_VEC;
+        ireg      <= ( others => '0');
+        ireg_a    <= ( others => '0');
+        ireg_b    <= ( others => '0');
+        ireg_c    <= ( others => '0');
+        ireg_d    <= ( others => '0');
  
       elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
-        pc_reg_p1     <= pc_reg_p1;
-        ireg          <= ireg;
+        pc_reg_p1 <= pc_reg_p1;
+        ireg      <= ireg;
+        ireg_a    <= ireg_a;
+        ireg_b    <= ireg_b;
+        ireg_c    <= ireg_c;
+        ireg_d    <= ireg_d;
   
       else
         pc_reg_p1 <= pc_reg;
         ireg      <= i_dat;
+        ireg_a    <= i_dat;
+        ireg_b    <= i_dat;
+        ireg_c    <= i_dat;
+        ireg_d    <= i_dat;
 
       end if;
  
@@ -1200,12 +1223,11 @@ begin
    end process;
 
 
-
   ------------------------------------------------------------------------------
+
   --
   -- return stack
   --
-  ------------------------------------------------------------------------------
   I_stack: rstack
     port map
       (
@@ -1241,7 +1263,10 @@ begin
                AND ( call_type = '1' ) 
                AND ( ex_null = '0' )
              )
+
+-- FIXME : disabled interrupts
 --             OR  ( irq_edge = '1' )
+
         else '0';
   
       dcd_pop <= '1'
@@ -1249,12 +1274,13 @@ begin
         else '0';
 
     end block B_stk_ctl;
+
   
   ------------------------------------------------------------------------------
+
   --
   -- instruction bus control signals and drivers 
   --
-  ------------------------------------------------------------------------------
 
   --
   -- instruction bus control ( read, enable permanently asserted active )
@@ -1278,10 +1304,10 @@ begin
   
 
   ------------------------------------------------------------------------------
+
   --
   -- data bus interface
   --
-  ------------------------------------------------------------------------------
 
   --
   -- data bus address sourced by ea adder
@@ -1349,10 +1375,10 @@ begin
 
 
   ------------------------------------------------------------------------------
+
   --
   -- drive simulation probe signals 
   --
-  ------------------------------------------------------------------------------
 
   -- pragma translate_off
 

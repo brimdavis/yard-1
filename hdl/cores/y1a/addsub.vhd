@@ -31,8 +31,9 @@ entity addsub is
 
   port
     (   
-      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
-      arith_op   : in  std_logic_vector(OP_MSB downto 0);
+      ireg       : in  std_logic_vector(INST_MSB downto 0);
+--    inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+--    arith_op   : in  std_logic_vector(OP_MSB downto 0);
 
       ain        : in  std_logic_vector(ALU_MSB downto 0);
       bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -66,6 +67,14 @@ architecture arch1 of addsub is
   attribute keep of pad_ain   : signal is true;
   attribute keep of pad_bin   : signal is true;
   attribute keep of cin       : signal is true;
+
+  --
+  -- instruction field aliases 
+  --
+  alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  
+  alias arith_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
 
 begin
 
