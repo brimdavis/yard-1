@@ -36,11 +36,6 @@ entity pcr_calc is
   port
     (   
       ireg           : in  std_logic_vector(INST_MSB downto 0);
---    inst_fld       : in  std_logic_vector(ID_MSB downto 0);
---    dslot_null     : in  std_logic;
---    call_type      : in  std_logic;
---    ext_bit        : in  std_logic;
---    ext_grp        : in  std_logic_vector(3 downto 0);
 
       pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
     

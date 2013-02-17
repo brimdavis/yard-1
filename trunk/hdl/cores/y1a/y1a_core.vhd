@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2012  Brian Davis
+-- (C) COPYRIGHT 2000-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -97,7 +97,10 @@ library work;
   use work.y1a_config.all;
   use work.y1a_comps.all;
 
+
+-- pragma translate_off
   use work.y1a_probe_pkg.all;
+-- pragma translate_on
 
 
 entity y1a_core is 
@@ -140,12 +143,7 @@ entity y1a_core is
       d_addr     : out std_logic_vector(ADDR_MSB downto 0);
 
       d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
-      d_wdat     : out std_logic_vector(ALU_MSB downto 0);
-
-      --
-      -- probe record for testing
-      --
-      y1a_probes : out y1a_probe_type
+      d_wdat     : out std_logic_vector(ALU_MSB downto 0)
     );
 
 end y1a_core;
@@ -241,12 +239,30 @@ architecture arch1 of y1a_core is
   signal ireg_b   : std_logic_vector(INST_MSB downto 0);
   signal ireg_c   : std_logic_vector(INST_MSB downto 0);
   signal ireg_d   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_f   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_g   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_h   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_i   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_j   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_k   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_m   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_n   : std_logic_vector(INST_MSB downto 0);
   
   attribute syn_keep of ireg    : signal is true;
   attribute syn_keep of ireg_a  : signal is true;
   attribute syn_keep of ireg_b  : signal is true;
   attribute syn_keep of ireg_c  : signal is true;
   attribute syn_keep of ireg_d  : signal is true;
+  attribute syn_keep of ireg_e  : signal is true;
+  attribute syn_keep of ireg_f  : signal is true;
+  attribute syn_keep of ireg_g  : signal is true;
+  attribute syn_keep of ireg_h  : signal is true;
+  attribute syn_keep of ireg_i  : signal is true;
+  attribute syn_keep of ireg_j  : signal is true;
+  attribute syn_keep of ireg_k  : signal is true;
+  attribute syn_keep of ireg_m  : signal is true;
+  attribute syn_keep of ireg_n  : signal is true;
 
   --
   -- stack signals
@@ -255,7 +271,7 @@ architecture arch1 of y1a_core is
   signal rsp_sr   : std_logic_vector(SR_MSB downto 0);
   
   signal dcd_push : std_logic;
-  signal dcd_pop : std_logic;
+  signal dcd_pop  : std_logic;
   
   
   --
@@ -487,6 +503,13 @@ begin
 
       signal wb_dcd : std_logic;
 
+      --
+      -- local decodes
+      --
+      alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg_m(15 downto 14);
+      alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_m(15 downto 12);
+      alias lea_bit    : std_logic                             is ireg_m(8);
+
     begin
    
       wb_dcd <=   '1' when  (
@@ -535,8 +558,6 @@ begin
    port map
      (
        ireg      => ireg_a,
---     opb_ctl   => opb_ctl,   
---     opb_const => opb_const, 
 
        cg_out    => cg_out    
      );
@@ -548,6 +569,17 @@ begin
   -- operand selection
   --
   op_sel1: block
+
+      --
+      -- local decodes
+      --
+      alias ireg_msb   : std_logic                             is ireg_n(15);
+      alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg_n(15 downto 14);
+      alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_n(15 downto 12);
+      alias logic_notb : std_logic                             is ireg_n(11);
+      alias opb_ctl    : std_logic_vector(1 downto 0)          is ireg_n(10 downto 9);
+      alias sel_opb    : std_logic_vector(3 downto 0)          is ireg_n( 7 downto 4);
+
 
     begin
   
@@ -565,11 +597,11 @@ begin
       -- BMD imm update:  R14 as imm_reg
       --   need to add TRS mux to use TRS as operand ( specify operation for MOV only?? )
       --
---      mux_bin <=   cg_out  when ( ireg(15)='0' ) AND ( opb_ctl(1 downto 0) /= "00" )
---             else imm_reg  when ( ireg(15)='0' ) AND ( sel_opb = REG_IMM )
+--      mux_bin <=   cg_out  when ( ireg_msb='0' ) AND ( opb_ctl(1 downto 0) /= "00" )
+--             else imm_reg  when ( ireg_msb='0' ) AND ( sel_opb = REG_IMM )
 --             else br;
 
-      mux_bin <=   cg_out  when ( ireg(15)='0' ) AND ( opb_ctl(1 downto 0) /= "00" )
+      mux_bin <=   cg_out  when ( ireg_msb='0' ) AND ( opb_ctl(1 downto 0) /= "00" )
              else  bin;
 
       --
@@ -590,8 +622,6 @@ begin
     port map
       (
         ireg       => ireg_b,
---      inst_fld   => inst_fld,
---      arith_op   => arith_op,
 
         ain        => ain,
         bin        => mux_inv_bin,
@@ -610,7 +640,6 @@ begin
     port map
       (   
         ireg      => ireg_c,
---      logic_op  => logic_op,   
 
         ain       => ain,        
         bin       => mux_inv_bin,        
@@ -644,13 +673,10 @@ begin
        port map
          (
            ireg         => ireg_c,
---         shift_grp    =>  shift_grp,    
---         shift_signed =>  shift_signed, 
---         shift_dir    =>  shift_dir,    
 
-           ain          =>  ain,          
+           ain          => ain,          
 
-           shift_dat    =>  shift_dat    
+           shift_dat    => shift_dat    
          );
 
     end generate GF_barrel;
@@ -698,13 +724,10 @@ begin
   --
   I_rr_ext: reg_extend
     generic map
-      ( CFG          => CFG )
+      ( CFG        => CFG )
     port map
       (   
-        ireg         => ireg_c,
---      inst_fld   => inst_fld,  
---      mem_size   => mem_size,  
---      mem_sign   => mem_sign,   
+        ireg       => ireg_c,
 
         din        => bin,
                   
@@ -724,9 +747,9 @@ begin
         port map
          (
            ireg  => ireg_c,
---         bsel  => shift_const,
 
            din   => ain,
+
            dout  => flip_dat
          );
 
@@ -750,11 +773,6 @@ begin
     port map
       (
         ireg       => ireg_d,
---      inst_fld   => inst_fld,  
---      dslot_null => dslot_null,
---      call_type  => call_type,
---      ext_bit    => ext_bit,  
---      ext_grp    => ext_grp,  
 
         pc_reg_p1  => pc_reg_p1, 
                   
@@ -770,13 +788,7 @@ begin
   I_ea_calc: ea_calc
     port map
       (
-        ireg       => ireg_d,
---      inst_fld   => inst_fld,  
---      mem_size   => mem_size,  
---      mem_mode   => mem_mode,  
---      sel_opb    => sel_opb,
---      sp_offset  => sp_offset, 
---      ldi_offset => ldi_offset,
+        ireg       => ireg_e,
 
         bin        => bin,      
         imm_reg    => imm_reg,   
@@ -795,11 +807,25 @@ begin
   --
   wb_mux : block
 
-    signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
-    signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
+      signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
+      signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
-    attribute syn_keep of wb_muxa  : signal is true;
-    attribute syn_keep of wb_muxb  : signal is true;
+      attribute syn_keep of wb_muxa  : signal is true;
+      attribute syn_keep of wb_muxb  : signal is true;
+
+      --
+      -- local instruction decode
+      --
+      alias inst_type    : std_logic_vector(TYPE_MSB downto 0)   is ireg_f(15 downto 14);
+      alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg_f(15 downto 12);
+  
+      alias arith_op     : std_logic_vector(OP_MSB   downto 0)   is ireg_f(13 downto 12);
+
+      alias shift_grp    : std_logic                             is ireg_f(11);
+      alias shift_signed : std_logic                             is ireg_f(10);
+      alias shift_dir    : std_logic                             is ireg_f( 9);
+
+      alias lea_bit      : std_logic                             is ireg_f( 8);
 
     begin
 
@@ -845,13 +871,15 @@ begin
 
     port map
       (
-        skip_sense   => skip_sense,  
-        skip_type    => skip_type,   
-        skip_cp_sel  => skip_cp_sel, 
-        skip_ra_type => skip_ra_type,
+        ireg         => ireg_g,
 
-        sel_opa      => sel_opa,     
-        opb_const    => opb_const,   
+--      skip_sense   => skip_sense,  
+--      skip_type    => skip_type,   
+--      skip_cp_sel  => skip_cp_sel, 
+--      skip_ra_type => skip_ra_type,
+--
+--      sel_opa      => sel_opa,     
+--      opb_const    => opb_const,   
 
         ain          => ain,         
         bin          => bin,        
@@ -1117,7 +1145,7 @@ begin
   --
   -- pipeline registers, hold on data stall
   --
-  --   instruction register
+  --   instruction register & copies
   --   pipelined copy of PC for EX stage
   --
   P_pipe_reg: process
@@ -1131,6 +1159,15 @@ begin
         ireg_b    <= ( others => '0');
         ireg_c    <= ( others => '0');
         ireg_d    <= ( others => '0');
+        ireg_e    <= ( others => '0');
+        ireg_f    <= ( others => '0');
+        ireg_g    <= ( others => '0');
+        ireg_h    <= ( others => '0');
+        ireg_i    <= ( others => '0');
+        ireg_j    <= ( others => '0');
+        ireg_k    <= ( others => '0');
+        ireg_m    <= ( others => '0');
+        ireg_n    <= ( others => '0');
  
       elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
         pc_reg_p1 <= pc_reg_p1;
@@ -1139,6 +1176,15 @@ begin
         ireg_b    <= ireg_b;
         ireg_c    <= ireg_c;
         ireg_d    <= ireg_d;
+        ireg_e    <= ireg_e;
+        ireg_f    <= ireg_f;
+        ireg_g    <= ireg_g;
+        ireg_h    <= ireg_h;
+        ireg_i    <= ireg_i;
+        ireg_j    <= ireg_j;
+        ireg_k    <= ireg_k;
+        ireg_m    <= ireg_m;
+        ireg_n    <= ireg_n;
   
       else
         pc_reg_p1 <= pc_reg;
@@ -1147,6 +1193,15 @@ begin
         ireg_b    <= i_dat;
         ireg_c    <= i_dat;
         ireg_d    <= i_dat;
+        ireg_e    <= i_dat;
+        ireg_f    <= i_dat;
+        ireg_g    <= i_dat;
+        ireg_h    <= i_dat;
+        ireg_i    <= i_dat;
+        ireg_j    <= i_dat;
+        ireg_k    <= i_dat;
+        ireg_m    <= i_dat;
+        ireg_n    <= i_dat;
 
       end if;
  
@@ -1252,6 +1307,15 @@ begin
   -- stack control lines
   --
   B_stk_ctl: block
+
+     --
+     -- local instruction decode
+     --
+     alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_h(15 downto 12);
+     alias ext_bit    : std_logic                             is ireg_h(11);
+     alias ext_grp    : std_logic_vector(3 downto 0)          is ireg_h(7 downto 4);
+     alias call_type  : std_logic                             is ireg_h(10);
+
     begin
 
       dcd_push <= '1'
@@ -1321,11 +1385,13 @@ begin
   I_dbus_ctl: dbus_ctl
     port map
       (
-        inst_fld  => inst_fld,  
-        ex_null   => ex_null,   
-        mem_size  => mem_size,  
-        lea_bit   => lea_bit,   
+        ireg      => ireg_i,
+--      inst_fld  => inst_fld,  
+--      mem_size  => mem_size,  
+--      lea_bit   => lea_bit,   
                                
+        ex_null   => ex_null,   
+
         ea_lsbs   => ea_dat(1 downto 0),    
                                
         d_en_l    => d_en_l,    
@@ -1343,9 +1409,10 @@ begin
 
     port map
       (
-        inst_fld  => inst_fld,  
-        mem_size  => mem_size,  
-        lea_bit   => lea_bit,   
+        ireg      => ireg_j,
+--      inst_fld  => inst_fld,  
+--      mem_size  => mem_size,  
+--      lea_bit   => lea_bit,   
   
         ain       => ain,        
 
@@ -1362,9 +1429,10 @@ begin
 
     port map
       (
-        inst_fld   => inst_fld,   
-        mem_size   => mem_size,   
-        mem_sign   => mem_sign,   
+        ireg       => ireg_k,
+--      inst_fld   => inst_fld,   
+--      mem_size   => mem_size,   
+--      mem_sign   => mem_sign,   
 
         ea_lsbs    => ea_dat(1 downto 0),     
 
@@ -1405,7 +1473,7 @@ begin
 
       y1a_probe_sigs.ea_dat     <= ea_dat;
 
-      y1a_probes <= y1a_probe_sigs;
+--      y1a_probes <= y1a_probe_sigs;
 
     end block B_probe;
 

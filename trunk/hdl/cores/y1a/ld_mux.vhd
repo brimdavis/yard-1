@@ -32,10 +32,10 @@ entity ld_mux is
 
   port
     (   
-      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
-
-      mem_size   : in  std_logic_vector(1 downto 0);
-      mem_sign   : in  std_logic;
+      ireg      : in  std_logic_vector(INST_MSB downto 0);
+--    inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+--    mem_size   : in  std_logic_vector(1 downto 0);
+--    mem_sign   : in  std_logic;
                   
       ea_lsbs    : in  std_logic_vector(1 downto 0);
 
@@ -64,6 +64,12 @@ architecture arch1 of ld_mux is
   --
   signal msb_fill : std_logic;
 
+  --
+  --
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias mem_size   : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
+  alias mem_sign   : std_logic                             is ireg(8);
 
 begin
 

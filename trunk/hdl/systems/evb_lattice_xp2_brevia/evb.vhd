@@ -124,11 +124,6 @@ architecture evb1 of evb is
 
   signal in_flags : std_logic_vector(15 downto 0);
 
-  --
-  --
-  --
-  signal evb_probes : y1a_probe_type;
-  
 
 begin
 
@@ -198,9 +193,7 @@ begin
 
         d_addr     => d_addr,
         d_rdat     => d_rdat,        
-        d_wdat     => d_wdat,
-
-        y1a_probes => evb_probes        
+        d_wdat     => d_wdat
       );
 
   --
@@ -402,7 +395,7 @@ begin
       wait until rising_edge(clk);
 
       -- LSB's of PC
-      -- led <= NOT evb_probes.pc_reg_p1(7 downto 0);
+      -- led <= NOT y1a_probe_sigs.pc_reg_p1(7 downto 0);
 
       -- UART receive data
       led <= NOT rx_dat;

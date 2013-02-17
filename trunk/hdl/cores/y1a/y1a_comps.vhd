@@ -56,8 +56,6 @@ package y1a_comps is
     port 
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      opb_ctl   : in std_logic_vector(1 downto 0);
---      opb_const : in std_logic_vector(4 downto 0);
 
         cg_out    : out std_logic_vector(ALU_MSB downto 0)
       );
@@ -68,8 +66,6 @@ package y1a_comps is
     port
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---        inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---        arith_op   : in  std_logic_vector(OP_MSB downto 0);
 
         ain        : in  std_logic_vector(ALU_MSB downto 0);
         bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -84,7 +80,6 @@ package y1a_comps is
     port
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      logic_op   : in  std_logic_vector(OP_MSB downto 0);
 
         ain        : in  std_logic_vector(ALU_MSB downto 0);
         bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -98,9 +93,6 @@ package y1a_comps is
     port
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      shift_grp    : in  std_logic;
---      shift_signed : in  std_logic;    
---      shift_dir    : in  std_logic;    
 
         ain          : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -136,9 +128,6 @@ package y1a_comps is
     port 
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---      mem_size   : in  std_logic_vector(1 downto 0);
---      mem_sign   : in  std_logic;
                   
         din        : in  std_logic_vector(ALU_MSB downto 0);
                   
@@ -151,7 +140,7 @@ package y1a_comps is
     port 
       (   
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      bsel : in  std_logic_vector(4 downto 0);
+
         din  : in  std_logic_vector(ALU_MSB downto 0);
         dout : out std_logic_vector(ALU_MSB downto 0)
       );
@@ -162,12 +151,6 @@ package y1a_comps is
     port
       (
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---      mem_size   : in  std_logic_vector(1 downto 0);
---      mem_mode   : in  std_logic;
---      sel_opb    : in  std_logic_vector(3 downto 0);
---      sp_offset  : in  std_logic_vector(3 downto 0);
---      ldi_offset : in  std_logic_vector(11 downto 0);
 
         bin        : in  std_logic_vector(ALU_MSB downto 0);
         imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
@@ -183,11 +166,6 @@ package y1a_comps is
      port
        (   
          ireg       : in  std_logic_vector(INST_MSB downto 0);
---       inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---       dslot_null : in  std_logic;
---       call_type  : in  std_logic;
---       ext_bit    : in  std_logic;
---       ext_grp    : in  std_logic_vector(3 downto 0);
 
          pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
        
@@ -204,13 +182,15 @@ package y1a_comps is
       );
     port
       (
-        skip_sense   : in  std_logic;
-        skip_type    : in  std_logic_vector(2 downto 0);
-        skip_cp_sel  : in  std_logic;
-        skip_ra_type : in  std_logic_vector(2 downto 0);
+        ireg       : in  std_logic_vector(INST_MSB downto 0);
 
-        sel_opa      : in  std_logic_vector(3 downto 0);
-        opb_const    : in  std_logic_vector(4 downto 0);
+--      skip_sense   : in  std_logic;
+--      skip_type    : in  std_logic_vector(2 downto 0);
+--      skip_cp_sel  : in  std_logic;
+--      skip_ra_type : in  std_logic_vector(2 downto 0);
+--
+--      sel_opa      : in  std_logic_vector(3 downto 0);
+--      opb_const    : in  std_logic_vector(4 downto 0);
 
         ain          : in  std_logic_vector(ALU_MSB downto 0);
         bin          : in  std_logic_vector(ALU_MSB downto 0);
@@ -244,10 +224,12 @@ package y1a_comps is
   component dbus_ctl is
     port
       (
-        inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+        ireg      : in  std_logic_vector(INST_MSB downto 0);
+--      inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+--      mem_size  : in  std_logic_vector(1 downto 0);
+--      lea_bit   : in  std_logic;
+
         ex_null   : in  std_logic;
-        mem_size  : in  std_logic_vector(1 downto 0);
-        lea_bit   : in  std_logic;
 
         ea_lsbs   : in  std_logic_vector(1 downto 0);
 
@@ -266,9 +248,10 @@ package y1a_comps is
       );
     port
       (
-        inst_fld  : in  std_logic_vector(ID_MSB downto 0);
-        mem_size  : in  std_logic_vector(1 downto 0);
-        lea_bit   : in  std_logic;
+        ireg      : in  std_logic_vector(INST_MSB downto 0);
+--      inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+--      mem_size  : in  std_logic_vector(1 downto 0);
+--      lea_bit   : in  std_logic;
 
         ain       : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -284,9 +267,10 @@ package y1a_comps is
       );
     port
       (
-        inst_fld   : in  std_logic_vector(ID_MSB downto 0);
-        mem_size   : in  std_logic_vector(1 downto 0);
-        mem_sign   : in  std_logic;
+        ireg       : in  std_logic_vector(INST_MSB downto 0);
+--      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
+--      mem_size   : in  std_logic_vector(1 downto 0);
+--      mem_sign   : in  std_logic;
 
         ea_lsbs    : in  std_logic_vector(1 downto 0);
 

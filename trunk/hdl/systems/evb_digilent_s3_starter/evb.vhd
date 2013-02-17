@@ -32,8 +32,11 @@ library work;
   use work.y1a_config.all;
   use work.y1a_comps.all;
 
-  use work.y1a_probe_pkg.all;
   use work.debounce_pkg.all;
+
+-- pragma translate_off
+  use work.y1a_probe_pkg.all;
+-- pragma translate_on
   
   
 entity evb is
@@ -124,11 +127,6 @@ architecture evb1 of evb is
 
   signal in_flags : std_logic_vector(15 downto 0);
 
-  --
-  --
-  --
-  signal evb_probes : y1a_probe_type;
-  
 
 begin
 
@@ -198,9 +196,7 @@ begin
 
         d_addr     => d_addr,
         d_rdat     => d_rdat,        
-        d_wdat     => d_wdat,
-
-        y1a_probes => evb_probes        
+        d_wdat     => d_wdat
       );
 
   --
@@ -403,7 +399,7 @@ begin
       wait until rising_edge(clk);
 
       -- LSB's of PC
-      -- led <= evb_probes.pc_reg_p1(7 downto 0);
+      -- led <= y1a_probe_sigs.pc_reg_p1(7 downto 0);
 
       -- UART receive data
       led <= rx_dat;

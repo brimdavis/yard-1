@@ -29,9 +29,6 @@ entity shift_one is
   port
     (   
       ireg       : in  std_logic_vector(INST_MSB downto 0);
---    shift_grp    : in  std_logic;
---    shift_signed : in  std_logic;    
---    shift_dir    : in  std_logic;    
 
       ain          : in  std_logic_vector(ALU_MSB downto 0);
 
