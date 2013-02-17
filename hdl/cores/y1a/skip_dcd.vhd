@@ -39,13 +39,15 @@ entity skip_dcd is
 
   port
     (   
-      skip_sense   : in  std_logic;
-      skip_type    : in  std_logic_vector(2 downto 0);
-      skip_cp_sel  : in  std_logic;
-      skip_ra_type : in  std_logic_vector(2 downto 0);
+      ireg       : in  std_logic_vector(INST_MSB downto 0);
 
-      sel_opa      : in  std_logic_vector(3 downto 0);
-      opb_const    : in  std_logic_vector(4 downto 0);
+--    skip_sense   : in  std_logic;
+--    skip_type    : in  std_logic_vector(2 downto 0);
+--    skip_cp_sel  : in  std_logic;
+--    skip_ra_type : in  std_logic_vector(2 downto 0);
+--
+--    sel_opa      : in  std_logic_vector(3 downto 0);
+--    opb_const    : in  std_logic_vector(4 downto 0);
 
       ain          : in  std_logic_vector(ALU_MSB downto 0);
       bin          : in  std_logic_vector(ALU_MSB downto 0);
@@ -90,6 +92,18 @@ architecture arch1 of skip_dcd is
   signal cb_z   : std_logic;
   signal cb_c   : std_logic;
   signal cb_v   : std_logic;
+
+  --
+  --
+  --
+  alias skip_sense    : std_logic                    is ireg(11);
+  alias skip_type     : std_logic_vector(2 downto 0) is ireg(10 downto 8);
+ 
+  alias skip_cp_sel   : std_logic                    is ireg( 7);
+  alias skip_ra_type  : std_logic_vector(2 downto 0) is ireg( 6 downto 4);
+
+  alias sel_opa       : std_logic_vector(3 downto 0) is ireg( 3 downto 0);
+  alias opb_const     : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
 
 
 begin

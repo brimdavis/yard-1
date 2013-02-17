@@ -33,8 +33,6 @@ entity cgen is
   port
     (   
       ireg      : in  std_logic_vector(INST_MSB downto 0);
---    opb_ctl   : in std_logic_vector(1 downto 0);
---    opb_const : in std_logic_vector(4 downto 0);
 
       cg_out    : out std_logic_vector(ALU_MSB downto 0)
     );

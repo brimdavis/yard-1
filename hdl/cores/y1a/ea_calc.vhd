@@ -34,12 +34,6 @@ entity ea_calc is
   port
     (   
       ireg       : in  std_logic_vector(INST_MSB downto 0);
---    inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---    mem_size   : in  std_logic_vector(1 downto 0);
---    mem_mode   : in  std_logic;
---    sel_opb    : in  std_logic_vector(3 downto 0);
---    sp_offset  : in  std_logic_vector(3 downto 0);
---    ldi_offset : in  std_logic_vector(11 downto 0);
 
       bin        : in  std_logic_vector(ALU_MSB downto 0);
       imm_reg    : in  std_logic_vector(ALU_MSB downto 0);

@@ -46,7 +46,6 @@ entity flip is
   port
     (   
       ireg  : in  std_logic_vector(INST_MSB downto 0);
---    bsel  : in  std_logic_vector (4 downto 0);
 
       din   : in  std_logic_vector (ALU_MSB downto 0);
       dout  : out std_logic_vector (ALU_MSB downto 0)

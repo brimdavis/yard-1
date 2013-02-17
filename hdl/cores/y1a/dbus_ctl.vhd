@@ -28,10 +28,12 @@ entity dbus_ctl is
 
   port
     (   
-      inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+      ireg      : in  std_logic_vector(INST_MSB downto 0);
+--    inst_fld  : in  std_logic_vector(ID_MSB downto 0);
+--    mem_size  : in  std_logic_vector(1 downto 0);
+--    lea_bit   : in  std_logic;
+
       ex_null   : in  std_logic;
-      mem_size  : in  std_logic_vector(1 downto 0);
-      lea_bit   : in  std_logic;
 
       ea_lsbs   : in  std_logic_vector(1 downto 0);
 
@@ -48,6 +50,13 @@ architecture arch1 of dbus_ctl is
 
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  --
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias mem_size   : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
+  alias lea_bit    : std_logic                             is ireg(8);
 
 begin
 

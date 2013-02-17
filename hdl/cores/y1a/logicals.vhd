@@ -29,7 +29,6 @@ entity logicals is
   port
     (   
       ireg       : in  std_logic_vector(INST_MSB downto 0);
---    logic_op   : in  std_logic_vector(OP_MSB downto 0);
 
       ain        : in  std_logic_vector(ALU_MSB downto 0);
       bin        : in  std_logic_vector(ALU_MSB downto 0);
