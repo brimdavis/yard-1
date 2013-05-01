@@ -1122,6 +1122,10 @@ sub ps_imm
     my $offset;
     my $imm;
 
+    my $label;
+    my $pcr_offset;
+    my $pcr_offset_str;
+
     my $opcode = $ops{$operation}{opc};
 
     check_argument_count( $#operands, 1 );
@@ -1151,13 +1155,25 @@ sub ps_imm
     #
     if ( $pass == 1 )
       {
+
         if ( $status != 0 )
           {
+            $label = next_imm_label();
+    
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
+            $imms{ $label } = { can_merge => 0, keep => 1, value => 0 };
+
+            if ($D1) { print $JNK_F (" imm table : $label, unknown\n"); }
           }
         else
           {
-            # TODO: set flag based on value ( IMM5, IMM12, LDI )
+            $label = next_imm_label();
+
+            # TODO: set keep flag based on known pass1 value ( IMM5, IMM12 vs. LDI )
+            $imms{ $label } = { can_merge => 1, keep => 1, value => $offset };
+
+            if ($D1) { print $JNK_F (" imm table : $label, $offset\n"); }
+
           }
       }
 
@@ -1245,10 +1261,41 @@ sub ps_imm
         #
         else
           {
+            #
+            # prototype imm hash code
+            #
+
+            # compute offset to automatic imm label
+            $pcr_offset = label_value( next_imm_label ) - get_address();
+
+            # check for quad aligned target address before truncating pcr_offset
+            if ( ( $pcr_offset % 4 ) > 0 )
+              {
+                do_error("Unaligned LDI target");
+              }
+
+            # check if within range of unsigned 12 bit pcr_offset field
+            if ( ( $pcr_offset > 4095  ) || ( $pcr_offset < 0 ) )
+              {
+                do_error("IMM offset to LDI constant is out of range");
+                $pcr_offset = 0;
+              }
+
+            # convert to quad offset
+            $pcr_offset = $pcr_offset >> 2;
+
+
+            # %012b format overflows format field for negative integers, truncate string to 12 bits after sprintf
+            $pcr_offset_str = sprintf("%012b", $pcr_offset);
+            $pcr_offset_str = substr( $pcr_offset_str, length($pcr_offset_str)-12, 12);
+
+
+            #
             $opcode = $ops{'ldi'}{opc};
-            $opcode = stuff_op_field( $opcode, 'r', '000000000000' );
-    
-            do_error("Automatic generation of LDI table entry from \'imm\' is not implemented yet.");
+
+            $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str );
+            #$opcode = stuff_op_field( $opcode, 'r', '000000000000' );
+
           }
 
      }

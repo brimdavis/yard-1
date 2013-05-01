@@ -3,7 +3,6 @@
 ::
 cd temp
 
-::xst -intstyle xflow   -ifn ..\evb.xst -ise evb.prj -ofn evb.syr 
 xst -intstyle xflow   -ifn ..\evb.xst -ofn evb.syr 
 if errorlevel 1 exit /b 1
 
