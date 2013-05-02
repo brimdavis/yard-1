@@ -339,8 +339,11 @@ sub next_imm_label
 #-------------------------------------------------------------
 sub flush_imms
 {
-  my $lstr;
+  my $label;
+  my $duplicate;
+  my $cstr;
   my $cdat;
+  my @sorted_labels;
 
   #
   # align to quad word boundary
@@ -350,14 +353,35 @@ sub flush_imms
   if ($pass == 2) { printf $LST_F ("\n  %08X           ; imms\n", $address ); }
 
   #
-  # loop though keys sorted by value
+  # keys sorted by value
   #
-  foreach my $label ( sort { $imms{$a}{value} <=> $imms{$b}{value}  or  lc($a) cmp lc($b) } keys(%imms) )
+  # TESTME: secondary sort by merge flag to avoid gaps in duplicated values
+  #
+#  @sorted_labels = sort { $imms{$a}{value} <=> $imms{$b}{value}  or  lc($a) cmp lc($b) } keys(%imms) ;
+  @sorted_labels = sort { $imms{$a}{value} <=> $imms{$b}{value}  or  $imms{$a}{can_merge} <=> $imms{$b}{can_merge} } keys(%imms) ;
+ 
+  if ($D1) { print $JNK_F ("flush_imms:\n"); }
+
+  for my $i (0 .. $#sorted_labels ) 
     { 
+      $label = $sorted_labels[$i];
 
       #
-      # TODO: add loop to merge identical values
+      # TESTME: flag to merge identical values
       #
+      if (    ( $i < $#sorted_labels ) 
+           && ( $imms{$label}{value} == $imms{$sorted_labels[$i+1]}{value} ) 
+           && ( $imms{$label}{can_merge} == 1 )
+         )
+      {
+        $duplicate = 1;
+      }
+      else
+      {
+        $duplicate = 0;
+      }
+
+      if ($D1) { print $JNK_F ("  $label : $imms{$label}{value}   $duplicate\n"); }
 
       # generate label
       if ( $pass == 1 ) { init_label($label) };
@@ -365,21 +389,23 @@ sub flush_imms
 
       if ($pass == 2) { printf $LST_F ("  %08X           %s:\n", $address, $label); }
 
-      # force constant to 32 bits 
-      $cdat = $imms{$label}{value} & 0xffffffff;
+      if ( !$duplicate )
+      {
+        if ($pass == 2)
+          {
+           # force constant to 32 bits 
+           $cdat = $imms{$label}{value} & 0xffffffff;
 
-      if ($pass == 2)
-        {
-          $lstr = sprintf "%08X", $cdat;
-          printf $OBJ_F ("quad=%s\n", $lstr);
+           $cstr = sprintf "%08X", $cdat;
+           printf $OBJ_F ("quad=%s\n", $cstr);
 
-          #  printf $LST_F ( "  %s: %08X\n", $label, $imms{$label}{value} ) ; 
+           printf $LST_F ("  %08X  %s       \n", $address  , substr($cstr,0,4) );
+           printf $LST_F ("  %08X  %s       \n", $address+2, substr($cstr,4,4) );
+          }
 
-          printf $LST_F ("  %08X  %s       \n", $address  , substr($lstr,0,4) );
-          printf $LST_F ("  %08X  %s       \n", $address+2, substr($lstr,4,4) );
-        }
+        $address = $address + 4;
+      }
 
-      $address = $address + 4;
     }
 
   $next_address = $address;
