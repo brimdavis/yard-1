@@ -880,7 +880,7 @@ sub ps_mem
 
                 if ( $status == 0 ) 
                   {
-                    # BMD make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
+                    # FIXME: make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
 
                     # check for valid offset 
                     if ( ($offset > 60) || ($offset < 0) || ( ( $offset % 4 ) > 0 ) ) 
@@ -1262,7 +1262,7 @@ sub ps_imm
         else
           {
             #
-            # prototype imm hash code
+            # prototype of imm hash code
             #
 
             # compute offset to automatic imm label
@@ -1274,8 +1274,12 @@ sub ps_imm
                 do_error("Unaligned LDI target");
               }
 
-            # check if within range of unsigned 12 bit pcr_offset field
-            if ( ( $pcr_offset > 4095  ) || ( $pcr_offset < 0 ) )
+            #
+            # check if offset is within range 
+            #  - unsigned 12 bit offset instruction field is in quads
+            #  - pcr_offset is in bytes before shift
+            #
+            if ( ( $pcr_offset > (4096 * 4)  ) || ( $pcr_offset < 0 ) )
               {
                 do_error("IMM offset to LDI constant is out of range");
                 $pcr_offset = 0;
@@ -1292,9 +1296,7 @@ sub ps_imm
 
             #
             $opcode = $ops{'ldi'}{opc};
-
             $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str );
-            #$opcode = stuff_op_field( $opcode, 'r', '000000000000' );
 
           }
 
