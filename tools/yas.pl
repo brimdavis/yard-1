@@ -294,7 +294,8 @@ my %labels = ();
 #  FIXME : add imms value handling routines to eliminate 'our'
 #
 our %imms = ();
-my $imm_seq;          
+our $imm_table_num;          
+my  $imm_seq;          
 
 #
 # line parsing
@@ -327,9 +328,9 @@ sub next_imm_label
 {
   my $imm_label = 'I$' . $imm_seq;
 
-  $imm_seq++;
+  if ($D1) { print $JNK_F ("next_imm_label() : $imm_label, $imm_seq\n"); }
 
-  if ($D1) { print $JNK_F ("next_imm_label : $imm_label, $imm_seq\n"); }
+  $imm_seq++;
 
   return( $imm_label );
 }
@@ -348,67 +349,86 @@ sub flush_imms
   #
   # align to quad word boundary
   #
-  $address = int ( ( $address + 3) / 4 ) * 4;
+  do_align(4);
 
   if ($pass == 2) { printf $LST_F ("\n  %08X           ; imms\n", $address ); }
 
   #
   # keys sorted by value
   #
-  # TESTME: secondary sort by merge flag to avoid gaps in duplicated values
-  #
 #  @sorted_labels = sort { $imms{$a}{value} <=> $imms{$b}{value}  or  lc($a) cmp lc($b) } keys(%imms) ;
-  @sorted_labels = sort { $imms{$a}{value} <=> $imms{$b}{value}  or  $imms{$a}{can_merge} <=> $imms{$b}{can_merge} } keys(%imms) ;
+  #
+  # TESTME: 
+  #   - secondary sort by table number to avoid merging with already flushed constants
+  #   - secondary sort by merge flag to avoid gaps in duplicated values
+  #
+  @sorted_labels = sort {     $imms{$a}{value} <=> $imms{$b}{value}  
+                          or  $imms{$a}{table_num} <=> $imms{$b}{table_num} 
+                          or  $imms{$a}{can_merge} <=> $imms{$b}{can_merge} 
+                          or  lc($a) cmp lc($b) 
+                        } keys(%imms) ;
  
   if ($D1) { print $JNK_F ("flush_imms:\n"); }
 
+  #
+  # using an index for the loop so merge code can look ahead to the next entry
+  #
   for my $i (0 .. $#sorted_labels ) 
     { 
       $label = $sorted_labels[$i];
 
       #
-      # TESTME: flag to merge identical values
+      # only print current table number
       #
-      if (    ( $i < $#sorted_labels ) 
-           && ( $imms{$label}{value} == $imms{$sorted_labels[$i+1]}{value} ) 
-           && ( $imms{$label}{can_merge} == 1 )
-         )
+      if ( $imms{$label}{table_num} == $imm_table_num )
       {
-        $duplicate = 1;
+        #
+        # TESTME: flag to merge identical values
+        #
+        if (    ( $i < $#sorted_labels ) 
+             && ( $imms{$label}{can_merge} == 1 )
+             && ( $imms{$label}{value}     == $imms{$sorted_labels[$i+1]}{value} ) 
+             && ( $imms{$label}{table_num} == $imms{$sorted_labels[$i+1]}{table_num} ) 
+           )
+        {
+          $duplicate = 1;
+        }
+        else
+        {
+          $duplicate = 0;
+        }
+
+        if ($D1) { print $JNK_F ("  $label :   $imms{$label}{value}   $duplicate   $imms{$label}{can_merge}   $imms{$label}{table_num}\n"); }
+
+        # generate label
+        if ( $pass == 1 ) { init_label($label) };
+        set_label($label, $address);
+
+        if ($pass == 2) { printf $LST_F ("  %08X           %s:\n", $address, $label); }
+
+        if ( !$duplicate )
+        {
+          if ($pass == 2)
+            {
+             # force constant to 32 bits 
+             $cdat = $imms{$label}{value} & 0xffffffff;
+
+             $cstr = sprintf "%08X", $cdat;
+             printf $OBJ_F ("quad=%s\n", $cstr);
+
+             printf $LST_F ("  %08X  %s       \n", $address  , substr($cstr,0,4) );
+             printf $LST_F ("  %08X  %s       \n", $address+2, substr($cstr,4,4) );
+            }
+
+          $address = $address + 4;
+        }
       }
-      else
-      {
-        $duplicate = 0;
-      }
-
-      if ($D1) { print $JNK_F ("  $label : $imms{$label}{value}   $duplicate\n"); }
-
-      # generate label
-      if ( $pass == 1 ) { init_label($label) };
-      set_label($label, $address);
-
-      if ($pass == 2) { printf $LST_F ("  %08X           %s:\n", $address, $label); }
-
-      if ( !$duplicate )
-      {
-        if ($pass == 2)
-          {
-           # force constant to 32 bits 
-           $cdat = $imms{$label}{value} & 0xffffffff;
-
-           $cstr = sprintf "%08X", $cdat;
-           printf $OBJ_F ("quad=%s\n", $cstr);
-
-           printf $LST_F ("  %08X  %s       \n", $address  , substr($cstr,0,4) );
-           printf $LST_F ("  %08X  %s       \n", $address+2, substr($cstr,4,4) );
-          }
-
-        $address = $address + 4;
-      }
-
     }
 
   $next_address = $address;
+
+  $imm_table_num++;          
+
 }
 
 
@@ -817,7 +837,7 @@ sub parse_expression
         }
     }
 
-  if ($D1) { printf $JNK_F ("exp.sum  :$sum\n"); }
+  if ($D1) { printf $JNK_F ("exp.sum  :$sum :$code\n"); }
   return($code,$sum);
 }
 
@@ -869,33 +889,35 @@ sub emit_op
 #
 my %directive_defs =
 (
-  'org'      =>  { type => 'DIRECTIVE' , ps => \&ps_org,     name => "ORiGin",   blab => "location counter set to address N"  },
-  '.org'     =>  { type => 'DIRECTIVE' , ps => \&ps_org,     name => ".ORiGin",  blab => "location counter set to address N"  },
+  'org'        =>  { type => 'DIRECTIVE' , ps => \&ps_org,       name => "ORiGin",     blab => "location counter set to address N"  },
+  '.org'       =>  { type => 'DIRECTIVE' , ps => \&ps_org,       name => ".ORiGin",    blab => "location counter set to address N"  },
 
-  'align'    =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => "ALIGN",    blab => "location counter forced to next modulo N byte boundary"  },
-  '.align'   =>  { type => 'DIRECTIVE' , ps => \&ps_align,   name => ".ALIGN",   blab => "location counter forced to next modulo N byte boundary"  },
+  'align'      =>  { type => 'DIRECTIVE' , ps => \&ps_align,     name => "ALIGN",      blab => "location counter forced to next modulo N byte boundary"  },
+  '.align'     =>  { type => 'DIRECTIVE' , ps => \&ps_align,     name => ".ALIGN",     blab => "location counter forced to next modulo N byte boundary"  },
 
-  '.common'  =>  { type => 'DIRECTIVE' , ps => \&ps_common,  name => ".COMMON",  blab => "common block:  label .common size, alignment"  },
+  '.common'    =>  { type => 'DIRECTIVE' , ps => \&ps_common,    name => ".COMMON",    blab => "common block:  label .common size, alignment"  },
 
-  'end'      =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => "END",      blab => "end assembly"  },
-  '.end'     =>  { type => 'DIRECTIVE' , ps => \&ps_end,     name => ".END",     blab => "end assembly"  },
+  'end'        =>  { type => 'DIRECTIVE' , ps => \&ps_end,       name => "END",        blab => "end assembly"  },
+  '.end'       =>  { type => 'DIRECTIVE' , ps => \&ps_end,       name => ".END",       blab => "end assembly"  },
 
-  'equ'      =>  { type => 'DIRECTIVE' , ps => \&ps_equ,     name => "EQUate",   blab => "equate symbol = value"  },
-  '.equ'     =>  { type => 'DIRECTIVE' , ps => \&ps_equ,     name => ".EQUate",  blab => "equate symbol = value"  },
+  'equ'        =>  { type => 'DIRECTIVE' , ps => \&ps_equ,       name => "EQUate",     blab => "equate symbol = value"  },
+  '.equ'       =>  { type => 'DIRECTIVE' , ps => \&ps_equ,       name => ".EQUate",    blab => "equate symbol = value"  },
 
-  '.global'  =>  { type => 'DIRECTIVE' , ps => \&ps_global,  name => ".SECTION", blab => "stub: global directive"  },
+  '.imm_table' =>  { type => 'DIRECTIVE' , ps => \&ps_imm_table, name => ".IMM_TABLE", blab => "generate immediate table"  },
 
-  '.section' =>  { type => 'DIRECTIVE' , ps => \&ps_section, name => ".SECTION", blab => "stub: section control directive"  },
+  '.global'    =>  { type => 'DIRECTIVE' , ps => \&ps_global,    name => ".GLOBAL",    blab => "stub: global directive"  },
+                                                                                     
+  '.section'   =>  { type => 'DIRECTIVE' , ps => \&ps_section,   name => ".SECTION",   blab => "stub: section control directive"  },
+                                                                                     
+  '.set'       =>  { type => 'DIRECTIVE' , ps => \&ps_set,       name => ".SET",       blab => "stub: assembler settings"  },
 
-  '.set'     =>  { type => 'DIRECTIVE' , ps => \&ps_set,     name => ".SET",     blab => "stub: assembler settings"  },
+  '.type'      =>  { type => 'DIRECTIVE' , ps => \&ps_type,      name => ".TYPE",      blab => "stub: object type"  },
+  '.size'      =>  { type => 'DIRECTIVE' , ps => \&ps_size,      name => ".SIZE",      blab => "stub: object size"  },
+                                                                                     
+  '.verify'    =>  { type => 'DIRECTIVE' , ps => \&ps_verify,    name => ".VERIFY",    blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
 
-  '.type'    =>  { type => 'DIRECTIVE' , ps => \&ps_type,    name => ".TYPE",    blab => "stub: object type"  },
-  '.size'    =>  { type => 'DIRECTIVE' , ps => \&ps_size,    name => ".SIZE",    blab => "stub: object size"  },
-
-  '.verify'  =>  { type => 'DIRECTIVE' , ps => \&ps_verify,  name => ".VERIFY",  blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
-
-  '.error'   =>  { type => 'DIRECTIVE' , ps => \&ps_error,   name => ".ERROR",   blab => "user error message"  },
-  '.warn'    =>  { type => 'DIRECTIVE' , ps => \&ps_warn,    name => ".WARN",    blab => "user warning message"  },
+  '.error'     =>  { type => 'DIRECTIVE' , ps => \&ps_error,     name => ".ERROR",     blab => "user error message"  },
+  '.warn'      =>  { type => 'DIRECTIVE' , ps => \&ps_warn,      name => ".WARN",      blab => "user warning message"  },
 
 );
 
@@ -930,6 +952,20 @@ sub ps_org
 
 }
 
+sub do_align
+{
+  my ( $align ) = shift;
+
+  $address = int ( ( $address + $align - 1) / $align ) * $align;
+  $next_address = $address;
+
+  if ($pass == 2)
+    {
+      printf $OBJ_F ("@%X\n", $address);
+      printf $LST_F ("  %08X           %s\n", $address, $raw_line );
+    }
+}
+
 sub ps_align
 {
   my ( $pass      ) = shift;
@@ -949,14 +985,8 @@ sub ps_align
       $align = 1;
     }
 
-  $address = int ( ( $address + $align - 1) / $align ) * $align;
-  $next_address = $address;
+  do_align($align);
 
-  if ($pass == 2)
-    {
-      printf $OBJ_F ("@%X\n", $address);
-      printf $LST_F ("  %08X           %s\n", $address, $raw_line );
-    }
 }
 
 sub ps_common
@@ -1052,6 +1082,21 @@ sub ps_equ
     {
       printf $LST_F ("  %08X           %s\n", label_value($label), $raw_line );
     }
+}
+
+
+sub ps_imm_table
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+  my $arg;
+  my $status;
+
+  flush_imms();
+
 }
 
 sub ps_global
@@ -1613,7 +1658,8 @@ while( $pass <= 2 )
 
     $label_prefix = '';
 
-    $imm_seq = 0;          
+    $imm_seq       = 0;          
+    $imm_table_num = 0;          
 
     #
     # file loop 

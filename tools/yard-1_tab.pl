@@ -1130,55 +1130,58 @@ sub ps_imm
 
     check_argument_count( $#operands, 1 );
 
+    # always grab the next imm label number, even if not used, to avoid phasing issues
+    $label = next_imm_label();
+
     # check if opb is an immediate constant
     if ( $operands[0] =~ /^#(.+)$/ )
       { 
         ($status, $offset) = parse_expression($1);
       }
-    
     else
       {
         do_error("Expecting immediate constant");
         $status = -1;
       }
-    
-    if ( ($pass == 2) & ($status != 0 ) )
-      {
-        do_error("Undefined immediate constant");
-
-        $opcode = $ops{'imm12'}{opc};
-        $opcode = stuff_op_field( $opcode, 'i', '000000000000' );
-      }
 
     #
-    # pass1 cases
+    # pass1 values
     #
     if ( $pass == 1 )
       {
 
         if ( $status != 0 )
           {
-            $label = next_imm_label();
-    
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
-            $imms{ $label } = { can_merge => 0, keep => 1, value => 0 };
+            $imms{ $label } = { can_merge => 0, keep => 1, table_num => $imm_table_num, value => 0 };
 
-            if ($D1) { print $JNK_F (" imm table : $label, unknown\n"); }
+            if ($D1) { print $JNK_F (" imm table unknown : $label, unknown, $imm_table_num\n"); }
           }
         else
           {
-            $label = next_imm_label();
+            # TODO: set keep flag based on known/unknown pass1 value ( IMM5, IMM12 vs. LDI )
+            $imms{ $label } = { can_merge => 1, keep => 1, table_num => $imm_table_num, value => $offset };
 
-            # TODO: set keep flag based on known pass1 value ( IMM5, IMM12 vs. LDI )
-            $imms{ $label } = { can_merge => 1, keep => 1, value => $offset };
-
-            if ($D1) { print $JNK_F (" imm table : $label, $offset\n"); }
+            if ($D1) { print $JNK_F (" imm table known : $label, $offset, $imm_table_num\n"); }
 
           }
       }
 
     #
-    # pass2 cases
+    # pass 2 values
+    #
+    if ( ($pass == 2) & ($status != 0 ) )
+      {
+        do_error("Undefined immediate constant");
+      }
+    else
+      {
+        # always populate value on pass 2 
+        $imms{ $label }{ value } = $offset;
+      }
+
+    #
+    # pass2 code generation
     #
     if ( ($pass == 2) & ($status == 0 ) ) 
       {
@@ -1265,13 +1268,17 @@ sub ps_imm
             # prototype of imm hash code
             #
 
-            # compute offset to automatic imm label
-            $pcr_offset = label_value( next_imm_label ) - get_address();
+
+            # calculate offset from current PC (quad aligned) to automatic imm label
+            $pcr_offset = label_value( $label ) - ( (get_address() >> 2 ) << 2);
+
+
+            if ($D1) { printf $JNK_F (" auto imm label, offset(bytes): %s %d\n", $label, $pcr_offset); }
 
             # check for quad aligned target address before truncating pcr_offset
             if ( ( $pcr_offset % 4 ) > 0 )
               {
-                do_error("Unaligned LDI target");
+                do_error("Unaligned automatic IMM LDI target address");
               }
 
             #
@@ -1281,7 +1288,7 @@ sub ps_imm
             #
             if ( ( $pcr_offset > (4096 * 4)  ) || ( $pcr_offset < 0 ) )
               {
-                do_error("IMM offset to LDI constant is out of range");
+                do_error("automatic IMM offset to LDI constant is out of range");
                 $pcr_offset = 0;
               }
 
