@@ -14,7 +14,9 @@
 ;
 ; try out the implemented shifts
 ;
-; only 1 bit shift lengths implemented in the core at the moment
+; 1 bit shift lengths implemented for all operations
+;
+; 2 bit shift lengths implemented for LSL/ROL only
 ;
 
     org $0
@@ -54,6 +56,23 @@
 
     ror     r1
     .verify r1,#$7000_0000
+
+;
+; check two-bit shifts
+;
+
+    rol     r1,#2
+    .verify r1,#$c000_0001
+
+    rol     r1,#2
+    .verify r1,#$0000_0007
+
+    lsl     r1,#2
+    .verify r1,#$0000_001C
+
+    lsl     r1,#2
+    .verify r1,#$0000_0070
+
 
 done:
    bra  done

@@ -32,8 +32,11 @@ library work;
   use work.y1a_config.all;
   use work.y1a_comps.all;
 
-  use work.y1a_probe_pkg.all;
   use work.debounce_pkg.all;
+
+-- pragma translate_off
+  use work.y1a_probe_pkg.all;
+-- pragma translate_on
   
   
 entity evb is
