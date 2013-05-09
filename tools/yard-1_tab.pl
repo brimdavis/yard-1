@@ -527,9 +527,15 @@ sub ps_sr
               { 
                 ($status, $offset) = parse_expression($1);
 
-                if ( $offset != 1 ) 
+                # shifts of one allowed for all
+                # shifts of two allowed only for ROL/LSL
+                if ( 
+                          ( $offset == 0 )
+                     || ( ( $offset  > 1 ) && ( ($operation eq 'lsr') || ($operation eq 'asr') || ($operation eq 'ror') ) )
+                     || ( ( $offset  > 2 ) && ( ($operation eq 'lsl') || ($operation eq 'rol') ) )
+                   )
                   {
-                    do_error("Only shift/rotate lengths of 1 are currently supported by the Y1A core");
+                    do_error("Unsupported shift/rotate length for the current Y1A core");
                   }
 
                 # FIXME: need mask or field overflow test

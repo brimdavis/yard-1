@@ -40,6 +40,7 @@ call v alu\reg1
 call v alu\shift1
 
 call v memory\imm12
+call v memory\imm_auto
 call v memory\ldi
 call v memory\lea1
 call v memory\mem1

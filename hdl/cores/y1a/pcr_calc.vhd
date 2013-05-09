@@ -28,8 +28,6 @@ library work;
   use work.y1_constants.all;
   use work.y1a_config.all;
 
-  use work.y1a_probe_pkg.all;
-
 
 entity pcr_calc is
 
@@ -52,7 +50,6 @@ architecture arch1 of pcr_calc is
 
   signal pc_p1_ext   : std_logic_vector(ALU_MSB downto 0);
   signal pcr_offset  : std_logic_vector(ALU_MSB downto 0);
-  signal ea_pc_lsbs  : std_logic_vector(1 downto 0);
 
   signal dcd_CALL    : boolean;
 

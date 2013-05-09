@@ -28,7 +28,9 @@ library work;
   use work.y1_constants.all;
   use work.y1a_config.all;
 
+  -- pragma translate_off
   use work.y1a_probe_pkg.all;
+  -- pragma translate_on
 
 
 entity skip_dcd is

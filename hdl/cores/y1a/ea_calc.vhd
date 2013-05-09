@@ -26,7 +26,9 @@ library work;
   use work.y1_constants.all;
   use work.y1a_config.all;
 
+  -- pragma translate_off
   use work.y1a_probe_pkg.all;
+  -- pragma translate_on
 
 
 entity ea_calc is
@@ -51,7 +53,6 @@ architecture arch1 of ea_calc is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  signal ea_mask_mux  : std_logic_vector(ALU_MSB downto 0);
   signal ea_off_mux   : std_logic_vector(ALU_MSB downto 0);
 
   signal pc_p1_masked : std_logic_vector(ALU_MSB downto 0);
