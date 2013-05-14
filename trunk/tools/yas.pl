@@ -347,20 +347,20 @@ sub flush_imms
   my @sorted_labels;
 
   #
+  # FIXME: return here if there are no imms to dump in the current imm table 
+  #  ( to prevent unnecessary aligns )
+  #
+
+  #
   # align to quad word boundary
   #
   do_align(4);
 
-  if ($pass == 2) { printf $LST_F ("\n  %08X           ; imms\n", $address ); }
-
   #
-  # keys sorted by value
-  #
-#  @sorted_labels = sort { $imms{$a}{value} <=> $imms{$b}{value}  or  lc($a) cmp lc($b) } keys(%imms) ;
-  #
-  # TESTME: 
+  # key sort
+  #   - primary sort by value
   #   - secondary sort by table number to avoid merging with already flushed constants
-  #   - secondary sort by merge flag to avoid gaps in duplicated values
+  #   - tertiary sort by merge flag to avoid gaps in duplicated values
   #
   @sorted_labels = sort {     $imms{$a}{value} <=> $imms{$b}{value}  
                           or  $imms{$a}{table_num} <=> $imms{$b}{table_num} 

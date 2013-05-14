@@ -1159,17 +1159,30 @@ sub ps_imm
         if ( $status != 0 )
           {
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
-            $imms{ $label } = { can_merge => 0, keep => 1, table_num => $imm_table_num, value => 0 };
+            $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0 };
 
-            if ($D1) { print $JNK_F (" imm table unknown : $label, unknown, $imm_table_num\n"); }
+            if ($D1) { print $JNK_F (" imm table (unknown) : $label, unknown, $imm_table_num\n"); }
           }
         else
           {
-            # TODO: set keep flag based on known/unknown pass1 value ( IMM5, IMM12 vs. LDI )
-            $imms{ $label } = { can_merge => 1, keep => 1, table_num => $imm_table_num, value => $offset };
 
-            if ($D1) { print $JNK_F (" imm table known : $label, $offset, $imm_table_num\n"); }
+            # don't create imm entry if pass 1 value is a known IMM5/IMM12 constant
+            if (
+                    ( $imm5_encode{sprintf("%08lx",  $offset)} )
+                 || ( $imm5_encode{sprintf("%08lx", ~$offset)} )
+                 || ( ($offset <= 2047) && ($offset >= -2048) )
+               )
 
+              { 
+                if ($D1) { print $JNK_F (" imm table ( known imm5|imm12 ) : $label, $offset, $imm_table_num\n"); }
+              }
+            else
+              { 
+                if ($D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
+
+                # add to imm hash
+                $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset };
+              }
           }
       }
 
@@ -1182,8 +1195,9 @@ sub ps_imm
       }
     else
       {
-        # always populate value on pass 2 
-        $imms{ $label }{ value } = $offset;
+        # if entry exists, {re}populate value on pass 2 
+        if ($imms{ $label }) 
+         { $imms{ $label }{ value } = $offset; }
       }
 
     #
@@ -1292,7 +1306,7 @@ sub ps_imm
             #  - unsigned 12 bit offset instruction field is in quads
             #  - pcr_offset is in bytes before shift
             #
-            if ( ( $pcr_offset > (4096 * 4)  ) || ( $pcr_offset < 0 ) )
+            if ( ( $pcr_offset > (4095 * 4)  ) || ( $pcr_offset < 0 ) )
               {
                 do_error("automatic IMM offset to LDI constant is out of range");
                 $pcr_offset = 0;
