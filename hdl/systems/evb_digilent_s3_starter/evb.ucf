@@ -1,0 +1,283 @@
+NET "clk50_in" TNM_NET = "clk";
+TIMESPEC "TS_clk" = PERIOD "clk" 20 ns HIGH 50 %;
+
+NET "clk50_in" LOC = "t9" | IOSTANDARD = LVCMOS33 ; 
+
+NET "rx_bit"   LOC = "t13" | IOSTANDARD = LVCMOS33 ; 
+NET "tx_bit"   LOC = "r13" | IOSTANDARD = LVCMOS33 ; 
+
+NET "pb<3>"    LOC = "l14" | IOSTANDARD = LVCMOS33; 
+NET "pb<2>"    LOC = "l13" | IOSTANDARD = LVCMOS33; 
+NET "pb<1>"    LOC = "m14" | IOSTANDARD = LVCMOS33; 
+NET "pb<0>"    LOC = "m13" | IOSTANDARD = LVCMOS33; 
+
+NET "sw<7>"    LOC = "k13" | IOSTANDARD = LVCMOS33; 
+NET "sw<6>"    LOC = "k14" | IOSTANDARD = LVCMOS33; 
+NET "sw<5>"    LOC = "j13" | IOSTANDARD = LVCMOS33; 
+NET "sw<4>"    LOC = "j14" | IOSTANDARD = LVCMOS33; 
+NET "sw<3>"    LOC = "h13" | IOSTANDARD = LVCMOS33; 
+NET "sw<2>"    LOC = "h14" | IOSTANDARD = LVCMOS33; 
+NET "sw<1>"    LOC = "g12" | IOSTANDARD = LVCMOS33; 
+NET "sw<0>"    LOC = "f12" | IOSTANDARD = LVCMOS33; 
+
+NET "led<7>"   LOC = "p11" | IOSTANDARD = LVCMOS33; 
+NET "led<6>"   LOC = "p12" | IOSTANDARD = LVCMOS33; 
+NET "led<5>"   LOC = "n12" | IOSTANDARD = LVCMOS33; 
+NET "led<4>"   LOC = "p13" | IOSTANDARD = LVCMOS33; 
+NET "led<3>"   LOC = "n14" | IOSTANDARD = LVCMOS33; 
+NET "led<2>"   LOC = "l12" | IOSTANDARD = LVCMOS33; 
+NET "led<1>"   LOC = "p14" | IOSTANDARD = LVCMOS33; 
+NET "led<0>"   LOC = "k12" | IOSTANDARD = LVCMOS33; 
+
+
+
+#
+#net "clk50_in"  loc = "t9";
+#net "clkusr_in" loc = "d9";
+#
+#net "rs232_b_tx" loc = "xx";
+#net "rs232_b_rx" loc = "xx";
+#
+#net "digit<3>" loc = "e13";
+#net "digit<2>" loc = "f14";
+#net "digit<1>" loc = "g14";
+#net "digit<0>" loc = "d14";
+#
+#net "seg_a" loc = "e14";
+#net "seg_b" loc = "g13";
+#net "seg_c" loc = "n15";
+#net "seg_d" loc = "p15";
+#net "seg_e" loc = "r16";
+#net "seg_f" loc = "f13";
+#net "seg_g" loc = "n16";
+#net "seg_dp" loc = "p16";
+#
+#net "ram_addr<17>" loc = "l3";
+#net "ram_addr<16>" loc = "k5";
+#net "ram_addr<15>" loc = "k3";
+#net "ram_addr<14>" loc = "j3";
+#net "ram_addr<13>" loc = "j4";
+#net "ram_addr<12>" loc = "h4";
+#net "ram_addr<11>" loc = "h3";
+#net "ram_addr<10>" loc = "g5";
+#net "ram_addr<9>" loc = "e4";
+#net "ram_addr<8>" loc = "e3";
+#net "ram_addr<7>" loc = "f4";
+#net "ram_addr<6>" loc = "f3";
+#net "ram_addr<5>" loc = "g4";
+#net "ram_addr<4>" loc = "l4";
+#net "ram_addr<3>" loc = "m3";
+#net "ram_addr<2>" loc = "m4";
+#net "ram_addr<1>" loc = "n3";
+#net "ram_addr<0>" loc = "l5";
+#
+#net "ram_we_l" loc = "g3";
+#net "ram_oe_l" loc = "k4";
+#
+#net "ram_a_dat<15>" loc = "r1";
+#net "ram_a_dat<14>" loc = "p1";
+#net "ram_a_dat<13>" loc = "l2";
+#net "ram_a_dat<12>" loc = "j2";
+#net "ram_a_dat<11>" loc = "h1";
+#net "ram_a_dat<10>" loc = "f2";
+#net "ram_a_dat<9>" loc = "p8";
+#net "ram_a_dat<8>" loc = "d3";
+#net "ram_a_dat<7>" loc = "b1";
+#net "ram_a_dat<6>" loc = "c1";
+#net "ram_a_dat<5>" loc = "c2";
+#net "ram_a_dat<4>" loc = "r5";
+#net "ram_a_dat<3>" loc = "t5";
+#net "ram_a_dat<2>" loc = "r6";
+#net "ram_a_dat<1>" loc = "t8";
+#net "ram_a_dat<0>" loc = "n7";
+#
+#net "ram_a_ce_l" loc = "p7";
+#net "ram_a_lb" loc = "p6";
+#net "ram_a_ub" loc = "t4";
+#
+#net "ram_b_dat<15>" loc = "n1";
+#net "ram_b_dat<14>" loc = "m1";
+#net "ram_b_dat<13>" loc = "k2";
+#net "ram_b_dat<12>" loc = "c3";
+#net "ram_b_dat<11>" loc = "f5";
+#net "ram_b_dat<10>" loc = "g1";
+#net "ram_b_dat<9>" loc = "e2";
+#net "ram_b_dat<8>" loc = "d2";
+#net "ram_b_dat<7>" loc = "d1";
+#net "ram_b_dat<6>" loc = "e1";
+#net "ram_b_dat<5>" loc = "g2";
+#net "ram_b_dat<4>" loc = "j1";
+#net "ram_b_dat<3>" loc = "k1";
+#net "ram_b_dat<2>" loc = "m2";
+#net "ram_b_dat<1>" loc = "n2";
+#net "ram_b_dat<0>" loc = "p2";
+#
+#net "ram_b_ce_l" loc = "n5";
+#net "ram_b_lb" loc = "p5";
+#net "ram_b_ub" loc = "r4";
+#
+#net "xcf_din"   loc = "m11";
+#net "xcf_init" loc = "n9";
+#net "xcf_cclk"  loc = "a14";
+#
+#net "ps2_dat"   loc = "m15";
+#net "ps2_clk"   loc = "m16";
+#
+#net "vga_red"   loc="r12";
+#net "vga_green" loc="t12";
+#net "vga_blue"  loc="r11";
+#
+#net "vga_hsync" loc="r9";
+#net "vga_vsync" loc="t10";
+#
+
+##################
+#
+# area group attempts
+#
+##################
+
+
+##################
+#
+# BRAMs left/right side @top of chip 
+# logic in top ~1/3
+#
+# results: 25.198 ns |   98 errors |  102992 score
+#
+##################
+
+#INST "blk_mem1/RAM3" LOC = "RAMB16_X1Y5" ;
+#INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
+#INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y5" ;
+#INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
+#
+#INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
+#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X39Y30 ;
+
+
+##################
+#
+# BRAMs in top, single column on left 
+# logic in top ~2/3, left half
+#
+# results: 23.114ns |   83 errors |  46165 score
+#
+##################
+
+#INST "blk_mem1/RAM3" LOC = "RAMB16_X0Y5" ;
+#INST "blk_mem1/RAM2" LOC = "RAMB16_X0Y4" ;
+#INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y3" ;
+#INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y2" ;
+#
+#INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
+#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X19Y14;
+
+
+##################
+#
+# BRAMs in middle, single column on left 
+# logic in middle ~2/3, left half
+#
+# results: 25.266 ns |   94 errors | 117011 score
+# [ but very low score (3043) @ phase 6 before before finishing unroutes ]         
+#          
+##################
+
+#INST "blk_mem1/RAM3" LOC = "RAMB16_X0Y4" ;
+#INST "blk_mem1/RAM2" LOC = "RAMB16_X0Y3" ;
+#INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y2" ;
+#INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y1" ;
+#
+#INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
+#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y41:SLICE_X19Y6;
+
+
+##################
+#
+# top, BRAM left-right
+#
+##################
+
+#INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
+#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X39Y30 ;
+
+INST "blk_mem1/RAM3" LOC = "RAMB16_X1Y5" ;
+INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
+INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y5" ;
+INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
+
+INST "I_evb_core/I_pcr_calc" AREA_GROUP = "AG_I_evb_core/I_pcr_calc" ;
+AREA_GROUP "AG_I_evb_core/I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
+
+INST "I_evb_core/I_ea_calc" AREA_GROUP = "AG_I_evb_core/I_ea_calc" ;
+AREA_GROUP "AG_I_evb_core/I_ea_calc" RANGE = SLICE_X7Y47:SLICE_X8Y30 ;
+
+INST "I_evb_core/I_ld_mux" AREA_GROUP = "AG_I_evb_core/I_ld_mux" ;
+AREA_GROUP "AG_I_evb_core/I_ld_mux" RANGE = SLICE_X11Y47:SLICE_X14Y30 ;
+
+INST "I_evb_core/I_regfile" AREA_GROUP = "AG_I_evb_core/I_regfile" ;
+AREA_GROUP "AG_I_evb_core/I_regfile" RANGE = SLICE_X16Y47:SLICE_X18Y30 ;
+
+INST "I_evb_core/I_st_mux" AREA_GROUP = "AG_I_evb_core/I_st_mux" ;
+AREA_GROUP "AG_I_evb_core/I_st_mux" RANGE = SLICE_X20Y47:SLICE_X21Y30 ;
+
+INST "I_evb_core/I_logicals" AREA_GROUP = "AG_I_evb_core/I_logicals" ;
+AREA_GROUP "AG_I_evb_core/I_logicals" RANGE = SLICE_X23Y47:SLICE_X24Y30 ;
+
+INST "I_evb_core/I_addsub" AREA_GROUP = "AG_I_evb_core/I_addsub" ;
+AREA_GROUP "AG_I_evb_core/I_addsub" RANGE = SLICE_X26Y47:SLICE_X27Y30 ;
+
+INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
+AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X29Y47:SLICE_X30Y30 ;
+
+INST "I_evb_core/I_cgen" AREA_GROUP = "AG_I_evb_core/I_cgen" ;
+AREA_GROUP "AG_I_evb_core/I_cgen" RANGE = SLICE_X31Y47:SLICE_X34Y30 ;
+
+##################
+#
+# top-middle, BRAM left side only
+#
+##################
+
+#INST "blk_mem1/RAM3" LOC = "RAMB16_X0Y5" ;
+#INST "blk_mem1/RAM2" LOC = "RAMB16_X0Y4" ;
+#INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y3" ;
+#INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y2" ;
+#
+#INST "I_evb_core/I_pcr_calc" AREA_GROUP = "AG_I_evb_core/I_pcr_calc" ;
+#AREA_GROUP "AG_I_evb_core/I_pcr_calc" RANGE = SLICE_X2Y43:SLICE_X3Y20 ;
+#
+#INST "I_evb_core/I_ea_calc" AREA_GROUP = "AG_I_evb_core/I_ea_calc" ;
+#AREA_GROUP "AG_I_evb_core/I_ea_calc" RANGE = SLICE_X7Y43:SLICE_X8Y20 ;
+#
+#INST "I_evb_core/I_ld_mux" AREA_GROUP = "AG_I_evb_core/I_ld_mux" ;
+#AREA_GROUP "AG_I_evb_core/I_ld_mux" RANGE = SLICE_X11Y43:SLICE_X14Y20 ;
+#
+#INST "I_evb_core/I_regfile" AREA_GROUP = "AG_I_evb_core/I_regfile" ;
+#AREA_GROUP "AG_I_evb_core/I_regfile" RANGE = SLICE_X16Y43:SLICE_X18Y20 ;
+#
+#INST "I_evb_core/I_st_mux" AREA_GROUP = "AG_I_evb_core/I_st_mux" ;
+#AREA_GROUP "AG_I_evb_core/I_st_mux" RANGE = SLICE_X20Y43:SLICE_X21Y20 ;
+#
+#INST "I_evb_core/I_logicals" AREA_GROUP = "AG_I_evb_core/I_logicals" ;
+#AREA_GROUP "AG_I_evb_core/I_logicals" RANGE = SLICE_X23Y43:SLICE_X24Y20 ;
+#
+#INST "I_evb_core/I_addsub" AREA_GROUP = "AG_I_evb_core/I_addsub" ;
+#AREA_GROUP "AG_I_evb_core/I_addsub" RANGE = SLICE_X26Y43:SLICE_X27Y20 ;
+#
+#INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
+#AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X29Y43:SLICE_X30Y20 ;
+#
+#INST "I_evb_core/I_cgen" AREA_GROUP = "AG_I_evb_core/I_cgen" ;
+#AREA_GROUP "AG_I_evb_core/I_cgen" RANGE = SLICE_X31Y43:SLICE_X34Y20 ;
+
+
+#
+# RLOCs
+#
+
+#INST "I_evb_core/I_logicals" RLOC_RANGE=X0Y0:X0Y31;
+#INST "I_evb_core/regfile1"   RLOC_RANGE=X0Y0:X1Y31;
+
+

@@ -12,7 +12,9 @@
 ---------------------------------------------------------------
 
 --
--- Y1A simple shifter, one bit shift/rotate, plus two bit LSL/ROL
+-- Y1A simple shifter 
+--   - one bit LSR/ASR/ROR
+--   - two bit LSL/ROL
 --
 
 library ieee;
