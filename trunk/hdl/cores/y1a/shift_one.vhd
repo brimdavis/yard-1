@@ -1,10 +1,12 @@
 -- 
 -- <shift_one.vhd>
 -- 
+-- FIXME: change the name of this module, since it now supports some two-bit operations
+--
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2012  Brian Davis
+-- (C) COPYRIGHT 2001-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
