@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2012  Brian Davis
+-- (C) COPYRIGHT 2000-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -29,9 +29,6 @@ entity dbus_ctl is
   port
     (   
       ireg      : in  std_logic_vector(INST_MSB downto 0);
---    inst_fld  : in  std_logic_vector(ID_MSB downto 0);
---    mem_size  : in  std_logic_vector(1 downto 0);
---    lea_bit   : in  std_logic;
 
       ex_null   : in  std_logic;
 

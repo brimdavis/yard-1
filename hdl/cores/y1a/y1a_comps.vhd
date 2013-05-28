@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2012  Brian Davis
+-- (C) COPYRIGHT 2001-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -184,14 +184,6 @@ package y1a_comps is
       (
         ireg       : in  std_logic_vector(INST_MSB downto 0);
 
---      skip_sense   : in  std_logic;
---      skip_type    : in  std_logic_vector(2 downto 0);
---      skip_cp_sel  : in  std_logic;
---      skip_ra_type : in  std_logic_vector(2 downto 0);
---
---      sel_opa      : in  std_logic_vector(3 downto 0);
---      opb_const    : in  std_logic_vector(4 downto 0);
-
         ain          : in  std_logic_vector(ALU_MSB downto 0);
         bin          : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -225,9 +217,6 @@ package y1a_comps is
     port
       (
         ireg      : in  std_logic_vector(INST_MSB downto 0);
---      inst_fld  : in  std_logic_vector(ID_MSB downto 0);
---      mem_size  : in  std_logic_vector(1 downto 0);
---      lea_bit   : in  std_logic;
 
         ex_null   : in  std_logic;
 
@@ -249,9 +238,6 @@ package y1a_comps is
     port
       (
         ireg      : in  std_logic_vector(INST_MSB downto 0);
---      inst_fld  : in  std_logic_vector(ID_MSB downto 0);
---      mem_size  : in  std_logic_vector(1 downto 0);
---      lea_bit   : in  std_logic;
 
         ain       : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -268,9 +254,6 @@ package y1a_comps is
     port
       (
         ireg       : in  std_logic_vector(INST_MSB downto 0);
---      inst_fld   : in  std_logic_vector(ID_MSB downto 0);
---      mem_size   : in  std_logic_vector(1 downto 0);
---      mem_sign   : in  std_logic;
 
         ea_lsbs    : in  std_logic_vector(1 downto 0);
 
