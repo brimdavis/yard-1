@@ -53,7 +53,8 @@ architecture arch1 of addsub is
   -- BMD XST workaround
   signal pad_ain    : std_logic_vector(ALU_MSB+2 downto 0);
   signal pad_bin    : std_logic_vector(ALU_MSB+2 downto 0);
-  signal cin        : std_logic;
+
+  signal dcd_sub    : std_logic;
 
   signal pad_bin_msb  : std_logic;
 
@@ -64,7 +65,7 @@ architecture arch1 of addsub is
 
   attribute keep of pad_ain   : signal is true;
   attribute keep of pad_bin   : signal is true;
-  attribute keep of cin       : signal is true;
+  attribute keep of dcd_sub   : signal is true;
 
   --
   -- instruction field aliases 
@@ -80,19 +81,16 @@ begin
   --   now using 'native' addsub subtract for RSUB
   --   external bin inversion & carry used for SUB
   --
-  cin <= '1' when arith_op = T_SUB else '0';
-
-  --
-  -- propagate any MSB inversions into padded bin so SUB borrow detect works correctly
-  --
-  pad_bin_msb <=  bin(ALU_MSB) when ( inst_fld = OPA_SUB )
-         else '0';
+  dcd_sub <= '1' when arith_op = T_SUB else '0';
 
   --
   -- BMD XST needs separate pad assignment to recognize addsub below
   --
-  pad_ain <= (         '0' & ain & cin );
-  pad_bin <= ( pad_bin_msb & bin & cin );
+  -- dcd_sub forces carry when set
+  -- also inverts carry detect logic (fixes invert-and-add carry/borrow problem)
+  --
+  pad_ain <= (     '0' & ain & dcd_sub );
+  pad_bin <= ( dcd_sub & bin & dcd_sub );
 
 
   wide_sum <=    pad_bin - pad_ain when arith_op = T_RSUB
@@ -106,3 +104,4 @@ begin
   arith_dat  <= wide_sum(ALU_MSB+1 downto 1);  
  
 end arch1;
+
