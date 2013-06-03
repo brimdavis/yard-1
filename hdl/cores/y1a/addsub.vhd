@@ -14,6 +14,10 @@
 --
 -- Y1A arithmetic ops
 --
+--
+--   - uses 'native' addsub for ADD and RSUB
+--   - external shared bin inversion logic, and internal +1, used to implement SUB
+--
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -48,15 +52,16 @@ architecture arch1 of addsub is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
+
+  --
+  -- addsub signals are padded in width for carry-in, carry/borrow-out logic
+  --
   signal wide_sum   : std_logic_vector(ALU_MSB+2 downto 0);
 
-  -- BMD XST workaround
   signal pad_ain    : std_logic_vector(ALU_MSB+2 downto 0);
   signal pad_bin    : std_logic_vector(ALU_MSB+2 downto 0);
 
   signal dcd_sub    : std_logic;
-
-  signal pad_bin_msb  : std_logic;
 
   --
   -- declare synthesis attributes
@@ -78,27 +83,34 @@ architecture arch1 of addsub is
 begin
 
   --
-  --   now using 'native' addsub subtract for RSUB
-  --   external bin inversion & carry used for SUB
+  -- decode of SUB used for special handling of borrow-out, force-carry-in
   --
   dcd_sub <= '1' when arith_op = T_SUB else '0';
 
   --
-  -- BMD XST needs separate pad assignment to recognize addsub below
+  -- BMD XST needs separate pad signal assignment here to recognize addsub below
+  --  - extra bit at the LSB is used to code behavioral carry-in
+  --  - extra bit at the MSB is used for carry/borrow detection
   --
-  -- dcd_sub forces carry when set
-  -- also inverts carry detect logic (fixes invert-and-add carry/borrow problem)
+  -- dcd_sub forces carry-in when set
+  --
+  -- dcd_sub is also used at the MSB to invert carry detect logic (fixes SUB borrow problem)
+  --   ADD/RSUB use addsub     : native carry/borrow = 1 when active, no inversion required
+  --   SUB uses invert-add-one : native borrow=0 when active, extra term inverts to make borrow=1 
   --
   pad_ain <= (     '0' & ain & dcd_sub );
   pad_bin <= ( dcd_sub & bin & dcd_sub );
 
 
+  --
+  -- addsub
+  --
   wide_sum <=    pad_bin - pad_ain when arith_op = T_RSUB
            else  pad_ain + pad_bin 
            ;
 
   --
-  -- break out result bits, plus carry for skip on carry/borrow 
+  -- break out result bits, plus carry out for skip on carry/borrow 
   --
   arith_cout <= wide_sum(ALU_MSB+2);
   arith_dat  <= wide_sum(ALU_MSB+1 downto 1);  

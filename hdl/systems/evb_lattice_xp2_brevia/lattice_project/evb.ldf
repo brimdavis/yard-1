@@ -77,6 +77,9 @@
         <Source name="../../../cores/y1a/reg_extend.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../../cores/y1a/state_ctl.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="../../../cores/y1a/y1_constants.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>

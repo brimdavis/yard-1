@@ -229,7 +229,6 @@ architecture arch1 of y1a_core is
 
   signal next_pc   : std_logic_vector(PC_MSB downto 0);
 
-  signal ext_bra_offset : std_logic_vector(ALU_MSB downto 0);
   
   --
   -- instruction register & copies
@@ -248,6 +247,7 @@ architecture arch1 of y1a_core is
   signal ireg_k   : std_logic_vector(INST_MSB downto 0);
   signal ireg_m   : std_logic_vector(INST_MSB downto 0);
   signal ireg_n   : std_logic_vector(INST_MSB downto 0);
+  signal ireg_p   : std_logic_vector(INST_MSB downto 0);
   
   attribute syn_keep of ireg    : signal is true;
   attribute syn_keep of ireg_a  : signal is true;
@@ -263,6 +263,7 @@ architecture arch1 of y1a_core is
   attribute syn_keep of ireg_k  : signal is true;
   attribute syn_keep of ireg_m  : signal is true;
   attribute syn_keep of ireg_n  : signal is true;
+  attribute syn_keep of ireg_p  : signal is true;
 
   --
   -- stack signals
@@ -334,16 +335,10 @@ architecture arch1 of y1a_core is
   --
   signal st_reg   : std_logic_vector(SR_MSB downto 0);
 
-  alias null_sr   : std_logic_vector(7 downto 0) is st_reg(SR_MSB downto SR_MSB - 7 );
   alias ex_null   : std_logic is st_reg(SR_MSB);
   
-  signal next_null_sr : std_logic_vector(7 downto 0);
 
-  signal spam_length_mask : std_logic_vector(7 downto 0);
   
-  --alias st_flag   : std_logic is st_reg(SR_MSB-4);
-
-
   ----------------------
   --
   -- instruction register aliases for opcode fields ( see constant.vhd )
@@ -372,7 +367,7 @@ architecture arch1 of y1a_core is
   alias logic_notb : std_logic is ireg(11);
  
   alias ext_bit    : std_logic is ireg(11);
-  
+
   --
   -- branch & extension group fields
   --
@@ -437,7 +432,7 @@ architecture arch1 of y1a_core is
   --
   alias spam_mode : std_logic_vector(2 downto 0) is ireg(10 downto 8);
   alias spam_mask : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
- 
+
 
   --
   -- early instruction decodes
@@ -653,7 +648,7 @@ begin
   --
   -- shifts & rotates
   --
-  --  TODO: only 1 bit shift/rotate lengths are currently implemented
+  --  TODO: implement barrel shifter
   --
 
   GT_barrel: if CFG.barrel_shift generate
@@ -934,226 +929,54 @@ begin
 
     end process;
 
-  --
-  -- status register
-  --
-  --   top 8 bits (the null_sr bits) are coded along with the instruction flow logic
-  --
-  --   missing :
-  --
-  --     - push/pop for interrupts & RTI ( started coding )
-  --
-  --     - define currently unused bits ( interrupt masks, levels, etc. )
-  --        - especially the interrupt enables for single level interrupt code
-  --          ( disable interrupts on irq after pushing old SR to stack )
-  --
-  sr1:  process 
-    begin
-      wait until rising_edge(clk);
-  
-      if  sync_rst = '1' then
-        st_reg(SR_MSB-8 downto 0) <= ( others => '0');
-  
-      -- FIXME: this is one cycle too early for SR restore
-      elsif ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
-        st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
-
-      end if;
-   
-    end process sr1;
 
   --
-  -- generate masks for SPAM instruction
   --
-  with spam_mode select
-  spam_length_mask  <=
-    X"FF" when B"000",
-    X"FE" when B"001",
-    X"FC" when B"010",
-    X"F8" when B"011",
-    X"F0" when B"100",
-    X"E0" when B"101",
-    X"C0" when B"110",
-    X"FF" when others;           
-
   --
-  -- compute extended branch offset
-  -- BMD compiles for 32 bit core only as currently coded
-  --
-  ext_bra_offset <=
+  I_state_ctl : state_ctl
+    generic map
+      ( CFG          => CFG )
 
-         imm_reg(21 downto 0) & bra_offset & '0'  
-    when ( bra_long = '1' )
+    port map
+      (
+        clk                => clk,
+        sync_rst           => sync_rst,
 
-    else ( ALU_MSB downto 10 => bra_offset(8) ) & bra_offset & '0'
-    ;
+        d_stall            => d_stall,      
+
+        skip_cond          => skip_cond,   
+        arith_skip_nocarry => arith_skip_nocarry,
+        arith_cout         => arith_cout,
 
 
-  -- 
-  -- instruction flow 
-  --   creates PC, flow control logic
-  --
-  -- re-write as block?  used to be a clocked process...  
-  --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, d_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+        ireg               => ireg_p,
 
-    begin
+        ain                => ain,      
+        imm_reg            => imm_reg,
 
-      --
-      -- flow control logic
-      --
 
-      if ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
-        --
-        -- data stall
-        --
-        next_pc       <= pc_reg;
-        next_null_sr  <= null_sr;
-  
-      elsif ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
-        --
-        -- SPAM instruction
-        --
-        next_pc       <= pc_reg + PC_INC_I1;
+        rsp_pc             => rsp_pc,
+        rsp_sr             => rsp_sr,
 
-        if spam_mode = B"111" then
-          next_null_sr  <= ( 7 downto 0 => ex_null ) AND spam_mask;
-        else
-          next_null_sr  <= ( ( 7 downto 0 => ex_null ) XOR (NOT spam_mask) ) AND spam_length_mask;
-        end if;
+        st_reg_out         => st_reg,
 
-      elsif ( ex_null = '1' ) then
-        --
-        -- nullified instruction
-        --
-        next_pc       <= pc_reg + PC_INC_I1;
-        next_null_sr  <= null_sr(6 downto 0) & '0';
+        pc_reg_out         => pc_reg,
+        next_pc_out        => next_pc,
 
-      else
-        --
-        -- instruction execution
-        --
-
-        case inst_fld is
-
-          when OPC_BR =>
-            next_pc       <= pc_reg_p1 + ext_bra_offset(PC_MSB downto 0);
-            next_null_sr  <= dslot_null & B"000_0000";
-
-          when OPC_EXT =>
-            if (ext_grp = EXT_JUMP) AND (ext_bit = '1' ) then
-              next_pc       <= ain(PC_MSB downto 0);
-              next_null_sr  <= dslot_null & B"000_0000";
-
-            elsif (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) then
-              next_pc       <= rsp_pc;
-
-              --
-              -- existing code won't work for skip, bra.d, etc. 
-              -- that would have changed next state
-              --
-              -- TODO: revised approach
-              --
-              -- enter interrupt:
-              --   - null current EX stage
-              --   - push EX stage inst. address, status register 
-              --   - next_pc = instruction vector
-              --   - set interrupt status flag
-              --
-              -- exit interrupt:
-              --   - #1 pop PC
-              --   - #1 execute or null delay slot as indicated by rti ?
-              --   - #2 pop SR during delay slot execution
-              --
-              -- issues:
-              --   Probably need to also stack current instruction fetch address,
-              --   restart fetch along with restoring EX stage ireg and pc_reg_p1.
-              --   Otherwise an interrupted branch delay slot won't work.
-              --
-
-              -- ??  load next_null sr with dslot_null & stacked bits of saved null 
-              -- state for an rti ( was top bit was already used when stacked ) ??
-              if ( ret_type = '1' ) then 
-                next_null_sr  <= dslot_null & rsp_sr(SR_MSB-1 downto SR_MSB-7);
-              else
-                next_null_sr  <= dslot_null & B"000_0000";
-              end if;
-
---            -- this pops ex_null too early: pops old SR while executing RTI branch slot,
---            -- which clobbers ex_null bit of current SR that's nulling RTI branch slot,
---            -- plus improperly restoring null bit for interrupted instruction
---            if ( ret_type = '1' ) then 
---                next_null <= rsp_sr(SR_MSB); 
---              else
---                next_null <= '1';
---              end if;
-
-            -- others in EXT group
-            else
-              next_pc       <= pc_reg + PC_INC_I1;
-              next_null_sr  <= null_sr(6 downto 0) & '0';
-    
-          end if;
-    
-          when OPC_SKIP =>
-            next_pc       <= pc_reg + PC_INC_I1;
-            next_null_sr  <= ( skip_cond OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-    
-          when OPA_ADD =>
-            next_pc       <= pc_reg + PC_INC_I1;
-            next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-  
-          when OPA_SUB =>
-            next_pc       <= pc_reg + PC_INC_I1;
-            next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-    
-          when OPA_RSUB  =>
-            next_pc       <= pc_reg + PC_INC_I1;
-            next_null_sr  <= ( ( arith_skip_nocarry AND NOT arith_cout) OR null_sr(6) ) & null_sr(5 downto 0) & '0';
-                                                                                                            
-          when others  =>
-            next_pc       <= pc_reg + PC_INC_I1;
-            next_null_sr  <= null_sr(6 downto 0) & '0';
-    
-        end case;
-    
-      end if; 
-    
-    end process pc1;
-
-    
-  --
-  --   register next_pc
-  --
-  pcr1: process 
-    begin
-      wait until rising_edge(clk);
-  
-      if sync_rst = '1' then
-        pc_reg   <= PC_RST_VEC;
-        null_sr  <= B"1000_0000";
-  
-      else
-        pc_reg   <= next_pc;
-        null_sr  <= next_null_sr;
-
-      end if;
-  
-    end process pcr1;
+        pc_reg_p1_out      => pc_reg_p1
+      );
 
 
   --
   -- pipeline registers, hold on data stall
   --
-  --   instruction register & copies
-  --   pipelined copy of PC for EX stage
+  --   instruction register & copies thereof 
   --
   P_pipe_reg: process
     begin
       wait until rising_edge(clk);
  
       if sync_rst = '1' then
-        pc_reg_p1 <= PC_RST_VEC;
         ireg      <= ( others => '0');
         ireg_a    <= ( others => '0');
         ireg_b    <= ( others => '0');
@@ -1168,9 +991,9 @@ begin
         ireg_k    <= ( others => '0');
         ireg_m    <= ( others => '0');
         ireg_n    <= ( others => '0');
+        ireg_p    <= ( others => '0');
  
       elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
-        pc_reg_p1 <= pc_reg_p1;
         ireg      <= ireg;
         ireg_a    <= ireg_a;
         ireg_b    <= ireg_b;
@@ -1185,9 +1008,9 @@ begin
         ireg_k    <= ireg_k;
         ireg_m    <= ireg_m;
         ireg_n    <= ireg_n;
+        ireg_p    <= ireg_n;
   
       else
-        pc_reg_p1 <= pc_reg;
         ireg      <= i_dat;
         ireg_a    <= i_dat;
         ireg_b    <= i_dat;
@@ -1202,6 +1025,7 @@ begin
         ireg_k    <= i_dat;
         ireg_m    <= i_dat;
         ireg_n    <= i_dat;
+        ireg_p    <= i_dat;
 
       end if;
  
