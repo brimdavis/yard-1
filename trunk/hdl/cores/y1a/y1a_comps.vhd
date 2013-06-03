@@ -264,4 +264,43 @@ package y1a_comps is
   end component;
 
 
+  component state_ctl is
+    generic
+      (
+        CFG          : y1a_config_type
+      );
+    port
+      (
+        clk                : in  std_logic;
+        sync_rst           : in  std_logic;
+
+
+        d_stall            : in  std_logic; 
+
+        skip_cond          : in  std_logic;
+        arith_skip_nocarry : in  std_logic;
+        arith_cout         : in  std_logic;
+
+
+        ireg               : in  std_logic_vector(INST_MSB downto 0);
+
+        ain                : in  std_logic_vector(ALU_MSB downto 0);
+        imm_reg            : in  std_logic_vector(ALU_MSB downto 0);
+
+        rsp_pc             : in  std_logic_vector(PC_MSB downto 0);
+        rsp_sr             : in  std_logic_vector(SR_MSB downto 0);
+
+
+        st_reg_out         : out std_logic_vector(SR_MSB downto 0);
+
+        pc_reg_out         : out std_logic_vector(PC_MSB downto 0);
+        next_pc_out        : out std_logic_vector(PC_MSB downto 0);
+
+        pc_reg_p1_out      : out std_logic_vector(PC_MSB downto 0)
+      );
+  end component;
+
+
+
+
 end package y1a_comps;
