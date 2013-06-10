@@ -155,12 +155,12 @@ architecture arch1 of y1a_core is
   -- declare synthesis attributes
   --
   attribute syn_keep : boolean;
+  attribute syn_hier : string;
 
 
   -- 
   -- prevent optimizations across core interface
   --
-  attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
 
@@ -222,6 +222,11 @@ architecture arch1 of y1a_core is
   signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
   --
+  -- memory control
+  --
+  signal dcd_stall    : boolean;
+
+  --
   -- program counter
   --
   signal pc_reg    : std_logic_vector(PC_MSB downto 0);
@@ -243,8 +248,8 @@ architecture arch1 of y1a_core is
   signal ireg_g   : std_logic_vector(INST_MSB downto 0);
   signal ireg_h   : std_logic_vector(INST_MSB downto 0);
   signal ireg_i   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_j   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_k   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_j   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_k   : std_logic_vector(INST_MSB downto 0);
   signal ireg_m   : std_logic_vector(INST_MSB downto 0);
   signal ireg_n   : std_logic_vector(INST_MSB downto 0);
   signal ireg_p   : std_logic_vector(INST_MSB downto 0);
@@ -259,8 +264,8 @@ architecture arch1 of y1a_core is
   attribute syn_keep of ireg_g  : signal is true;
   attribute syn_keep of ireg_h  : signal is true;
   attribute syn_keep of ireg_i  : signal is true;
-  attribute syn_keep of ireg_j  : signal is true;
-  attribute syn_keep of ireg_k  : signal is true;
+--  attribute syn_keep of ireg_j  : signal is true;
+--  attribute syn_keep of ireg_k  : signal is true;
   attribute syn_keep of ireg_m  : signal is true;
   attribute syn_keep of ireg_n  : signal is true;
   attribute syn_keep of ireg_p  : signal is true;
@@ -901,6 +906,22 @@ begin
   --
   ------------------------------------------------------------------------------
 
+  I_stall_dcd: stall_dcd
+    generic map
+      ( CFG         => CFG )
+
+    port map
+      (
+        clk          => clk, 
+        sync_rst     => sync_rst,
+
+        i_dat        => i_dat,
+        d_stall      => d_stall,      
+
+        dcd_stall    => dcd_stall
+      );
+
+
   --
   -- irq edge detect logic
   --   need to add interrupt enable flag to SR 
@@ -970,7 +991,7 @@ begin
   --
   -- pipeline registers, hold on data stall
   --
-  --   instruction register & copies thereof 
+  --   instruction register 
   --
   P_pipe_reg: process
     begin
@@ -978,59 +999,113 @@ begin
  
       if sync_rst = '1' then
         ireg      <= ( others => '0');
-        ireg_a    <= ( others => '0');
-        ireg_b    <= ( others => '0');
-        ireg_c    <= ( others => '0');
-        ireg_d    <= ( others => '0');
-        ireg_e    <= ( others => '0');
-        ireg_f    <= ( others => '0');
-        ireg_g    <= ( others => '0');
-        ireg_h    <= ( others => '0');
-        ireg_i    <= ( others => '0');
-        ireg_j    <= ( others => '0');
-        ireg_k    <= ( others => '0');
-        ireg_m    <= ( others => '0');
-        ireg_n    <= ( others => '0');
-        ireg_p    <= ( others => '0');
- 
-      elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+
+--      elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+
+      elsif dcd_stall then
         ireg      <= ireg;
-        ireg_a    <= ireg_a;
-        ireg_b    <= ireg_b;
-        ireg_c    <= ireg_c;
-        ireg_d    <= ireg_d;
-        ireg_e    <= ireg_e;
-        ireg_f    <= ireg_f;
-        ireg_g    <= ireg_g;
-        ireg_h    <= ireg_h;
-        ireg_i    <= ireg_i;
-        ireg_j    <= ireg_j;
-        ireg_k    <= ireg_k;
-        ireg_m    <= ireg_m;
-        ireg_n    <= ireg_n;
-        ireg_p    <= ireg_n;
-  
+
       else
         ireg      <= i_dat;
-        ireg_a    <= i_dat;
-        ireg_b    <= i_dat;
-        ireg_c    <= i_dat;
-        ireg_d    <= i_dat;
-        ireg_e    <= i_dat;
-        ireg_f    <= i_dat;
-        ireg_g    <= i_dat;
-        ireg_h    <= i_dat;
-        ireg_i    <= i_dat;
-        ireg_j    <= i_dat;
-        ireg_k    <= i_dat;
-        ireg_m    <= i_dat;
-        ireg_n    <= i_dat;
-        ireg_p    <= i_dat;
 
       end if;
  
    end process;
 
+
+  --
+  -- no register fanout for ireg
+  --
+  -- TODO: add CFG.hw.xxx  hardware configuration record for this stuff
+  --
+  G_no_ireg_fanout : if FALSE generate
+    begin
+
+      ireg_a <= ireg;
+      ireg_b <= ireg;
+      ireg_c <= ireg;
+      ireg_d <= ireg;
+      ireg_e <= ireg;
+      ireg_f <= ireg;
+      ireg_g <= ireg;
+      ireg_h <= ireg;
+      ireg_i <= ireg;
+--    ireg_j <= ireg;
+--    ireg_k <= ireg;
+      ireg_m <= ireg;
+      ireg_n <= ireg;
+      ireg_p <= ireg;
+
+    end generate G_no_ireg_fanout;
+
+
+  --
+  -- register fanout for ireg
+  --
+  G_ireg_fanout : if TRUE generate
+    begin
+
+      --
+      -- copies of instruction register to limit fanout
+      --
+      P_pipe_reg: process
+        begin
+          wait until rising_edge(clk);
+   
+          if sync_rst = '1' then
+            ireg_a    <= ( others => '0');
+            ireg_b    <= ( others => '0');
+            ireg_c    <= ( others => '0');
+            ireg_d    <= ( others => '0');
+            ireg_e    <= ( others => '0');
+            ireg_f    <= ( others => '0');
+            ireg_g    <= ( others => '0');
+            ireg_h    <= ( others => '0');
+            ireg_i    <= ( others => '0');
+--          ireg_j    <= ( others => '0');
+--          ireg_k    <= ( others => '0');
+            ireg_m    <= ( others => '0');
+            ireg_n    <= ( others => '0');
+            ireg_p    <= ( others => '0');
+   
+--          elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
+          elsif dcd_stall then
+            ireg_a    <= ireg_a;
+            ireg_b    <= ireg_b;
+            ireg_c    <= ireg_c;
+            ireg_d    <= ireg_d;
+            ireg_e    <= ireg_e;
+            ireg_f    <= ireg_f;
+            ireg_g    <= ireg_g;
+            ireg_h    <= ireg_h;
+            ireg_i    <= ireg_i;
+--          ireg_j    <= ireg_j;
+--          ireg_k    <= ireg_k;
+            ireg_m    <= ireg_m;
+            ireg_n    <= ireg_n;
+            ireg_p    <= ireg_n;
+      
+          else
+            ireg_a    <= i_dat;
+            ireg_b    <= i_dat;
+            ireg_c    <= i_dat;
+            ireg_d    <= i_dat;
+            ireg_e    <= i_dat;
+            ireg_f    <= i_dat;
+            ireg_g    <= i_dat;
+            ireg_h    <= i_dat;
+            ireg_i    <= i_dat;
+--          ireg_j    <= i_dat;
+--          ireg_k    <= i_dat;
+            ireg_m    <= i_dat;
+            ireg_n    <= i_dat;
+            ireg_p    <= i_dat;
+
+          end if;
+   
+        end process;
+
+    end generate G_ireg_fanout;
 
 
   --    
@@ -1169,26 +1244,30 @@ begin
   --
   -- instruction bus control signals and drivers 
   --
+  B_ibus: block
+    begin
 
-  --
-  -- instruction bus control ( read, enable permanently asserted active )
-  --
-  i_en_l <= '0';
-  i_rd_l <= '0';
+      --
+      -- instruction bus control ( read, enable permanently asserted active )
+      --
+      i_en_l <= '0';
+      i_rd_l <= '0';
   
-  --
-  -- generate registered or non-registered inst. address bus
-  --   see comments near CFG_REG_I_ADDR flag declaration
-  --
-  GT_iaddr: if CFG_REG_I_ADDR = TRUE generate
-     begin
-       i_addr <= pc_reg;
-     end generate GT_iaddr;
+      --
+      -- generate registered or non-registered inst. address bus
+      --   see comments near CFG_REG_I_ADDR flag declaration
+      --
+      GT_iaddr: if CFG_REG_I_ADDR = TRUE generate
+         begin
+           i_addr <= pc_reg;
+         end generate GT_iaddr;
 
-  GF_iaddr: if CFG_REG_I_ADDR = FALSE generate
-     begin
-       i_addr <= next_pc;
-     end generate GF_iaddr;
+      GF_iaddr: if CFG_REG_I_ADDR = FALSE generate
+         begin
+           i_addr <= next_pc;
+         end generate GF_iaddr;
+
+    end block B_ibus;
   
 
   ------------------------------------------------------------------------------
@@ -1196,75 +1275,130 @@ begin
   --
   -- data bus interface
   --
+  B_dbus: block
 
-  --
-  -- data bus address sourced by ea adder
-  --
-  d_addr <= ea_dat;
+    signal dcd_st       : boolean;
+    signal dcd_st32     : boolean;
+    signal dcd_st16     : boolean;
+    signal dcd_st8      : boolean;
 
+    signal dcd_quad_ld  : boolean;
+    signal dcd_wyde_ld  : boolean;
+    signal dcd_byte_ld  : boolean;
 
-  --
-  -- data bus control signals
-  --
-  I_dbus_ctl: dbus_ctl
-    port map
-      (
-        ireg      => ireg_i,
---      inst_fld  => inst_fld,  
---      mem_size  => mem_size,  
---      lea_bit   => lea_bit,   
-                               
-        ex_null   => ex_null,   
-
-        ea_lsbs   => ea_dat(1 downto 0),    
-                               
-        d_en_l    => d_en_l,    
-        d_rd_l    => d_rd_l,    
-        d_wr_l    => d_wr_l,    
-        d_wr_en_l => d_wr_en_l 
-      );
-
-  --
-  -- byte/wyde lane mux for stores                                                                
-  --                                                                                              
-  I_st_mux: st_mux
-    generic map
-      ( CFG       => CFG )
-
-    port map
-      (
-        ireg      => ireg_j,
---      inst_fld  => inst_fld,  
---      mem_size  => mem_size,  
---      lea_bit   => lea_bit,   
-  
-        ain       => ain,        
-
-        d_wdat    => d_wdat
-      );
+    signal dcd_mem_sign : std_logic;
 
 
-  --
-  -- byte/wyde {sign extending} lane mux for loads
-  --
-  I_ld_mux: ld_mux
-    generic map
-      ( CFG        => CFG )
+    begin
 
-    port map
-      (
-        ireg       => ireg_k,
---      inst_fld   => inst_fld,   
---      mem_size   => mem_size,   
---      mem_sign   => mem_sign,   
+      --
+      -- data bus address sourced by ea adder
+      --
+      d_addr <= ea_dat;
+    
+    
+      --
+      -- data bus control signals
+      --
+        I_dbus_ctl: dbus_ctl
+        port map
+          (
+            ireg      => ireg_i,
+    --      inst_fld  => inst_fld,  
+    --      mem_size  => mem_size,  
+    --      lea_bit   => lea_bit,   
+                                   
+            ex_null   => ex_null,   
+    
+            ea_lsbs   => ea_dat(1 downto 0),    
+                                   
+            d_en_l    => d_en_l,    
+            d_rd_l    => d_rd_l,    
+            d_wr_l    => d_wr_l,    
+            d_wr_en_l => d_wr_en_l 
+          );
+    
+      --
+      -- byte/wyde lane mux for stores                                                                
+      --                                                                                              
+      I_st_mux: st_mux
+        generic map
+          ( CFG       => CFG )
+    
+        port map
+          (
+            dcd_st    => dcd_st,    
+            dcd_st32  => dcd_st32,  
+            dcd_st16  => dcd_st16,  
+            dcd_st8   => dcd_st8,   
 
-        ea_lsbs    => ea_dat(1 downto 0),     
-
-        d_rdat     => d_rdat,     
-
-        mem_wb_bus => mem_wb_bus 
-      );
-
+            ain       => ain,        
+    
+            d_wdat    => d_wdat
+          );
+    
+      I_st_mux_dcd: st_mux_dcd
+        generic map
+          ( CFG       => CFG )
+    
+        port map
+          (
+            clk       => clk, 
+            sync_rst  => sync_rst,
+    
+            i_dat     => i_dat,
+            stall     => dcd_stall,      
+    
+            dcd_st    => dcd_st,    
+            dcd_st32  => dcd_st32,  
+            dcd_st16  => dcd_st16,  
+            dcd_st8   => dcd_st8
+          );
+    
+    
+      --
+      -- byte/wyde {sign extending} lane mux for loads
+      --
+      I_ld_mux: ld_mux
+        generic map
+          ( CFG          => CFG )
+    
+        port map
+          (
+            dcd_mem_sign => dcd_mem_sign, 
+    
+            dcd_quad_ld  => dcd_quad_ld, 
+            dcd_wyde_ld  => dcd_wyde_ld, 
+            dcd_byte_ld  => dcd_byte_ld, 
+    
+            ea_lsbs      => ea_dat(1 downto 0),     
+    
+            d_rdat       => d_rdat,     
+    
+            mem_wb_bus   => mem_wb_bus 
+          );
+    
+    
+      I_ld_mux_dcd: ld_mux_dcd
+        generic map
+          ( CFG          => CFG )
+    
+        port map
+          (
+            clk          => clk, 
+            sync_rst     => sync_rst,
+    
+            i_dat        => i_dat,
+            stall        => dcd_stall,      
+    
+            dcd_mem_sign => dcd_mem_sign, 
+    
+            dcd_quad_ld  => dcd_quad_ld, 
+            dcd_wyde_ld  => dcd_wyde_ld, 
+            dcd_byte_ld  => dcd_byte_ld
+          );
+    
+    end block B_dbus;
 
   ------------------------------------------------------------------------------
 
@@ -1296,8 +1430,6 @@ begin
       y1a_probe_sigs.rsp_pc     <= ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc;
 
       y1a_probe_sigs.ea_dat     <= ea_dat;
-
---      y1a_probes <= y1a_probe_sigs;
 
     end block B_probe;
 

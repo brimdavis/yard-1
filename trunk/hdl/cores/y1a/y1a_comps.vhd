@@ -212,6 +212,26 @@ package y1a_comps is
   end component;
 
 
+  component stall_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+  
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
+  
+        i_dat        : in  std_logic_vector(INST_MSB downto 0);
+        d_stall      : in  std_logic;
+
+        dcd_stall    : out boolean
+      );
+  
+  end component;
+
+
 
   component dbus_ctl is
     port
@@ -237,12 +257,38 @@ package y1a_comps is
       );
     port
       (
-        ireg      : in  std_logic_vector(INST_MSB downto 0);
+        dcd_st    : in  boolean;
+        dcd_st32  : in  boolean;
+        dcd_st16  : in  boolean;
+        dcd_st8   : in  boolean;
 
         ain       : in  std_logic_vector(ALU_MSB downto 0);
 
         d_wdat    : out std_logic_vector(ALU_MSB downto 0)
       );
+  end component;
+
+
+  component st_mux_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+  
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
+  
+        i_dat        : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  boolean;
+
+        dcd_st       : out boolean;
+        dcd_st32     : out boolean;
+        dcd_st16     : out boolean;
+        dcd_st8      : out boolean
+      );
+  
   end component;
 
 
@@ -253,14 +299,42 @@ package y1a_comps is
       );
     port
       (
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        dcd_mem_sign : in  std_logic;
 
-        ea_lsbs    : in  std_logic_vector(1 downto 0);
+        dcd_quad_ld  : in  boolean;
+        dcd_wyde_ld  : in  boolean;
+        dcd_byte_ld  : in  boolean;
 
-        d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
+        ea_lsbs      : in  std_logic_vector(1 downto 0);
 
-        mem_wb_bus : out std_logic_vector(ALU_MSB downto 0)
+        d_rdat       : in  std_logic_vector(ALU_MSB downto 0);
+                     
+        mem_wb_bus   : out std_logic_vector(ALU_MSB downto 0)
       );
+  end component;
+
+
+  component ld_mux_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+  
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
+  
+        i_dat        : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  boolean;
+
+        dcd_mem_sign : out std_logic;
+
+        dcd_quad_ld  : out boolean;
+        dcd_wyde_ld  : out boolean;
+        dcd_byte_ld  : out boolean
+      );
+  
   end component;
 
 
