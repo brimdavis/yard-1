@@ -52,7 +52,10 @@ entity st_mux is
 
   port
     (   
-      ireg      : in  std_logic_vector(INST_MSB downto 0);
+      dcd_st    : in  boolean;
+      dcd_st32  : in  boolean;
+      dcd_st16  : in  boolean;
+      dcd_st8   : in  boolean;
 
       ain       : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -66,13 +69,6 @@ architecture arch1 of st_mux is
 
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
-
-  --
-  --
-  --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  alias mem_size   : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
-  alias lea_bit    : std_logic                             is ireg(8);
 
 begin
 
@@ -90,9 +86,9 @@ begin
   GF_cnns: if NOT CFG.non_native_store generate                                           
     begin                                                                                     
                                                                                               
-      d_wdat  
+      d_wdat
         <=   ain               
-        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') )                                                                                                       
+        when dcd_st
 
         else ( others => '0')
         ;                                                              
@@ -107,13 +103,13 @@ begin
                                                                                               
       d_wdat  
         <=   ain                                                                                   
-        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( ( mem_size = MEM_32 ) OR ( mem_size = MEM_32_SP ) ) 
+        when dcd_st32
 
         else ain(15 downto 0) & ain(15 downto 0)                                                    
-        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_16 ) 
+        when dcd_st16
 
         else ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0)
-        when ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_8 )  
+        when dcd_st8
 
         else ( others => '0')
         ;

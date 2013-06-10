@@ -32,13 +32,17 @@ entity ld_mux is
 
   port
     (   
-      ireg       : in  std_logic_vector(INST_MSB downto 0);
-                  
-      ea_lsbs    : in  std_logic_vector(1 downto 0);
+      dcd_mem_sign : in  std_logic;
 
-      d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
+      dcd_quad_ld  : in  boolean;
+      dcd_wyde_ld  : in  boolean;
+      dcd_byte_ld  : in  boolean;
                   
-      mem_wb_bus : out std_logic_vector(ALU_MSB downto 0)
+      ea_lsbs      : in  std_logic_vector(1 downto 0);
+
+      d_rdat       : in  std_logic_vector(ALU_MSB downto 0);
+                  
+      mem_wb_bus   : out std_logic_vector(ALU_MSB downto 0)
     );
 
 end ld_mux;
@@ -50,23 +54,10 @@ architecture arch1 of ld_mux is
   attribute syn_hier of arch1: architecture is "hard";
 
   --
-  -- instruction decodes
-  --
-  signal dcd_quad_ld: boolean;
-  signal dcd_wyde_ld: boolean;
-  signal dcd_byte_ld: boolean;
-
-  --
   -- msb fill for sign/zero extension
   --
   signal msb_fill : std_logic;
 
-  --
-  --
-  --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  alias mem_size   : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
-  alias mem_sign   : std_logic                             is ireg(8);
 
 begin
 
@@ -76,17 +67,6 @@ begin
   assert ( CFG.non_native_load AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.non_native_load )
     report "Unsupported load configuration flag and/or ALU_WIDTH settings."
     severity error;
-
-
-  --
-  -- instruction decodes
-  --
-  dcd_quad_ld <= ( inst_fld = OPM_LDI ) OR ( ( inst_fld = OPM_LD  ) AND ( ( mem_size = MEM_32 ) OR  ( mem_size = MEM_32_SP ) ) );
-
-  dcd_wyde_ld <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_16 );
-
-  dcd_byte_ld <= ( inst_fld = OPM_LD ) AND ( mem_size = MEM_8 );
-
 
   --
   --
@@ -109,7 +89,7 @@ begin
       --
       -- msb fill for sign/zero extension
       --
-      msb_fill <=  '0'         when  mem_sign = '0'
+      msb_fill <=  '0'         when  dcd_mem_sign = '0'
               else d_rdat(31)  when  ea_lsbs = B"00"
               else d_rdat(23)  when  ea_lsbs = B"01"
               else d_rdat(15)  when  ea_lsbs = B"10"
