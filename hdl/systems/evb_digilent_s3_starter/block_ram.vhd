@@ -52,11 +52,11 @@ entity blk_mem is
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
       d_addr    : in  std_logic_vector (10 downto 0);
-      d_rdat    : out std_logic_vector(ALU_MSB downto 0);
-      d_wdat    : in  std_logic_vector(ALU_MSB downto 0);
+      d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
+      d_wdat    : in  std_logic_vector(D_DAT_MSB downto 0);
 
       i_addr    : in  std_logic_vector  (11 downto 0);
-      i_dat     : out std_logic_vector (INST_MSB downto 0)
+      i_dat     : out std_logic_vector(I_DAT_MSB downto 0)
     );
 
 
@@ -71,32 +71,14 @@ architecture arch1 of blk_mem is
   signal d_we3,d_we2,d_we1,d_we0  : std_logic;
   signal d_en                     : std_logic;
 
-  signal lsb_p1                   : std_logic;
 
 begin
 
   --
-  -- delay LSB of address for i_dat mux
-  --
-  delay_lsb: process
-    begin
-      wait until falling_edge(clk);
-      lsb_p1 <= i_addr(0);
-    end process;
-
-  --
-  -- big-endian mux instruction bus output from 32 to 16 bits 
-  -- inst. bus not tristated (for speed), currently can only have one driver
-  --
-  i_dat <=   loc_i_dat(15 downto  0) when ( lsb_p1 = '1' )
-        else loc_i_dat(31 downto 16);
-
-    
-
-  --
   -- connect local data bus signals to ports
   --
-  d_rdat  <= loc_rdat;
+  i_dat    <= loc_i_dat;
+  d_rdat   <= loc_rdat;
 
   loc_wdat <= d_wdat;
 

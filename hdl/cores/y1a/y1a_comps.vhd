@@ -28,20 +28,43 @@ package y1a_comps is
   component regfile is
     port
       (   
-        clk : in std_logic;
+        clk      : in std_logic;
+        sync_rst : in  std_logic;
   
-        we  : in  std_logic;
-        wa  : in  std_logic_vector(RF_ADDR_MSB downto 0);
-        wd  : in  std_logic_vector(RF_DAT_MSB downto 0);
+        we       : in  std_logic;
+        wa       : in  std_logic_vector(RF_ADDR_MSB downto 0);
+        wd       : in  std_logic_vector(RF_DAT_MSB downto 0);
   
-        ra1 : in  std_logic_vector(RF_ADDR_MSB downto 0);
-        ra2 : in  std_logic_vector(RF_ADDR_MSB downto 0);
+        ra1      : in  std_logic_vector(RF_ADDR_MSB downto 0);
+        ra2      : in  std_logic_vector(RF_ADDR_MSB downto 0);
   
-        rd1 : out std_logic_vector(RF_DAT_MSB downto 0);
-        rd2 : out std_logic_vector(RF_DAT_MSB downto 0)
+        rd1      : out std_logic_vector(RF_DAT_MSB downto 0);
+        rd2      : out std_logic_vector(RF_DAT_MSB downto 0);
+
+        imm_reg  : out std_logic_vector (RF_DAT_MSB  downto 0)
       );
   end component;
   
+  component regfile_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+
+    port
+      (   
+        clk        : in  std_logic;
+        sync_rst   : in  std_logic;
+
+        inst       : in  std_logic_vector(INST_MSB downto 0);
+        stall      : in  std_logic;
+
+        ex_null    : in  std_logic;
+
+        dcd_wb_en  : out std_logic
+      );
+  end component;
+
 
   component pw2_rom is
     port 
@@ -150,14 +173,46 @@ package y1a_comps is
   component ea_calc is
     port
       (
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        dcd_LDI      : in boolean;
+        dcd_mode_SP  : in boolean;
+        dcd_src_mux  : in boolean;
 
-        bin        : in  std_logic_vector(ALU_MSB downto 0);
-        imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
+        mem_mode     : in std_logic;
+                       
+        sp_offset    : in std_logic_vector( 3 downto 0);
+        ldi_offset   : in std_logic_vector(11 downto 0);
 
-        pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
+        bin          : in  std_logic_vector(ALU_MSB downto 0);
+        imm_reg      : in  std_logic_vector(ALU_MSB downto 0);
+
+        pc_reg_p1    : in  std_logic_vector(PC_MSB downto 0);
     
-        ea_dat     : out std_logic_vector(ALU_MSB downto 0)
+        ea_dat       : out std_logic_vector(ALU_MSB downto 0)
+      );
+  end component;
+
+
+  component ea_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+    port
+      (   
+        clk            : in  std_logic;
+        sync_rst       : in  std_logic;
+  
+        inst           : in  std_logic_vector(INST_MSB downto 0);
+        stall          : in  std_logic;
+  
+        dcd_LDI        : out boolean;
+        dcd_mode_SP    : out boolean;
+        dcd_src_mux    : out boolean;
+  
+        fld_mem_mode   : out std_logic;
+  
+        fld_sp_offset  : out std_logic_vector( 3 downto 0);
+        fld_ldi_offset : out std_logic_vector(11 downto 0)
       );
   end component;
 
@@ -212,6 +267,29 @@ package y1a_comps is
   end component;
 
 
+  component rstack_dcd is
+     generic
+       (
+         CFG        : y1a_config_type
+       );
+     port
+       (   
+         clk          : in  std_logic;
+         sync_rst     : in  std_logic;
+
+         inst         : in  std_logic_vector(INST_MSB downto 0);
+         stall        : in  std_logic;
+
+         ex_null      : in  std_logic;
+         irq_edge     : in  std_logic;
+
+         dcd_push     : out std_logic;
+         dcd_pop      : out std_logic
+
+       );
+  end component;
+
+
   component stall_dcd is
     generic
       (
@@ -223,10 +301,10 @@ package y1a_comps is
         clk          : in  std_logic;
         sync_rst     : in  std_logic;
   
-        i_dat        : in  std_logic_vector(INST_MSB downto 0);
+        inst         : in  std_logic_vector(INST_MSB downto 0);
         d_stall      : in  std_logic;
 
-        dcd_stall    : out boolean
+        dcd_stall    : out std_logic
       );
   
   end component;
@@ -234,9 +312,18 @@ package y1a_comps is
 
 
   component dbus_ctl is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+
     port
       (
-        ireg      : in  std_logic_vector(INST_MSB downto 0);
+        clk       : in  std_logic;
+        sync_rst  : in  std_logic;
+  
+        inst      : in  std_logic_vector(INST_MSB downto 0);
+        stall     : in  std_logic;
 
         ex_null   : in  std_logic;
 
@@ -255,6 +342,7 @@ package y1a_comps is
       (
         CFG       : y1a_config_type
       );
+
     port
       (
         dcd_st    : in  boolean;
@@ -280,8 +368,8 @@ package y1a_comps is
         clk          : in  std_logic;
         sync_rst     : in  std_logic;
   
-        i_dat        : in  std_logic_vector(INST_MSB downto 0);
-        stall        : in  boolean;
+        inst         : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  std_logic;
 
         dcd_st       : out boolean;
         dcd_st32     : out boolean;
@@ -325,8 +413,8 @@ package y1a_comps is
         clk          : in  std_logic;
         sync_rst     : in  std_logic;
   
-        i_dat        : in  std_logic_vector(INST_MSB downto 0);
-        stall        : in  boolean;
+        inst         : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  std_logic;
 
         dcd_mem_sign : out std_logic;
 

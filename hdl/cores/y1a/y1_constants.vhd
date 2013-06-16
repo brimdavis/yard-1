@@ -64,7 +64,14 @@ package y1_constants is
   --
 
   --
-  -- ALU_WIDTH defined above
+  -- define external bus interface widths 
+  --
+  constant D_DAT_MSB   : integer := ALU_WIDTH-1;
+  constant I_DAT_MSB   : integer := ALU_WIDTH-1;
+
+
+  --
+  -- ALU_WIDTH defined at top of file
   --
   constant ALU_MSB   : integer := ALU_WIDTH-1;
 
@@ -91,9 +98,11 @@ package y1_constants is
   constant ADDR_WIDTH  : integer := ALU_WIDTH;
   constant ADDR_MSB    : integer := ADDR_WIDTH-1;
 
+  --
   -- LSB used for native word size addressing of memory
   --   changes when processor width changes ( 16 bit -> 1   32 bit -> 2)
-  -- this kludge works only for 16/32, should change to log lookup 
+  --
+  -- the following divide kludge works only for 16/32, should change to log lookup 
   --
   constant ADDR_WORD_LSB   : integer := (ALU_WIDTH/16);
 
@@ -113,7 +122,8 @@ package y1_constants is
   --
   -- return stack 
   --
-  -- RSP_DEPTH, RSP_WIDTH defined above
+  -- RSP_DEPTH, RSP_WIDTH defined at top of file
+  --
   constant RSP_MSB     : integer := RSP_WIDTH-1;
 
   --

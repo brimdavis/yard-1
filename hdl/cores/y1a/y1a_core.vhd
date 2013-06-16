@@ -97,6 +97,9 @@ library work;
   use work.y1a_config.all;
   use work.y1a_comps.all;
 
+--
+-- simulation-only probes
+--
 
 -- pragma translate_off
   use work.y1a_probe_pkg.all;
@@ -128,7 +131,7 @@ entity y1a_core is
       i_rd_l     : out std_logic;
 
       i_addr     : out std_logic_vector(PC_MSB downto 0);
-      i_dat      : in  std_logic_vector(INST_MSB downto 0);
+      i_dat      : in  std_logic_vector(I_DAT_MSB downto 0);
 
       --
       -- data bus
@@ -142,8 +145,8 @@ entity y1a_core is
 
       d_addr     : out std_logic_vector(ADDR_MSB downto 0);
 
-      d_rdat     : in  std_logic_vector(ALU_MSB downto 0);
-      d_wdat     : out std_logic_vector(ALU_MSB downto 0)
+      d_rdat     : in  std_logic_vector(D_DAT_MSB downto 0);
+      d_wdat     : out std_logic_vector(D_DAT_MSB downto 0)
     );
 
 end y1a_core;
@@ -183,7 +186,7 @@ architecture arch1 of y1a_core is
   --
   -- writeback enable 
   --
-  signal wb_en : std_logic;
+  signal dcd_wb_en : std_logic;
 
   --
   -- alu/logic inputs
@@ -221,10 +224,6 @@ architecture arch1 of y1a_core is
   signal ea_dat     : std_logic_vector(ALU_MSB downto 0);
   signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
-  --
-  -- memory control
-  --
-  signal dcd_stall    : boolean;
 
   --
   -- program counter
@@ -234,6 +233,14 @@ architecture arch1 of y1a_core is
 
   signal next_pc   : std_logic_vector(PC_MSB downto 0);
 
+
+  --
+  -- instruction data
+  --
+  signal i_sel    : std_logic;
+  signal inst     : std_logic_vector(INST_MSB downto 0);
+
+  signal dcd_stall    : std_logic;
   
   --
   -- instruction register & copies
@@ -243,14 +250,14 @@ architecture arch1 of y1a_core is
   signal ireg_b   : std_logic_vector(INST_MSB downto 0);
   signal ireg_c   : std_logic_vector(INST_MSB downto 0);
   signal ireg_d   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
   signal ireg_f   : std_logic_vector(INST_MSB downto 0);
   signal ireg_g   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_h   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_i   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_h   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_i   : std_logic_vector(INST_MSB downto 0);
 --  signal ireg_j   : std_logic_vector(INST_MSB downto 0);
 --  signal ireg_k   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_m   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_m   : std_logic_vector(INST_MSB downto 0);
   signal ireg_n   : std_logic_vector(INST_MSB downto 0);
   signal ireg_p   : std_logic_vector(INST_MSB downto 0);
   
@@ -259,14 +266,14 @@ architecture arch1 of y1a_core is
   attribute syn_keep of ireg_b  : signal is true;
   attribute syn_keep of ireg_c  : signal is true;
   attribute syn_keep of ireg_d  : signal is true;
-  attribute syn_keep of ireg_e  : signal is true;
+--  attribute syn_keep of ireg_e  : signal is true;
   attribute syn_keep of ireg_f  : signal is true;
   attribute syn_keep of ireg_g  : signal is true;
-  attribute syn_keep of ireg_h  : signal is true;
-  attribute syn_keep of ireg_i  : signal is true;
+--  attribute syn_keep of ireg_h  : signal is true;
+--  attribute syn_keep of ireg_i  : signal is true;
 --  attribute syn_keep of ireg_j  : signal is true;
 --  attribute syn_keep of ireg_k  : signal is true;
-  attribute syn_keep of ireg_m  : signal is true;
+--  attribute syn_keep of ireg_m  : signal is true;
   attribute syn_keep of ireg_n  : signal is true;
   attribute syn_keep of ireg_p  : signal is true;
 
@@ -276,10 +283,7 @@ architecture arch1 of y1a_core is
   signal rsp_pc   : std_logic_vector(PC_MSB downto 0);
   signal rsp_sr   : std_logic_vector(SR_MSB downto 0);
   
-  signal dcd_push : std_logic;
-  signal dcd_pop  : std_logic;
-  
-  
+ 
   --
   -- interrupt stuff ( interrupts currently disabled, not working )
   --
@@ -472,85 +476,55 @@ constant CFG_REG_I_ADDR : boolean := TRUE;
 
 begin
 
-
   ------------------------------------------------------------------------------
-
   --
   -- register file
   --
-  I_regfile: regfile
-    port map
-      (
-        clk  => clk, 
-
-        we   => wb_en, 
-        wa   => force_sel_opa, 
-        wd   => wb_bus,
-
-        ra1  => force_sel_opa, 
-        ra2  => force_sel_opb, 
-
-        rd1  => ar, 
-        rd2  => br
-      );
-
-  --
-  -- register file writeback enable
-  --   enable for arith & logic, load & move
-  --   disable on reset or ex_null from branch/skip control
-  --
-  wb_ctl1: block
-
-      signal wb_dcd : std_logic;
-
-      --
-      -- local decodes
-      --
-      alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg_m(15 downto 14);
-      alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_m(15 downto 12);
-      alias lea_bit    : std_logic                             is ireg_m(8);
+  B_rf : block
 
     begin
-   
-      wb_dcd <=   '1' when  (
-                                   ( inst_type = OPA     )   
-                              OR   ( inst_type = OPL     ) 
 
-                              OR   ( inst_fld  = OPM_IMM ) 
-                              OR ( ( inst_fld  = OPM_LD  ) AND ( d_stall = '0' ) )
-                              OR ( ( inst_fld  = OPM_LDI ) AND ( d_stall = '0' ) )
-                              OR ( ( inst_fld  = OPM_ST  ) AND ( lea_bit = '1' ) ) 
-                            ) 
-            else  '0';
+      I_regfile: regfile
+        port map
+          (
+            clk     => clk, 
+            sync_rst       => sync_rst,
 
-      wb_en <= wb_dcd AND (NOT ex_null) AND (NOT sync_rst);
+            we      => dcd_wb_en, 
+            wa      => force_sel_opa, 
+            wd      => wb_bus,
 
-    end block wb_ctl1;
+            ra1     => force_sel_opa, 
+            ra2     => force_sel_opb, 
 
-  --
-  -- IMM register snooping
-  --   registers found here live outside of register file RAM,
-  --   to allow reads & updates independent of normal two port 
-  --   register file accesses
-  --
+            rd1     => ar, 
+            rd2     => br,
 
-  P_snoop_reg: process
-    begin
-      wait until rising_edge(clk);
+            imm_reg => imm_reg
+          );
 
-      if sync_rst = '1' then
-        imm_reg <= ( others => '0');
 
-      elsif ( wb_en = '1' ) AND ( force_sel_opa = REG_IMM ) then
-        imm_reg <= wb_bus;
+      I_regfile_dcd : regfile_dcd
+        generic map
+          ( CFG       => CFG )
+        
+        port map
+          (
+            clk       => clk, 
+            sync_rst  => sync_rst,
+        
+            inst      => inst,
+            stall     => dcd_stall,      
 
-      end if;
+            ex_null   => ex_null,
 
-    end process;
+            dcd_wb_en => dcd_wb_en 
+          );
+
+    end block B_rf;
 
 
   ------------------------------------------------------------------------------
-
   --
   -- immediate constant generation
   --
@@ -564,11 +538,10 @@ begin
 
  
   ------------------------------------------------------------------------------
-
   --
   -- operand selection
   --
-  op_sel1: block
+  B_op_sel: block
 
       --
       -- local decodes
@@ -611,10 +584,9 @@ begin
                  else      mux_bin;
 
          
-    end block op_sel1;
+    end block B_op_sel;
 
   ------------------------------------------------------------------------------
-
   --
   -- arithmetic operations ( add, subtract, reverse subtract )
   --
@@ -632,7 +604,6 @@ begin
 
 
   ------------------------------------------------------------------------------
-
   --
   -- logical operations  ( move, and, or, xor )
   --
@@ -649,7 +620,6 @@ begin
   
 
   ------------------------------------------------------------------------------
-
   --
   -- shifts & rotates
   --
@@ -682,7 +652,6 @@ begin
     end generate GF_barrel;
 
   ------------------------------------------------------------------------------
-
   --
   -- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
   --
@@ -718,7 +687,6 @@ begin
 --     end generate GF_seek;
 
   ------------------------------------------------------------------------------
-
   --
   -- reg-reg sign/zero extension
   --
@@ -736,7 +704,6 @@ begin
 
 
   ------------------------------------------------------------------------------
-
   --
   -- FLIP instruction  ( universal bit swapper )
   --
@@ -764,7 +731,6 @@ begin
 
   
   ------------------------------------------------------------------------------
-
   --
   --   PC Relative address calculation
   --    - now used only for return address calculations
@@ -781,26 +747,71 @@ begin
 
 
   ------------------------------------------------------------------------------
-
   --
   --   Effective Address calculation
   --
-  I_ea_calc: ea_calc
-    port map
-      (
-        ireg       => ireg_e,
+  B_ea : block
 
-        bin        => bin,      
-        imm_reg    => imm_reg,   
+    signal dcd_LDI      : boolean;
+    signal dcd_mode_SP  : boolean;
+    signal dcd_src_mux  : boolean;
 
-        pc_reg_p1  => pc_reg_p1, 
-                   
-        ea_dat     => ea_dat    
-      );
+    signal mem_mode     : std_logic;
+    signal mem_size     : std_logic_vector( 1 downto 0);
+
+    signal sel_opb      : std_logic_vector( 3 downto 0);
+    signal sp_offset    : std_logic_vector( 3 downto 0);
+    signal ldi_offset   : std_logic_vector(11 downto 0);
+
+    begin
+
+      I_ea_calc: ea_calc
+        port map
+          (
+            dcd_LDI        => dcd_LDI,   
+            dcd_mode_SP    => dcd_mode_SP,
+            dcd_src_mux    => dcd_src_mux,
+                             
+            mem_mode       => mem_mode,  
+                                    
+            sp_offset      => sp_offset, 
+            ldi_offset     => ldi_offset,
+
+            bin            => bin,      
+            imm_reg        => imm_reg,   
+    
+            pc_reg_p1      => pc_reg_p1, 
+                       
+            ea_dat         => ea_dat    
+          );
+
+
+      I_ea_dcd : ea_dcd
+        generic map
+          ( CFG            => CFG )
+
+        port map
+          (   
+            clk            => clk, 
+            sync_rst       => sync_rst,
+  
+            inst           => inst,
+            stall          => dcd_stall,
+  
+            dcd_LDI        => dcd_LDI,    
+            dcd_mode_SP    => dcd_mode_SP,
+            dcd_src_mux    => dcd_src_mux,
+  
+            fld_mem_mode   => mem_mode,   
+  
+            fld_sp_offset  => sp_offset,  
+            fld_ldi_offset => ldi_offset 
+          );
+
+    end block B_ea;
 
 
   ------------------------------------------------------------------------------
-
   --
   -- writeback mux
   --    replaces old TBUF writeback code with mux cascade
@@ -861,7 +872,6 @@ begin
 
 
   ------------------------------------------------------------------------------
-
   --
   -- skip condition logic
   --
@@ -915,7 +925,7 @@ begin
         clk          => clk, 
         sync_rst     => sync_rst,
 
-        i_dat        => i_dat,
+        inst         => inst,
         d_stall      => d_stall,      
 
         dcd_stall    => dcd_stall
@@ -1002,11 +1012,11 @@ begin
 
 --      elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
 
-      elsif dcd_stall then
+      elsif ( dcd_stall = '1' ) then
         ireg      <= ireg;
 
       else
-        ireg      <= i_dat;
+        ireg      <= inst;
 
       end if;
  
@@ -1025,14 +1035,14 @@ begin
       ireg_b <= ireg;
       ireg_c <= ireg;
       ireg_d <= ireg;
-      ireg_e <= ireg;
+--    ireg_e <= ireg;
       ireg_f <= ireg;
       ireg_g <= ireg;
-      ireg_h <= ireg;
-      ireg_i <= ireg;
+--    ireg_h <= ireg;
+--    ireg_i <= ireg;
 --    ireg_j <= ireg;
 --    ireg_k <= ireg;
-      ireg_m <= ireg;
+--    ireg_m <= ireg;
       ireg_n <= ireg;
       ireg_p <= ireg;
 
@@ -1057,49 +1067,49 @@ begin
             ireg_b    <= ( others => '0');
             ireg_c    <= ( others => '0');
             ireg_d    <= ( others => '0');
-            ireg_e    <= ( others => '0');
+--          ireg_e    <= ( others => '0');
             ireg_f    <= ( others => '0');
             ireg_g    <= ( others => '0');
-            ireg_h    <= ( others => '0');
-            ireg_i    <= ( others => '0');
+--          ireg_h    <= ( others => '0');
+--          ireg_i    <= ( others => '0');
 --          ireg_j    <= ( others => '0');
 --          ireg_k    <= ( others => '0');
-            ireg_m    <= ( others => '0');
+--          ireg_m    <= ( others => '0');
             ireg_n    <= ( others => '0');
             ireg_p    <= ( others => '0');
    
 --          elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
-          elsif dcd_stall then
+          elsif ( dcd_stall = '1' ) then
             ireg_a    <= ireg_a;
             ireg_b    <= ireg_b;
             ireg_c    <= ireg_c;
             ireg_d    <= ireg_d;
-            ireg_e    <= ireg_e;
+--          ireg_e    <= ireg_e;
             ireg_f    <= ireg_f;
             ireg_g    <= ireg_g;
-            ireg_h    <= ireg_h;
-            ireg_i    <= ireg_i;
+--          ireg_h    <= ireg_h;
+--          ireg_i    <= ireg_i;
 --          ireg_j    <= ireg_j;
 --          ireg_k    <= ireg_k;
-            ireg_m    <= ireg_m;
+--          ireg_m    <= ireg_m;
             ireg_n    <= ireg_n;
             ireg_p    <= ireg_n;
       
           else
-            ireg_a    <= i_dat;
-            ireg_b    <= i_dat;
-            ireg_c    <= i_dat;
-            ireg_d    <= i_dat;
-            ireg_e    <= i_dat;
-            ireg_f    <= i_dat;
-            ireg_g    <= i_dat;
-            ireg_h    <= i_dat;
-            ireg_i    <= i_dat;
---          ireg_j    <= i_dat;
---          ireg_k    <= i_dat;
-            ireg_m    <= i_dat;
-            ireg_n    <= i_dat;
-            ireg_p    <= i_dat;
+            ireg_a    <= inst;
+            ireg_b    <= inst;
+            ireg_c    <= inst;
+            ireg_d    <= inst;
+--          ireg_e    <= inst;
+            ireg_f    <= inst;
+            ireg_g    <= inst;
+--          ireg_h    <= inst;
+--          ireg_i    <= inst;
+--          ireg_j    <= inst;
+--          ireg_k    <= inst;
+--          ireg_m    <= inst;
+            ireg_n    <= inst;
+            ireg_p    <= inst;
 
           end if;
    
@@ -1142,25 +1152,25 @@ begin
           --
           --    force opa = IMM (r14) for LDI and IMM12
           --
-          if  ( i_dat(15 downto 12) = OPM_IMM ) OR ( i_dat(15 downto 12) = OPM_LDI ) then
+          if  ( inst(15 downto 12) = OPM_IMM ) OR ( inst(15 downto 12) = OPM_LDI ) then
             force_sel_opa <= X"E" ;
           else 
-            force_sel_opa <= i_dat(3 downto 0);
+            force_sel_opa <= inst(3 downto 0);
           end if;
 
           --
           --    force opb = FP/SP for memory accesses using stack mode
           --
-          if  ( ( i_dat(15 downto 12) = OPM_LD ) OR ( i_dat(15 downto 12) = OPM_ST ) ) AND ( i_dat(10 downto 9) = MEM_32_SP ) then
+          if  ( ( inst(15 downto 12) = OPM_LD ) OR ( inst(15 downto 12) = OPM_ST ) ) AND ( inst(10 downto 9) = MEM_32_SP ) then
 
-            if  i_dat(11) = '0'  then
+            if  inst(11) = '0'  then
               force_sel_opb <= X"C" ;  -- fp
             else 
               force_sel_opb <= X"D" ;  -- sp
             end if;
 
           else 
-            force_sel_opb <= i_dat(7 downto 4);
+            force_sel_opb <= inst(7 downto 4);
 
           end if;
 
@@ -1168,7 +1178,7 @@ begin
           --
           -- instruction decode for writeback bus memory source
           --
-          dcd_mem_ld  <= ( i_dat(15 downto 12) = OPM_LDI ) OR ( i_dat(15 downto 12) = OPM_LD  );
+          dcd_mem_ld  <= ( inst(15 downto 12) = OPM_LDI ) OR ( inst(15 downto 12) = OPM_LD  );
 
         end if;
  
@@ -1178,73 +1188,64 @@ begin
 
 
   ------------------------------------------------------------------------------
-
   --
-  -- return stack
+  -- return stack 
   --
-  I_stack: rstack
-    port map
-      (
-        clk      => clk, 
-        sync_rst => sync_rst,
+  B_rstack: block
 
-        push     => dcd_push, 
-        pop      => dcd_pop,
+    signal dcd_push : std_logic;
+    signal dcd_pop  : std_logic;
 
-        --
-        -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
-        --
-        pc_in    => pcr_addr(PC_MSB downto 0), 
-        sr_in    => st_reg,
-
-        pc_stk   => rsp_pc, 
-        sr_stk   => rsp_sr
-      );
-
-
-  --
-  -- stack control lines
-  --
-  B_stk_ctl: block
-
-     --
-     -- local instruction decode
-     --
-     alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_h(15 downto 12);
-     alias ext_bit    : std_logic                             is ireg_h(11);
-     alias ext_grp    : std_logic_vector(3 downto 0)          is ireg_h(7 downto 4);
-     alias call_type  : std_logic                             is ireg_h(10);
 
     begin
 
-      dcd_push <= '1'
-        when (
-               (
-                     ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
-                 OR  ( inst_fld = OPC_BR )
-               )
-               AND ( call_type = '1' ) 
-               AND ( ex_null = '0' )
-             )
+      I_stack: rstack
+        port map
+          (
+            clk      => clk, 
+            sync_rst => sync_rst,
 
--- FIXME : disabled interrupts
---             OR  ( irq_edge = '1' )
+            push     => dcd_push, 
+            pop      => dcd_pop,
 
-        else '0';
-  
-      dcd_pop <= '1'
-        when (inst_fld  = OPC_EXT) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN )  AND ( ex_null = '0')
-        else '0';
+            --
+            -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
+            --
+            pc_in    => pcr_addr(PC_MSB downto 0), 
+            sr_in    => st_reg,
 
-    end block B_stk_ctl;
+            pc_stk   => rsp_pc, 
+            sr_stk   => rsp_sr
+          );
+
+
+      I_rstack_dcd: rstack_dcd
+        generic map
+          ( CFG          => CFG )
+      
+        port map
+          (
+            clk          => clk, 
+            sync_rst     => sync_rst,
+      
+            inst         => inst,
+            stall        => dcd_stall,      
+
+            ex_null      => ex_null,   
+            irq_edge     => irq_edge,
+
+            dcd_push     => dcd_push, 
+            dcd_pop      => dcd_pop
+          );
+
+    end block B_rstack;
 
   
   ------------------------------------------------------------------------------
-
   --
   -- instruction bus control signals and drivers 
   --
-  B_ibus: block
+  B_ibus_ctl: block
     begin
 
       --
@@ -1259,19 +1260,50 @@ begin
       --
       GT_iaddr: if CFG_REG_I_ADDR = TRUE generate
          begin
-           i_addr <= pc_reg;
+           i_addr   <= pc_reg;
+           i_sel    <= pc_reg(1);
          end generate GT_iaddr;
 
       GF_iaddr: if CFG_REG_I_ADDR = FALSE generate
          begin
            i_addr <= next_pc;
+           i_sel  <= next_pc(1);
          end generate GF_iaddr;
 
-    end block B_ibus;
-  
+    end block B_ibus_ctl;
+
 
   ------------------------------------------------------------------------------
+  --
+  -- instruction bus datapath ( mux 32 to 16 bits )
+  --
+  B_ibus_dat: block
+    signal i_sel_p1 : std_logic;
 
+    begin
+
+      --
+      -- big-endian mux instruction bus output from 32 to 16 bits 
+      -- inst. bus not tristated (for speed), currently can only have one driver
+      --
+      delay_lsb: process
+        begin
+
+          wait until falling_edge(clk);
+
+          i_sel_p1 <= i_sel;
+
+        end process;
+
+        
+      inst  <=   i_dat(15 downto  0) when ( i_sel_p1 = '1' )
+            else i_dat(31 downto 16);
+
+
+    end block B_ibus_dat;
+
+ 
+  ------------------------------------------------------------------------------
   --
   -- data bus interface
   --
@@ -1301,12 +1333,16 @@ begin
       -- data bus control signals
       --
         I_dbus_ctl: dbus_ctl
+        generic map
+          ( CFG       => CFG )
+    
         port map
           (
-            ireg      => ireg_i,
-    --      inst_fld  => inst_fld,  
-    --      mem_size  => mem_size,  
-    --      lea_bit   => lea_bit,   
+            clk       => clk, 
+            sync_rst  => sync_rst,
+    
+            inst      => inst,
+            stall     => dcd_stall,      
                                    
             ex_null   => ex_null,   
     
@@ -1346,7 +1382,7 @@ begin
             clk       => clk, 
             sync_rst  => sync_rst,
     
-            i_dat     => i_dat,
+            inst      => inst,
             stall     => dcd_stall,      
     
             dcd_st    => dcd_st,    
@@ -1388,7 +1424,7 @@ begin
             clk          => clk, 
             sync_rst     => sync_rst,
     
-            i_dat        => i_dat,
+            inst         => inst,
             stall        => dcd_stall,      
     
             dcd_mem_sign => dcd_mem_sign, 
@@ -1418,7 +1454,7 @@ begin
       y1a_probe_sigs.imm_reg    <= imm_reg;
 
       y1a_probe_sigs.wb_bus     <= wb_bus;
-      y1a_probe_sigs.wb_en      <= wb_en;
+      y1a_probe_sigs.wb_en      <= dcd_wb_en;
       y1a_probe_sigs.wb_ra      <= force_sel_opa;
 
       y1a_probe_sigs.st_reg     <= st_reg;
