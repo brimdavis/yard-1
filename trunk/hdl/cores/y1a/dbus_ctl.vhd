@@ -25,10 +25,18 @@ library work;
 
 
 entity dbus_ctl is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
 
   port
     (   
-      ireg      : in  std_logic_vector(INST_MSB downto 0);
+      clk       : in  std_logic;
+      sync_rst  : in  std_logic;
+
+      inst      : in  std_logic_vector(INST_MSB downto 0);
+      stall     : in  std_logic;
 
       ex_null   : in  std_logic;
 
@@ -49,6 +57,11 @@ architecture arch1 of dbus_ctl is
   attribute syn_hier of arch1: architecture is "hard";
 
   --
+  -- instruction register
+  --
+  signal ireg        : std_logic_vector(INST_MSB downto 0);
+
+  --
   --
   --
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
@@ -56,6 +69,23 @@ architecture arch1 of dbus_ctl is
   alias lea_bit    : std_logic                             is ireg(8);
 
 begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
 
   --
   --   original design:

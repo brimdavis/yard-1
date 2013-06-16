@@ -75,7 +75,7 @@ architecture evb1 of evb is
   signal i_rd_l  : std_logic;   
   
   signal i_addr  : std_logic_vector(PC_MSB downto 0);
-  signal i_dat   : std_logic_vector(INST_MSB downto 0);
+  signal i_dat   : std_logic_vector(I_DAT_MSB downto 0);
   
   --
   -- data bus
@@ -185,7 +185,7 @@ begin
         i_rd_l     => i_rd_l,
 
         i_addr     => i_addr,
-        i_dat      => i_dat ,
+        i_dat      => i_dat,
 
         d_en_l     => d_en_l,
         d_rd_l     => d_rd_l,

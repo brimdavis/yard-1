@@ -35,14 +35,21 @@ entity ea_calc is
 
   port
     (   
-      ireg       : in  std_logic_vector(INST_MSB downto 0);
+      dcd_LDI      : in boolean;
+      dcd_mode_SP  : in boolean;
+      dcd_src_mux  : in boolean;
 
-      bin        : in  std_logic_vector(ALU_MSB downto 0);
-      imm_reg    : in  std_logic_vector(ALU_MSB downto 0);
+      mem_mode     : in std_logic;
+                     
+      sp_offset    : in std_logic_vector( 3 downto 0);
+      ldi_offset   : in std_logic_vector(11 downto 0);
 
-      pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
+      bin          : in  std_logic_vector(ALU_MSB downto 0);
+      imm_reg      : in  std_logic_vector(ALU_MSB downto 0);
+
+      pc_reg_p1    : in  std_logic_vector(PC_MSB downto 0);
     
-      ea_dat     : out std_logic_vector(ALU_MSB downto 0)
+      ea_dat       : out std_logic_vector(ALU_MSB downto 0)
     );
 
 end ea_calc;
@@ -57,31 +64,7 @@ architecture arch1 of ea_calc is
 
   signal pc_p1_masked : std_logic_vector(ALU_MSB downto 0);
 
-  signal dcd_LDI      : boolean;
-  signal mode_SP      : boolean;
-  signal src_mux_ctl  : boolean;
-
-  --
-  --
-  --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  alias mem_mode   : std_logic is ireg(11);
-  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-  alias sel_opb    : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
-  alias sp_offset  : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
-  alias ldi_offset : std_logic_vector(11 downto 0) is ireg(11 downto 0);
-
 begin
-
-  --
-  -- instruction decodes
-  --
-  dcd_LDI     <= ( inst_fld = OPM_LDI   );
-
-  mode_SP     <= ( mem_size = MEM_32_SP );
-
-  src_mux_ctl <=  dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT mode_SP ) );
-
 
   --
   -- mux ea offset sources
@@ -89,10 +72,10 @@ begin
   ea_off_mux <=  
 
           imm_reg                                
-    when  ( mem_mode  = '1' ) AND ( NOT ( mode_SP OR dcd_LDI ) )
+    when  ( mem_mode  = '1' ) AND ( NOT ( dcd_mode_SP OR dcd_LDI ) )
  
     else  ( ALU_MSB downto  6 => '0') & sp_offset  & B"00" 
-    when  mode_SP AND ( NOT dcd_LDI )
+    when  dcd_mode_SP AND ( NOT dcd_LDI )
 
     else  ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" 
     when  dcd_LDI  
@@ -115,7 +98,7 @@ begin
   --
   -- merge bin mux with adder to shorten critical path
   --
-  ea_dat  <=  ea_off_mux + pc_p1_masked  when src_mux_ctl
+  ea_dat  <=  ea_off_mux + pc_p1_masked  when dcd_src_mux
          else ea_off_mux + bin;         
 
 
