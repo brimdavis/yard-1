@@ -233,27 +233,39 @@ INST "I_evb_core/B_ea.I_ea_calc" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_calc" ;
 AREA_GROUP "AG_I_evb_core/B_ea.I_ea_calc" RANGE = SLICE_X20Y47:SLICE_X21Y28 ;
 
 INST "I_evb_core/B_ea.I_ea_dcd" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_ea.I_ea_dcd" RANGE = SLICE_X20Y32:SLICE_X21Y26 ;
+AREA_GROUP "AG_I_evb_core/B_ea.I_ea_dcd" RANGE = SLICE_X20Y44:SLICE_X21Y26 ;
 
 
 INST "I_evb_core/B_rf.I_regfile" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile" ;
 AREA_GROUP "AG_I_evb_core/B_rf.I_regfile" RANGE = SLICE_X16Y47:SLICE_X18Y30 ;
 
+INST "I_evb_core/B_rf.I_regfile_dcd" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_rf.I_regfile_dcd" RANGE = SLICE_X16Y29:SLICE_X18Y26 ;
 
-INST "I_evb_core/I_logicals" AREA_GROUP = "AG_I_evb_core/I_logicals" ;
-AREA_GROUP "AG_I_evb_core/I_logicals" RANGE = SLICE_X23Y47:SLICE_X24Y30 ;
+
+INST "I_evb_core/B_logicals.I_logicals" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals" ;
+AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals" RANGE = SLICE_X23Y47:SLICE_X24Y30 ;
+
+INST "I_evb_core/B_logicals.I_logicals_dcd" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals_dcd" RANGE = SLICE_X23Y29:SLICE_X24Y26 ;
 
 
-INST "I_evb_core/I_addsub" AREA_GROUP = "AG_I_evb_core/I_addsub" ;
-AREA_GROUP "AG_I_evb_core/I_addsub" RANGE = SLICE_X26Y47:SLICE_X27Y30 ;
+INST "I_evb_core/B_addsub.I_addsub" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub" ;
+AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub" RANGE = SLICE_X26Y47:SLICE_X27Y30 ;
+
+INST "I_evb_core/B_addsub.I_addsub_dcd" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub_dcd" RANGE = SLICE_X26Y29:SLICE_X27Y26 ;
 
 
 INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
 AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X29Y47:SLICE_X30Y30 ;
 
 
-INST "I_evb_core/I_cgen" AREA_GROUP = "AG_I_evb_core/I_cgen" ;
-AREA_GROUP "AG_I_evb_core/I_cgen" RANGE = SLICE_X31Y47:SLICE_X34Y30 ;
+INST "I_evb_core/B_cg.I_cgen" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen" ;
+AREA_GROUP "AG_I_evb_core/B_cg.I_cgen" RANGE = SLICE_X31Y47:SLICE_X34Y30 ;
+
+INST "I_evb_core/B_cg.I_cgen_dcd" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_cg.I_cgen_dcd" RANGE = SLICE_X31Y29:SLICE_X34Y26 ;
 
 
 #

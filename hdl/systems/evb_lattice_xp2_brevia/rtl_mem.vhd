@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2008-2012  Brian Davis
+-- (C) COPYRIGHT 2008-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -42,13 +42,12 @@ entity rtl_mem is
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
       d_addr    : in  std_logic_vector(10 downto 0);
-      d_rdat    : out std_logic_vector(ALU_MSB downto 0);
-      d_wdat    : in  std_logic_vector(ALU_MSB downto 0);
+      d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
+      d_wdat    : in  std_logic_vector(D_DAT_MSB downto 0);
 
       i_addr    : in  std_logic_vector(11 downto 0);
-      i_dat     : out std_logic_vector(INST_MSB downto 0)
+      i_dat     : out std_logic_vector(I_DAT_MSB downto 0)
     );
-
 
 end rtl_mem;
 
@@ -64,8 +63,6 @@ architecture arch1 of rtl_mem is
   signal d_we3,d_we2,d_we1,d_we0 : std_logic;
   signal d_en   : std_logic;
 
-  signal lsb_p1 : std_logic;
-
   signal  din3,  din2,  din1,  din0 : std_logic_vector(7 downto 0);
   signal dout3, dout2, dout1, dout0 : std_logic_vector(7 downto 0);
   signal iout3, iout2, iout1, iout0 : std_logic_vector(7 downto 0);
@@ -74,7 +71,6 @@ architecture arch1 of rtl_mem is
   signal ram_b2 : mem_type  := mem_dat_b2;
   signal ram_b1 : mem_type  := mem_dat_b1;
   signal ram_b0 : mem_type  := mem_dat_b0;
-
 
   --
   -- prevent Synplify from wrapping RAMs with write bypass logic
@@ -90,28 +86,18 @@ architecture arch1 of rtl_mem is
 begin
 
   --
-  -- big-endian mux instruction bus output from 32 to 16 bits 
-  -- inst. bus not tristated (for speed), currently can only have one driver
+  -- inst. bus out
   --
-  delay_lsb: process
-    begin
-
-      wait until falling_edge(clk);
-
-      lsb_p1 <= i_addr(0);
-
-    end process;
-    
-  i_dat <=   loc_i_dat(15 downto  0) when ( lsb_p1 = '1' )
-        else loc_i_dat(31 downto 16);
+  i_dat  <=   loc_i_dat;
 
   --
   -- data bus 
   --
   d_rdat  <= loc_rdat;
---       when  ( ( d_rd_l = '0' ) AND ( d_cs_l = '0' ) )
---       else (others => 'Z');
 
+  --
+  -- internal bus and control signals
+  --
   loc_wdat <= d_wdat;
 
   d_en  <= NOT d_cs_l;

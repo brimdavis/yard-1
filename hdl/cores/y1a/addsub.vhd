@@ -35,7 +35,8 @@ entity addsub is
 
   port
     (   
-      ireg       : in  std_logic_vector(INST_MSB downto 0);
+      dcd_sub    : in  std_logic;
+      dcd_rsub   : in  std_logic;
 
       ain        : in  std_logic_vector(ALU_MSB downto 0);
       bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -52,7 +53,6 @@ architecture arch1 of addsub is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-
   --
   -- addsub signals are padded in width for carry-in, carry/borrow-out logic
   --
@@ -61,8 +61,6 @@ architecture arch1 of addsub is
   signal pad_ain    : std_logic_vector(ALU_MSB+2 downto 0);
   signal pad_bin    : std_logic_vector(ALU_MSB+2 downto 0);
 
-  signal dcd_sub    : std_logic;
-
   --
   -- declare synthesis attributes
   --
@@ -70,22 +68,9 @@ architecture arch1 of addsub is
 
   attribute keep of pad_ain   : signal is true;
   attribute keep of pad_bin   : signal is true;
-  attribute keep of dcd_sub   : signal is true;
 
-  --
-  -- instruction field aliases 
-  --
-  alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  
-  alias arith_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
 
 begin
-
-  --
-  -- decode of SUB used for special handling of borrow-out, force-carry-in
-  --
-  dcd_sub <= '1' when arith_op = T_SUB else '0';
 
   --
   -- BMD XST needs separate pad signal assignment here to recognize addsub below
@@ -105,7 +90,7 @@ begin
   --
   -- addsub
   --
-  wide_sum <=    pad_bin - pad_ain when arith_op = T_RSUB
+  wide_sum <=    pad_bin - pad_ain when dcd_rsub = '1'
            else  pad_ain + pad_bin 
            ;
 
