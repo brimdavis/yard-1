@@ -246,8 +246,8 @@ architecture arch1 of y1a_core is
   -- instruction register & copies
   --
   signal ireg     : std_logic_vector(INST_MSB downto 0);
-  signal ireg_a   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_b   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_a   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_b   : std_logic_vector(INST_MSB downto 0);
   signal ireg_c   : std_logic_vector(INST_MSB downto 0);
   signal ireg_d   : std_logic_vector(INST_MSB downto 0);
 --  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
@@ -262,8 +262,8 @@ architecture arch1 of y1a_core is
   signal ireg_p   : std_logic_vector(INST_MSB downto 0);
   
   attribute syn_keep of ireg    : signal is true;
-  attribute syn_keep of ireg_a  : signal is true;
-  attribute syn_keep of ireg_b  : signal is true;
+--  attribute syn_keep of ireg_a  : signal is true;
+--  attribute syn_keep of ireg_b  : signal is true;
   attribute syn_keep of ireg_c  : signal is true;
   attribute syn_keep of ireg_d  : signal is true;
 --  attribute syn_keep of ireg_e  : signal is true;
@@ -340,116 +340,28 @@ architecture arch1 of y1a_core is
 
 
   --
-  -- status register
-  --
-  signal st_reg   : std_logic_vector(SR_MSB downto 0);
-
-  alias ex_null   : std_logic is st_reg(SR_MSB);
-  
-
-  
-  ----------------------
-  --
-  -- instruction register aliases for opcode fields ( see constant.vhd )
-  --    defined here using aliases until I figure out how best to define them 
-  --    in a constant package; maybe define as sub-records of sundry ir types
-  --
-  --  15:14   opcode (type)
-  --  13:12   opcode (op)
-  --     11   opcode extension field
-  --   11:9   skip control field
-  --   10:9   opb control field
-  --    8:4   opb constant field
-  --    7:4   opb register field
-  --    7:4   shift control field
-  --    3:0   opa register field
-  --
-  alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  
-  alias arith_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
-  alias logic_op   : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
-  alias ctl_op     : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
-  alias mem_op     : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
-  
-  alias arith_skip_nocarry  : std_logic is ireg(11);
-  alias logic_notb : std_logic is ireg(11);
- 
-  alias ext_bit    : std_logic is ireg(11);
-
-  --
-  -- branch & extension group fields
-  --
-  alias bra_long   : std_logic is ireg(11);
-  alias ret_type   : std_logic is ireg(10);
-  alias call_type  : std_logic is ireg(10);
-  alias dslot_null : std_logic is ireg(9);
-  alias bra_offset : std_logic_vector(8 downto 0) is ireg(8 downto 0);
-
-  alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
-  
-
-  --
-  -- LDI offset
-  --
-  alias ldi_offset : std_logic_vector(11 downto 0) is ireg(11 downto 0);
-  
-  --
-  -- skip control bits
-  --
-  --alias skip_ctl    : std_logic_vector(2 downto 0) is ireg(11 downto 9);
-  alias skip_sense : std_logic is ireg(11);
-  alias skip_type  : std_logic_vector(2 downto 0) is ireg(10 downto 8);
- 
-  alias skip_cp_sel   : std_logic is ireg(7);
-  alias skip_ra_type  : std_logic_vector(2 downto 0) is ireg(6 downto 4);
-  
-  --
-  -- load/store/lea address mode & operand size/sign extension
-  --
-  -- August 2012 : mode and sign bits were swapped to enable shared
-  --               decode bits for reg-reg sign extension instructions
-  --
-  alias mem_mode   : std_logic is ireg(11);
-  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-  alias mem_sign   : std_logic is ireg(8);
-  alias sp_offset  : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
-
-  alias lea_bit    : std_logic is ireg(8);
-  
-  --
-  -- opb control fields
-  --
-  alias opb_ctl     : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-
-  alias opb_const   : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
-  alias sel_opb     : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
-  alias sel_opa     : std_logic_vector(3 downto 0) is ireg( 3 downto 0);
-  
-  --
-  -- shift control
-  --
-  alias shift_grp    : std_logic                    is ireg(11);
-  alias shift_signed : std_logic                    is ireg(10);
-  alias shift_dir    : std_logic                    is ireg( 9);
-  alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
- 
-  alias misc_grp : std_logic_vector(1 downto 0) is ireg(9 downto 8);
-
-  --
-  -- SPAM instruction fields
-  --
-  alias spam_mode : std_logic_vector(2 downto 0) is ireg(10 downto 8);
-  alias spam_mask : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
-
-
-  --
   -- early instruction decodes
   --
   signal force_sel_opa  : std_logic_vector(3 downto 0);
   signal force_sel_opb  : std_logic_vector(3 downto 0);
 
   signal dcd_mem_ld     : boolean;
+
+
+  --
+  -- status register
+  --
+  signal st_reg   : std_logic_vector(SR_MSB downto 0);
+
+  alias ex_null   : std_logic is st_reg(SR_MSB);
+
+
+  --
+  -- remaining instruction decode aliases in use
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias arith_skip_nocarry  : std_logic is ireg(11);
+
 
 ------------------------------------------------------------------------------
 --
@@ -487,20 +399,20 @@ begin
       I_regfile: regfile
         port map
           (
-            clk     => clk, 
-            sync_rst       => sync_rst,
+            clk       => clk, 
+            sync_rst  => sync_rst,
 
-            we      => dcd_wb_en, 
-            wa      => force_sel_opa, 
-            wd      => wb_bus,
+            we        => dcd_wb_en, 
+            wa        => force_sel_opa, 
+            wd        => wb_bus,
 
-            ra1     => force_sel_opa, 
-            ra2     => force_sel_opb, 
+            ra1       => force_sel_opa, 
+            ra2       => force_sel_opb, 
 
-            rd1     => ar, 
-            rd2     => br,
+            rd1       => ar, 
+            rd2       => br,
 
-            imm_reg => imm_reg
+            imm_reg   => imm_reg
           );
 
 
@@ -528,14 +440,39 @@ begin
   --
   -- immediate constant generation
   --
-  I_cgen: cgen
-   port map
-     (
-       ireg      => ireg_a,
+  B_cg : block
 
-       cg_out    => cg_out    
-     );
+    signal opb_ctl     : std_logic_vector(1 downto 0);
+    signal opb_const   : std_logic_vector(4 downto 0);
 
+    begin
+
+      I_cgen: cgen
+       port map
+         (
+           opb_ctl        => opb_ctl,    
+           opb_const      => opb_const,   
+
+           cg_out         => cg_out    
+         );
+
+      I_cgen_dcd : cgen_dcd
+        generic map
+          ( CFG           => CFG )
+        
+        port map
+          (
+            clk           => clk, 
+            sync_rst      => sync_rst,
+        
+            inst          => inst,
+            stall         => dcd_stall,      
+
+            fld_opb_ctl   => opb_ctl,    
+            fld_opb_const => opb_const   
+          );
+
+    end block B_cg;
  
   ------------------------------------------------------------------------------
   --
@@ -590,34 +527,81 @@ begin
   --
   -- arithmetic operations ( add, subtract, reverse subtract )
   --
-  I_addsub: addsub
-    port map
-      (
-        ireg       => ireg_b,
+  B_addsub: block
 
-        ain        => ain,
-        bin        => mux_inv_bin,
+    signal dcd_sub  : std_logic;
+    signal dcd_rsub : std_logic;
+
+    begin
+
+      I_addsub: addsub
+        port map
+          (
+            dcd_sub    => dcd_sub,
+            dcd_rsub   => dcd_rsub,
+
+            ain        => ain,
+            bin        => mux_inv_bin,
   
-        arith_cout => arith_cout,
-        arith_dat  => arith_dat
-      );
+            arith_cout => arith_cout,
+            arith_dat  => arith_dat
+          );
 
+      I_addsub_dcd: addsub_dcd
+        generic map
+          ( CFG       => CFG )
+  
+        port map
+          (
+            clk       => clk, 
+            sync_rst  => sync_rst,
+  
+            inst      => inst,
+            stall     => dcd_stall,      
+  
+            dcd_sub   => dcd_sub,
+            dcd_rsub  => dcd_rsub
+          );
+
+    end block B_addsub;
 
   ------------------------------------------------------------------------------
   --
   -- logical operations  ( move, and, or, xor )
   --
-  I_logicals: logicals
-    port map
-      (   
-        ireg      => ireg_c,
+  B_logicals: block
 
-        ain       => ain,        
-        bin       => mux_inv_bin,        
+    signal logic_op  : std_logic_vector(OP_MSB downto 0);
+
+    begin
+
+      I_logicals: logicals
+        port map
+          (   
+            logic_op     => logic_op,
+
+            ain          => ain,        
+            bin          => mux_inv_bin,        
   
-        logic_dat => logic_dat
-      );
+            logic_dat    => logic_dat
+          );
+
+      I_logicals_dcd: logicals_dcd
+        generic map
+          ( CFG          => CFG )
   
+        port map
+          (
+            clk          => clk, 
+            sync_rst     => sync_rst,
+  
+            inst         => inst,
+            stall        => dcd_stall,      
+  
+            fld_logic_op => logic_op
+          );
+  
+    end block B_logicals;
 
   ------------------------------------------------------------------------------
   --
@@ -852,7 +836,7 @@ begin
       wb_muxb <=   logic_dat    when  ( inst_type = OPL      ) 
              else  flip_dat     when  ( inst_fld  = OPA_MISC ) AND ( shift_grp = '0' ) AND ( shift_signed='1' ) AND ( shift_dir = '1' )
 
-             else  ( ALU_MSB downto 12 => ireg(11) ) & ireg(11 downto 0) when ( inst_fld = OPM_IMM )
+             else  ( ALU_MSB downto 12 => ireg_f(11) ) & ireg_f(11 downto 0) when ( inst_fld = OPM_IMM )
 
 --
 -- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
@@ -1031,8 +1015,8 @@ begin
   G_no_ireg_fanout : if FALSE generate
     begin
 
-      ireg_a <= ireg;
-      ireg_b <= ireg;
+--    ireg_a <= ireg;
+--    ireg_b <= ireg;
       ireg_c <= ireg;
       ireg_d <= ireg;
 --    ireg_e <= ireg;
@@ -1063,8 +1047,8 @@ begin
           wait until rising_edge(clk);
    
           if sync_rst = '1' then
-            ireg_a    <= ( others => '0');
-            ireg_b    <= ( others => '0');
+--          ireg_a    <= ( others => '0');
+--          ireg_b    <= ( others => '0');
             ireg_c    <= ( others => '0');
             ireg_d    <= ( others => '0');
 --          ireg_e    <= ( others => '0');
@@ -1080,8 +1064,8 @@ begin
    
 --          elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
           elsif ( dcd_stall = '1' ) then
-            ireg_a    <= ireg_a;
-            ireg_b    <= ireg_b;
+--          ireg_a    <= ireg_a;
+--          ireg_b    <= ireg_b;
             ireg_c    <= ireg_c;
             ireg_d    <= ireg_d;
 --          ireg_e    <= ireg_e;
@@ -1096,8 +1080,8 @@ begin
             ireg_p    <= ireg_n;
       
           else
-            ireg_a    <= inst;
-            ireg_b    <= inst;
+--          ireg_a    <= inst;
+--          ireg_b    <= inst;
             ireg_c    <= inst;
             ireg_d    <= inst;
 --          ireg_e    <= inst;

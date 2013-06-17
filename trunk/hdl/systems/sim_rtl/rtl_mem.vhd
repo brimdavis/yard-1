@@ -61,8 +61,6 @@ architecture arch1 of rtl_mem is
   signal d_we3,d_we2,d_we1,d_we0 : std_logic;
   signal d_en   : std_logic;
 
-  signal lsb_p1 : std_logic;
-
   signal  din3,  din2,  din1,  din0 : std_logic_vector(7 downto 0);
   signal dout3, dout2, dout1, dout0 : std_logic_vector(7 downto 0);
   signal iout3, iout2, iout1, iout0 : std_logic_vector(7 downto 0);

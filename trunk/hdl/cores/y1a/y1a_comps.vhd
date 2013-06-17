@@ -78,17 +78,38 @@ package y1a_comps is
   component cgen is
     port 
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        opb_ctl       : in  std_logic_vector(1 downto 0);
+        opb_const     : in  std_logic_vector(4 downto 0);
 
-        cg_out    : out std_logic_vector(ALU_MSB downto 0)
+        cg_out        : out std_logic_vector(ALU_MSB downto 0)
       );
   end component;
-  
+
+  component cgen_dcd is
+    generic
+      (
+        CFG           : y1a_config_type
+      );
+
+    port
+      (   
+        clk           : in  std_logic;
+        sync_rst      : in  std_logic;
+
+        inst          : in  std_logic_vector(INST_MSB downto 0);
+        stall         : in  std_logic;
+
+        fld_opb_ctl   : out std_logic_vector(1 downto 0);
+        fld_opb_const : out std_logic_vector(4 downto 0)
+      );
+  end component;
+
   
   component addsub is
     port
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        dcd_sub    : in  std_logic;
+        dcd_rsub   : in  std_logic;
 
         ain        : in  std_logic_vector(ALU_MSB downto 0);
         bin        : in  std_logic_vector(ALU_MSB downto 0);
@@ -98,18 +119,56 @@ package y1a_comps is
       );
   end component;
 
+  component addsub_dcd is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+
+    port
+      (   
+        clk        : in  std_logic;
+        sync_rst   : in  std_logic;
+
+        inst       : in  std_logic_vector(INST_MSB downto 0);
+        stall      : in  std_logic;
+
+        dcd_sub    : out std_logic;
+        dcd_rsub   : out std_logic
+      );
+  end component;
+
 
   component logicals is
     port
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        logic_op     : in  std_logic_vector(OP_MSB   downto 0);
 
-        ain        : in  std_logic_vector(ALU_MSB downto 0);
-        bin        : in  std_logic_vector(ALU_MSB downto 0);
+        ain          : in  std_logic_vector(ALU_MSB downto 0);
+        bin          : in  std_logic_vector(ALU_MSB downto 0);
   
-        logic_dat  : out std_logic_vector(ALU_MSB downto 0)
+        logic_dat    : out std_logic_vector(ALU_MSB downto 0)
       );
   end component;
+
+  component logicals_dcd is
+    generic
+      (
+        CFG          : y1a_config_type
+      );
+
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
+
+        inst         : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  std_logic;
+
+        fld_logic_op : out std_logic_vector(OP_MSB   downto 0)
+      );
+  end component;
+
 
 
   component shift_one is

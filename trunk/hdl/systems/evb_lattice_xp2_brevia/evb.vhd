@@ -75,7 +75,7 @@ architecture evb1 of evb is
   signal i_rd_l  : std_logic;   
   
   signal i_addr  : std_logic_vector(PC_MSB downto 0);
-  signal i_dat   : std_logic_vector(INST_MSB downto 0);
+  signal i_dat   : std_logic_vector(I_DAT_MSB downto 0);
   
   --
   -- data bus
@@ -86,18 +86,18 @@ architecture evb1 of evb is
   signal d_wr_en_l : std_logic_vector(3 downto 0);  
   
   signal d_addr  : std_logic_vector(ADDR_MSB downto 0);
-  signal d_rdat  : std_logic_vector(ALU_MSB downto 0);
-  signal d_wdat  : std_logic_vector(ALU_MSB downto 0);
-
+  signal d_rdat  : std_logic_vector(D_DAT_MSB downto 0);
+  signal d_wdat  : std_logic_vector(D_DAT_MSB downto 0);
+  
   signal d_stall    : std_logic;    
   
   --
   -- data bus mux structure
   --
-  signal blkram_rdat  : std_logic_vector(ALU_MSB downto 0);
-  signal uart_rdat    : std_logic_vector(ALU_MSB downto 0);
-  signal io_rdat      : std_logic_vector(ALU_MSB downto 0);
-  signal spare_rdat   : std_logic_vector(ALU_MSB downto 0);
+  signal blkram_rdat  : std_logic_vector(D_DAT_MSB downto 0);
+  signal uart_rdat    : std_logic_vector(D_DAT_MSB downto 0);
+  signal io_rdat      : std_logic_vector(D_DAT_MSB downto 0);
+  signal spare_rdat   : std_logic_vector(D_DAT_MSB downto 0);
 
   --
   -- local decodes

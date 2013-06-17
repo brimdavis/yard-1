@@ -95,7 +95,7 @@ begin
       if sync_rst = '1' then
         imm_reg <= ( others => '0');
 
-      elsif ( we = '1' ) AND ( ra1 = REG_IMM ) then
+      elsif ( we = '1' ) AND ( wa = REG_IMM ) then
         imm_reg <= wd;
 
       end if;
