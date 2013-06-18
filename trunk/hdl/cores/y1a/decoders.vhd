@@ -930,7 +930,184 @@ end arch1;
 
 
 ------------------------------
--- 
+-- pcr_calc_dcd
 ------------------------------
 
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+
+library work;
+  use work.y1_constants.all;
+  use work.y1a_config.all;
+
+
+entity pcr_calc_dcd is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
+
+  port
+    (   
+      clk            : in  std_logic;
+      sync_rst       : in  std_logic;
+
+      inst           : in  std_logic_vector(INST_MSB downto 0);
+      stall          : in  std_logic;
+
+      fld_dslot_null : out std_logic;
+      dcd_call       : out std_logic
+    );
+
+end pcr_calc_dcd;
+
+
+architecture arch1 of pcr_calc_dcd is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  -- instruction register
+  --
+  signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+  --
+  -- instruction field aliases 
+  --
+  --
+  --
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+
+  alias call_type  : std_logic is ireg(10);
+  alias dslot_null : std_logic is ireg(9);
+
+  alias ext_bit    : std_logic is ireg(11);
+  alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
+
+begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
+
+
+  --
+  -- instruction decodes
+  --
+  dcd_call <= '1' 
+           when   (
+                        ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
+                    OR  ( inst_fld = OPC_BR )
+                  )
+                  AND ( call_type = '1' )
+
+           else '0';
+
+  fld_dslot_null <= dslot_null;
+
+
+end arch1;
+
+
+------------------------------
+-- shift_dcd
+------------------------------
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+
+library work;
+  use work.y1_constants.all;
+  use work.y1a_config.all;
+
+
+entity shift_dcd is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
+
+  port
+    (   
+      clk            : in  std_logic;
+      sync_rst       : in  std_logic;
+
+      inst           : in  std_logic_vector(INST_MSB downto 0);
+      stall          : in  std_logic;
+
+      fld_shift_grp    : out std_logic;
+      fld_shift_signed : out std_logic;
+      fld_shift_dir    : out std_logic;
+      fld_shift_const  : out std_logic_vector(4 downto 0) 
+    );
+
+end shift_dcd;
+
+
+architecture arch1 of shift_dcd is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  -- instruction register
+  --
+  signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+  --
+  -- instruction field aliases 
+  --
+  alias shift_grp    : std_logic is ireg(11);
+  alias shift_signed : std_logic is ireg(10);
+  alias shift_dir    : std_logic is ireg( 9);
+  alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
+
+begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
+
+
+  fld_shift_grp    <= shift_grp;  
+  fld_shift_signed <= shift_signed;
+  fld_shift_dir    <= shift_dir;  
+  fld_shift_const  <= shift_const;
+
+end arch1;
+
+
+------------------------------
+-- 
+------------------------------
 

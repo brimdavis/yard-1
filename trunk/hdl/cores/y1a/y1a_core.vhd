@@ -168,7 +168,7 @@ architecture arch1 of y1a_core is
 
 
   --
-  -- signals
+  -- global signals
   --
 
   --
@@ -178,15 +178,17 @@ architecture arch1 of y1a_core is
   signal br      : std_logic_vector(ALU_MSB downto 0);
   
   --
-  -- register file writeback bus ( multiple tri-state drivers in original core )
+  -- register file writeback bus and writeback enable 
   --
-  signal wb_bus     : std_logic_vector(ALU_MSB downto 0);
-  signal mem_wb_bus : std_logic_vector(ALU_MSB downto 0);
+  signal wb_bus  : std_logic_vector(ALU_MSB downto 0);
+  signal wb_en   : std_logic;
+
 
   --
-  -- writeback enable 
+  -- register file & memory writeback busses ( multiple tri-state drivers in original core )
   --
-  signal dcd_wb_en : std_logic;
+  signal mem_wb_bus : std_logic_vector(ALU_MSB downto 0);
+
 
   --
   -- alu/logic inputs
@@ -249,7 +251,7 @@ architecture arch1 of y1a_core is
 --  signal ireg_a   : std_logic_vector(INST_MSB downto 0);
 --  signal ireg_b   : std_logic_vector(INST_MSB downto 0);
   signal ireg_c   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_d   : std_logic_vector(INST_MSB downto 0);
+--  signal ireg_d   : std_logic_vector(INST_MSB downto 0);
 --  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
   signal ireg_f   : std_logic_vector(INST_MSB downto 0);
   signal ireg_g   : std_logic_vector(INST_MSB downto 0);
@@ -265,7 +267,7 @@ architecture arch1 of y1a_core is
 --  attribute syn_keep of ireg_a  : signal is true;
 --  attribute syn_keep of ireg_b  : signal is true;
   attribute syn_keep of ireg_c  : signal is true;
-  attribute syn_keep of ireg_d  : signal is true;
+--  attribute syn_keep of ireg_d  : signal is true;
 --  attribute syn_keep of ireg_e  : signal is true;
   attribute syn_keep of ireg_f  : signal is true;
   attribute syn_keep of ireg_g  : signal is true;
@@ -402,7 +404,7 @@ begin
             clk       => clk, 
             sync_rst  => sync_rst,
 
-            we        => dcd_wb_en, 
+            we        => wb_en, 
             wa        => force_sel_opa, 
             wd        => wb_bus,
 
@@ -430,7 +432,7 @@ begin
 
             ex_null   => ex_null,
 
-            dcd_wb_en => dcd_wb_en 
+            dcd_wb_en => wb_en 
           );
 
     end block B_rf;
@@ -621,17 +623,44 @@ begin
 
 
   GF_barrel: if NOT CFG.barrel_shift generate
+
+    signal shift_grp    : std_logic;
+    signal shift_signed : std_logic;
+    signal shift_dir    : std_logic;
+    signal shift_const  : std_logic_vector(4 downto 0);
+
     begin
 
       I_shift_one: shift_one
        port map
          (
-           ireg         => ireg_c,
+           shift_grp         => shift_grp,    
+           shift_signed      => shift_signed, 
+           shift_dir         => shift_dir,    
+           shift_const       => shift_const,  
 
-           ain          => ain,          
+           ain               => ain,          
 
-           shift_dat    => shift_dat    
+           shift_dat         => shift_dat    
          );
+
+      I_shift_dcd: shift_dcd
+        generic map
+          ( CFG              => CFG )
+  
+        port map
+          (
+            clk              => clk, 
+            sync_rst         => sync_rst,
+  
+            inst             => inst,
+            stall            => dcd_stall,      
+
+            fld_shift_grp    => shift_grp,   
+            fld_shift_signed => shift_signed,
+            fld_shift_dir    => shift_dir,   
+            fld_shift_const  => shift_const 
+          );
 
     end generate GF_barrel;
 
@@ -719,16 +748,41 @@ begin
   --   PC Relative address calculation
   --    - now used only for return address calculations
   --
-  I_pcr_calc: pcr_calc
-    port map
-      (
-        ireg       => ireg_d,
+  B_pcr : block
 
-        pc_reg_p1  => pc_reg_p1, 
-                  
-        pcr_addr   => pcr_addr
-      );
+    signal dcd_call      : std_logic;
+    signal dslot_null    : std_logic;
 
+    begin
+
+      I_pcr_calc: pcr_calc
+        port map
+          (
+            dcd_call       => dcd_call,
+            dslot_null     => dslot_null, 
+
+            pc_reg_p1      => pc_reg_p1, 
+                      
+            pcr_addr       => pcr_addr
+          );
+
+      I_pcr_calc_dcd: pcr_calc_dcd
+        generic map
+          ( CFG            => CFG )
+
+        port map
+          (   
+            clk            => clk, 
+            sync_rst       => sync_rst,
+  
+            inst           => inst,
+            stall          => dcd_stall,
+
+            fld_dslot_null => dslot_null, 
+            dcd_call       => dcd_call       
+          );
+
+    end block B_pcr;
 
   ------------------------------------------------------------------------------
   --
@@ -1018,7 +1072,7 @@ begin
 --    ireg_a <= ireg;
 --    ireg_b <= ireg;
       ireg_c <= ireg;
-      ireg_d <= ireg;
+--    ireg_d <= ireg;
 --    ireg_e <= ireg;
       ireg_f <= ireg;
       ireg_g <= ireg;
@@ -1050,7 +1104,7 @@ begin
 --          ireg_a    <= ( others => '0');
 --          ireg_b    <= ( others => '0');
             ireg_c    <= ( others => '0');
-            ireg_d    <= ( others => '0');
+--          ireg_d    <= ( others => '0');
 --          ireg_e    <= ( others => '0');
             ireg_f    <= ( others => '0');
             ireg_g    <= ( others => '0');
@@ -1067,7 +1121,7 @@ begin
 --          ireg_a    <= ireg_a;
 --          ireg_b    <= ireg_b;
             ireg_c    <= ireg_c;
-            ireg_d    <= ireg_d;
+--          ireg_d    <= ireg_d;
 --          ireg_e    <= ireg_e;
             ireg_f    <= ireg_f;
             ireg_g    <= ireg_g;
@@ -1083,7 +1137,7 @@ begin
 --          ireg_a    <= inst;
 --          ireg_b    <= inst;
             ireg_c    <= inst;
-            ireg_d    <= inst;
+--          ireg_d    <= inst;
 --          ireg_e    <= inst;
             ireg_f    <= inst;
             ireg_g    <= inst;
@@ -1438,7 +1492,7 @@ begin
       y1a_probe_sigs.imm_reg    <= imm_reg;
 
       y1a_probe_sigs.wb_bus     <= wb_bus;
-      y1a_probe_sigs.wb_en      <= dcd_wb_en;
+      y1a_probe_sigs.wb_en      <= wb_en;
       y1a_probe_sigs.wb_ra      <= force_sel_opa;
 
       y1a_probe_sigs.st_reg     <= st_reg;

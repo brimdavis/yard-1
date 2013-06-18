@@ -207,8 +207,11 @@ INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
 INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y5" ;
 INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
 
-INST "I_evb_core/I_pcr_calc" AREA_GROUP = "AG_I_evb_core/I_pcr_calc" ;
-AREA_GROUP "AG_I_evb_core/I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
+INST "I_evb_core/B_pcr.I_pcr_calc" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc" ;
+AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
+
+INST "I_evb_core/B_pcr.I_pcr_calc_dcd" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" RANGE = SLICE_X2Y29:SLICE_X3Y26 ;
 
 
 INST "I_evb_core/B_dbus.I_st_mux" AREA_GROUP = "AG_I_evb_core/B_dbus.I_st_mux" ;
@@ -259,6 +262,9 @@ AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub_dcd" RANGE = SLICE_X26Y29:SLICE_X27Y
 
 INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
 AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X29Y47:SLICE_X30Y30 ;
+
+INST "I_evb_core/GF_barrel.I_shift_dcd" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_dcd" ;
+AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_dcd" RANGE = SLICE_X29Y29:SLICE_X30Y26 ;
 
 
 INST "I_evb_core/B_cg.I_cgen" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen" ;
