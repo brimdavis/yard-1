@@ -170,18 +170,39 @@ package y1a_comps is
   end component;
 
 
-
   component shift_one is
     port
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        shift_grp        : in  std_logic;
+        shift_signed     : in  std_logic;
+        shift_dir        : in  std_logic;
+        shift_const      : in  std_logic_vector(4 downto 0);
 
-        ain          : in  std_logic_vector(ALU_MSB downto 0);
+        ain              : in  std_logic_vector(ALU_MSB downto 0);
 
-        shift_dat    : out std_logic_vector(ALU_MSB downto 0)
+        shift_dat        : out std_logic_vector(ALU_MSB downto 0)
       );
   end component;
 
+  component shift_dcd is
+    generic
+      (
+        CFG              : y1a_config_type
+      );
+    port
+      (   
+        clk              : in  std_logic;
+        sync_rst         : in  std_logic;
+  
+        inst             : in  std_logic_vector(INST_MSB downto 0);
+        stall            : in  std_logic;
+
+        fld_shift_grp    : out std_logic;
+        fld_shift_signed : out std_logic;
+        fld_shift_dir    : out std_logic;
+        fld_shift_const  : out std_logic_vector(4 downto 0) 
+      );
+  end component;
 
 
   component ffb is
@@ -279,15 +300,34 @@ package y1a_comps is
   component pcr_calc is
      port
        (   
-         ireg       : in  std_logic_vector(INST_MSB downto 0);
+         dcd_call    : in  std_logic;
 
-         pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
+         dslot_null  : in  std_logic;
+         pc_reg_p1   : in  std_logic_vector(PC_MSB downto 0);
        
-         pcr_addr   : out std_logic_vector(ALU_MSB downto 0)
+         pcr_addr    : out std_logic_vector(ALU_MSB downto 0)
        );
 
   end component;
   
+  component pcr_calc_dcd is
+     generic
+       (
+         CFG            : y1a_config_type
+       );
+     port
+       (   
+         clk            : in  std_logic;
+         sync_rst       : in  std_logic;
+
+         inst           : in  std_logic_vector(INST_MSB downto 0);
+         stall          : in  std_logic;
+
+         fld_dslot_null : out std_logic;
+         dcd_call       : out std_logic
+       );
+  end component;
+
 
   component skip_dcd is
     generic
@@ -296,7 +336,7 @@ package y1a_comps is
       );
     port
       (
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        ireg         : in  std_logic_vector(INST_MSB downto 0);
 
         ain          : in  std_logic_vector(ALU_MSB downto 0);
         bin          : in  std_logic_vector(ALU_MSB downto 0);

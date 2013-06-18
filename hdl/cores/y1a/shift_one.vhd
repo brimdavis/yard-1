@@ -32,7 +32,10 @@ entity shift_one is
 
   port
     (   
-      ireg         : in  std_logic_vector(INST_MSB downto 0);
+      shift_grp    : in  std_logic;
+      shift_signed : in  std_logic;
+      shift_dir    : in  std_logic;
+      shift_const  : in  std_logic_vector(4 downto 0);
 
       ain          : in  std_logic_vector(ALU_MSB downto 0);
 
@@ -50,14 +53,6 @@ architecture arch1 of shift_one is
   signal shift_msb  : std_logic;
   signal shift1_lsb : std_logic;
   signal shift2_lsb : std_logic;
-
-  --
-  --
-  --
-  alias shift_grp    : std_logic is ireg(11);
-  alias shift_signed : std_logic is ireg(10);
-  alias shift_dir    : std_logic is ireg( 9);
-  alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
 
 begin
 
@@ -86,7 +81,6 @@ begin
 
             else  ain(ALU_MSB-1 downto 0) & shift1_lsb                -- LSL/ROL as default
             ;
---          when  (shift_dir = '1') AND ( shift_const = B"0_0001")    -- shift by one (default, else commented out)
-
+--          when  (shift_dir = '1') AND ( shift_const = B"0_0001")    -- shift by one (default, 'when' commented out)
 
 end arch1;
