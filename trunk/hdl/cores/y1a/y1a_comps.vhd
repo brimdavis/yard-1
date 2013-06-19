@@ -226,15 +226,40 @@ package y1a_comps is
   component reg_extend  is
     generic
       (
-        CFG        : y1a_config_type
+        CFG          : y1a_config_type
       );
     port 
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        dcd_wyde     : in std_logic;
+
+        mem_sign     : in std_logic;
+        mem_size     : in std_logic_vector(1 downto 0);
                   
-        din        : in  std_logic_vector(ALU_MSB downto 0);
+        din          : in  std_logic_vector(ALU_MSB downto 0);
                   
-        ext_out    : out std_logic_vector(ALU_MSB downto 0)
+        ext_out      : out std_logic_vector(ALU_MSB downto 0)
+      );
+  end component;
+
+  component reg_extend_dcd is
+    generic
+      (
+        CFG          : y1a_config_type
+      );
+
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
+
+        inst         : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  std_logic;
+
+        dcd_wyde     : out std_logic;
+
+        fld_mem_sign : out std_logic;
+        fld_mem_size : out std_logic_vector(1 downto 0) 
+
       );
   end component;
 
@@ -242,7 +267,7 @@ package y1a_comps is
   component flip is
     port 
       (   
-        ireg       : in  std_logic_vector(INST_MSB downto 0);
+        bsel  : in  std_logic_vector (4 downto 0);
 
         din  : in  std_logic_vector(ALU_MSB downto 0);
         dout : out std_logic_vector(ALU_MSB downto 0)

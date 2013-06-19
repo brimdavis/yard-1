@@ -30,16 +30,19 @@ library work;
 entity reg_extend is
   generic
     (
-      CFG        : y1a_config_type
+      CFG       : y1a_config_type
     );
 
   port
     (   
-      ireg       : in  std_logic_vector(INST_MSB downto 0);
+      dcd_wyde  : in std_logic;
+
+      mem_sign  : in std_logic;
+      mem_size  : in std_logic_vector(1 downto 0);
+
+      din       : in  std_logic_vector(ALU_MSB downto 0);
                   
-      din        : in  std_logic_vector(ALU_MSB downto 0);
-                  
-      ext_out    : out std_logic_vector(ALU_MSB downto 0)
+      ext_out   : out std_logic_vector(ALU_MSB downto 0)
     );
 
 end reg_extend;
@@ -50,38 +53,21 @@ architecture arch1 of reg_extend is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  --
-  -- instruction decodes
-  --
-  signal dcd_wyde: boolean;
 
   --
   -- msb fill for sign/zero extension
   --
   signal msb_fill : std_logic;
 
-  --
-  --
-  --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-
-  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-  alias mem_sign   : std_logic is ireg(8);
-
 
 begin
-
-  --
-  -- instruction decodes
-  --
-  dcd_wyde <= mem_size = MEM_16;
 
 
   --
   -- msb fill for sign/zero extension
   --
   msb_fill <=  '0'      when  mem_sign = '0'
-          else din(15)  when  dcd_wyde
+          else din(15)  when  dcd_wyde = '1'
           else din( 7)  
            ;
 
@@ -98,7 +84,7 @@ begin
   --
   -- byte lane 1 mux
   --
-  ext_out(15 downto 8)  <=  din(15 downto  8)      when  dcd_wyde
+  ext_out(15 downto 8)  <=  din(15 downto  8)      when  dcd_wyde = '1'
                        else ( others => msb_fill )     
                         ;
 
