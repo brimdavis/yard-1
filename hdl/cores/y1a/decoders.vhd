@@ -18,7 +18,7 @@
 --
 
 --
--- master copy of aliases ( to be replaced )
+-- master copy of aliases ( TODO: replace aliases with something better )
 --
   
 --  ----------------------
@@ -1103,6 +1103,92 @@ begin
   fld_shift_signed <= shift_signed;
   fld_shift_dir    <= shift_dir;  
   fld_shift_const  <= shift_const;
+
+end arch1;
+
+
+------------------------------
+-- reg_extend_dcd
+------------------------------
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+
+library work;
+  use work.y1_constants.all;
+  use work.y1a_config.all;
+
+
+entity reg_extend_dcd is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
+
+  port
+    (   
+      clk            : in  std_logic;
+      sync_rst       : in  std_logic;
+
+      inst           : in  std_logic_vector(INST_MSB downto 0);
+      stall          : in  std_logic;
+
+      dcd_wyde       : out std_logic;
+
+      fld_mem_sign   : out std_logic;
+      fld_mem_size   : out std_logic_vector(1 downto 0) 
+    );
+
+end reg_extend_dcd;
+
+
+architecture arch1 of reg_extend_dcd is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  -- instruction register
+  --
+  signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+  --
+  -- instruction field aliases 
+  --
+  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+
+  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
+  alias mem_sign   : std_logic is ireg(8);
+
+begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
+
+  --
+  -- instruction decodes
+  --
+  dcd_wyde <=   '1' when mem_size = MEM_16
+           else '0';
+
+
+  fld_mem_size <= mem_size; 
+  fld_mem_sign <= mem_sign;
 
 end arch1;
 

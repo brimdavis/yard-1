@@ -45,7 +45,7 @@ entity flip is
 
   port
     (   
-      ireg  : in  std_logic_vector(INST_MSB downto 0);
+      bsel  : in  std_logic_vector (4 downto 0);
 
       din   : in  std_logic_vector (ALU_MSB downto 0);
       dout  : out std_logic_vector (ALU_MSB downto 0)
@@ -60,11 +60,6 @@ architecture arch1 of flip is
   attribute syn_hier of arch1: architecture is "hard";
 
 
-  signal bsel  :  std_logic_vector (4 downto 0);
-  --
-  --
-  --
-  alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
 
 begin
 
@@ -74,11 +69,6 @@ begin
   assert ( ALU_WIDTH = 16 ) OR ( ALU_WIDTH = 32 ) 
     report "Unsupported ALU width for flip"
     severity error;
-
-  --
-  --
-  --
-  bsel <= shift_const;
 
   --
   -- uses shifts & masks like SW version instead of coding explicit bit exchanges

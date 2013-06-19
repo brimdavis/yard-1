@@ -160,12 +160,10 @@ architecture arch1 of y1a_core is
   attribute syn_keep : boolean;
   attribute syn_hier : string;
 
-
   -- 
   -- prevent optimizations across core interface
   --
   attribute syn_hier of arch1: architecture is "hard";
-
 
   --
   -- global signals
@@ -226,7 +224,6 @@ architecture arch1 of y1a_core is
   signal ea_dat     : std_logic_vector(ALU_MSB downto 0);
   signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
-
   --
   -- program counter
   --
@@ -234,7 +231,6 @@ architecture arch1 of y1a_core is
   signal pc_reg_p1 : std_logic_vector(PC_MSB downto 0);
 
   signal next_pc   : std_logic_vector(PC_MSB downto 0);
-
 
   --
   -- instruction data
@@ -248,35 +244,11 @@ architecture arch1 of y1a_core is
   -- instruction register & copies
   --
   signal ireg     : std_logic_vector(INST_MSB downto 0);
---  signal ireg_a   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_b   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_c   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_d   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_e   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_f   : std_logic_vector(INST_MSB downto 0);
   signal ireg_g   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_h   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_i   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_j   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_k   : std_logic_vector(INST_MSB downto 0);
---  signal ireg_m   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_n   : std_logic_vector(INST_MSB downto 0);
   signal ireg_p   : std_logic_vector(INST_MSB downto 0);
   
   attribute syn_keep of ireg    : signal is true;
---  attribute syn_keep of ireg_a  : signal is true;
---  attribute syn_keep of ireg_b  : signal is true;
-  attribute syn_keep of ireg_c  : signal is true;
---  attribute syn_keep of ireg_d  : signal is true;
---  attribute syn_keep of ireg_e  : signal is true;
-  attribute syn_keep of ireg_f  : signal is true;
   attribute syn_keep of ireg_g  : signal is true;
---  attribute syn_keep of ireg_h  : signal is true;
---  attribute syn_keep of ireg_i  : signal is true;
---  attribute syn_keep of ireg_j  : signal is true;
---  attribute syn_keep of ireg_k  : signal is true;
---  attribute syn_keep of ireg_m  : signal is true;
-  attribute syn_keep of ireg_n  : signal is true;
   attribute syn_keep of ireg_p  : signal is true;
 
   --
@@ -285,7 +257,7 @@ architecture arch1 of y1a_core is
   signal rsp_pc   : std_logic_vector(PC_MSB downto 0);
   signal rsp_sr   : std_logic_vector(SR_MSB downto 0);
   
- 
+
   --
   -- interrupt stuff ( interrupts currently disabled, not working )
   --
@@ -308,39 +280,6 @@ architecture arch1 of y1a_core is
   --
   signal imm_reg   : std_logic_vector(ALU_MSB downto 0);
 
-
-  ----------------------
-  -- 
-  -- GHDL bug- placing attributes after aliases causes cascade of errors like this:
-  --     ' alias "ex_null" does not denote the entire object '
-
-  --
-  -- synthesis directives
-  --  used to break up combinatorial ALU cascade into CLB sized chunks
-  --
-  
---   attribute keep of ain   : signal is true;
---   attribute keep of bin   : signal is true;
---   
---   attribute keep of ar   : signal is true;
---   attribute keep of br   : signal is true;
--- 
---   attribute keep of arith_dat  : signal is true;
---   attribute keep of logic_dat  : signal is true;
---   
---   attribute keep of cg_out   : signal is true;
---   
---   attribute keep of skip_cond   : signal is true;
--- 
---   attribute keep of ffb_dat     : signal is true;
---   attribute keep of bitcnt_dat  : signal is true;
---   attribute keep of flip_dat    : signal is true;
--- 
---   attribute keep of mem_wb_bus    : signal is true;
-  
-  ----------------------
-
-
   --
   -- early instruction decodes
   --
@@ -349,7 +288,6 @@ architecture arch1 of y1a_core is
 
   signal dcd_mem_ld     : boolean;
 
-
   --
   -- status register
   --
@@ -357,9 +295,8 @@ architecture arch1 of y1a_core is
 
   alias ex_null   : std_logic is st_reg(SR_MSB);
 
-
   --
-  -- remaining instruction decode aliases in use
+  -- remaining instruction decode aliases in use in top level
   --
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   alias arith_skip_nocarry  : std_logic is ireg(11);
@@ -483,14 +420,19 @@ begin
   B_op_sel: block
 
       --
+      -- local instruction register
+      --
+      signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+      --
       -- local decodes
       --
-      alias ireg_msb   : std_logic                             is ireg_n(15);
-      alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg_n(15 downto 14);
-      alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg_n(15 downto 12);
-      alias logic_notb : std_logic                             is ireg_n(11);
-      alias opb_ctl    : std_logic_vector(1 downto 0)          is ireg_n(10 downto 9);
-      alias sel_opb    : std_logic_vector(3 downto 0)          is ireg_n( 7 downto 4);
+      alias ireg_msb   : std_logic                             is ireg(15);
+      alias inst_type  : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
+      alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+      alias logic_notb : std_logic                             is ireg(11);
+      alias opb_ctl    : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
+      alias sel_opb    : std_logic_vector(3 downto 0)          is ireg( 7 downto 4);
 
 
     begin
@@ -521,6 +463,23 @@ begin
       --
       mux_inv_bin <=   NOT mux_bin when ( (inst_type = OPL ) AND (logic_notb = '1') ) OR ( inst_fld = OPA_SUB )
                  else      mux_bin;
+
+      --
+      -- local instruction register
+      --
+      P_ireg: process
+      begin
+        wait until rising_edge(clk);
+
+        if sync_rst = '1' then
+          ireg  <= ( others => '0');
+
+        elsif dcd_stall = '0' then
+          ireg  <= inst;
+
+        end if;
+
+      end process;
 
          
     end block B_op_sel;
@@ -703,39 +662,98 @@ begin
   --
   -- reg-reg sign/zero extension
   --
-  I_rr_ext: reg_extend
-    generic map
-      ( CFG        => CFG )
-    port map
-      (   
-        ireg       => ireg_c,
+  B_reg_extend: block
 
-        din        => bin,
-                  
-        ext_out    => ext_dat
-      );
+    signal dcd_wyde : std_logic;
 
+    signal mem_sign : std_logic;
+    signal mem_size : std_logic_vector(1 downto 0);
+
+    begin
+
+      I_reg_extend: reg_extend
+        generic map
+          ( CFG          => CFG )
+        port map
+          (   
+            dcd_wyde     => dcd_wyde,    
+
+            mem_sign     => mem_sign,
+            mem_size     => mem_size,
+
+            din          => bin,
+                      
+            ext_out      => ext_dat
+          );
+
+      I_reg_extend_dcd: reg_extend_dcd
+        generic map
+          ( CFG          => CFG )
+        port map
+          (   
+            clk          => clk, 
+            sync_rst     => sync_rst,
+  
+            inst         => inst,
+            stall        => dcd_stall,
+
+            dcd_wyde     => dcd_wyde,    
+
+            fld_mem_sign => mem_sign,
+            fld_mem_size => mem_size
+          );
+
+    end block B_reg_extend;
 
   ------------------------------------------------------------------------------
   --
   -- FLIP instruction  ( universal bit swapper )
   --
   GT_flip: if CFG.bit_flip generate
+
+    --
+    -- local instruction register
+    --
+    signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+    --
+    --
+    --
+    alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
+
     begin
 
-      flip1: flip
+      I_flip: flip
         port map
          (
-           ireg  => ireg_c,
+           bsel  => shift_const,
 
            din   => ain,
 
            dout  => flip_dat
          );
 
+      --
+      -- local instruction register
+      --
+      P_ireg: process
+      begin
+        wait until rising_edge(clk);
+
+        if sync_rst = '1' then
+          ireg  <= ( others => '0');
+
+        elsif dcd_stall = '0' then
+          ireg  <= inst;
+
+        end if;
+
+      end process;
+
     end generate GT_flip;
 
   GF_flip: if NOT CFG.bit_flip generate
+
     begin
 
       flip_dat <= ( others => '0' );
@@ -863,18 +881,23 @@ begin
       attribute syn_keep of wb_muxb  : signal is true;
 
       --
+      -- local instruction register
+      --
+      signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+      --
       -- local instruction decode
       --
-      alias inst_type    : std_logic_vector(TYPE_MSB downto 0)   is ireg_f(15 downto 14);
-      alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg_f(15 downto 12);
+      alias inst_type    : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
+      alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   
-      alias arith_op     : std_logic_vector(OP_MSB   downto 0)   is ireg_f(13 downto 12);
+      alias arith_op     : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
 
-      alias shift_grp    : std_logic                             is ireg_f(11);
-      alias shift_signed : std_logic                             is ireg_f(10);
-      alias shift_dir    : std_logic                             is ireg_f( 9);
+      alias shift_grp    : std_logic                             is ireg(11);
+      alias shift_signed : std_logic                             is ireg(10);
+      alias shift_dir    : std_logic                             is ireg( 9);
 
-      alias lea_bit      : std_logic                             is ireg_f( 8);
+      alias lea_bit      : std_logic                             is ireg( 8);
 
     begin
 
@@ -890,7 +913,7 @@ begin
       wb_muxb <=   logic_dat    when  ( inst_type = OPL      ) 
              else  flip_dat     when  ( inst_fld  = OPA_MISC ) AND ( shift_grp = '0' ) AND ( shift_signed='1' ) AND ( shift_dir = '1' )
 
-             else  ( ALU_MSB downto 12 => ireg_f(11) ) & ireg_f(11 downto 0) when ( inst_fld = OPM_IMM )
+             else  ( ALU_MSB downto 12 => ireg(11) ) & ireg(11 downto 0) when ( inst_fld = OPM_IMM )
 
 --
 -- TODO : move hijacked FF1/CNT1 opcodes to coprocessor space
@@ -905,6 +928,23 @@ begin
              else  shift_dat    when  ( inst_fld  = OPA_MISC ) 
  
              else  ( others => '0' );
+
+      --
+      -- local instruction register
+      --
+      P_ireg: process
+      begin
+        wait until rising_edge(clk);
+
+        if sync_rst = '1' then
+          ireg  <= ( others => '0');
+
+        elsif dcd_stall = '0' then
+          ireg  <= inst;
+
+        end if;
+
+      end process;
 
     end block wb_mux;
 
@@ -1062,32 +1102,6 @@ begin
 
 
   --
-  -- no register fanout for ireg
-  --
-  -- TODO: add CFG.hw.xxx  hardware configuration record for this stuff
-  --
-  G_no_ireg_fanout : if FALSE generate
-    begin
-
---    ireg_a <= ireg;
---    ireg_b <= ireg;
-      ireg_c <= ireg;
---    ireg_d <= ireg;
---    ireg_e <= ireg;
-      ireg_f <= ireg;
-      ireg_g <= ireg;
---    ireg_h <= ireg;
---    ireg_i <= ireg;
---    ireg_j <= ireg;
---    ireg_k <= ireg;
---    ireg_m <= ireg;
-      ireg_n <= ireg;
-      ireg_p <= ireg;
-
-    end generate G_no_ireg_fanout;
-
-
-  --
   -- register fanout for ireg
   --
   G_ireg_fanout : if TRUE generate
@@ -1101,52 +1115,15 @@ begin
           wait until rising_edge(clk);
    
           if sync_rst = '1' then
---          ireg_a    <= ( others => '0');
---          ireg_b    <= ( others => '0');
-            ireg_c    <= ( others => '0');
---          ireg_d    <= ( others => '0');
---          ireg_e    <= ( others => '0');
-            ireg_f    <= ( others => '0');
             ireg_g    <= ( others => '0');
---          ireg_h    <= ( others => '0');
---          ireg_i    <= ( others => '0');
---          ireg_j    <= ( others => '0');
---          ireg_k    <= ( others => '0');
---          ireg_m    <= ( others => '0');
-            ireg_n    <= ( others => '0');
             ireg_p    <= ( others => '0');
    
---          elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
           elsif ( dcd_stall = '1' ) then
---          ireg_a    <= ireg_a;
---          ireg_b    <= ireg_b;
-            ireg_c    <= ireg_c;
---          ireg_d    <= ireg_d;
---          ireg_e    <= ireg_e;
-            ireg_f    <= ireg_f;
             ireg_g    <= ireg_g;
---          ireg_h    <= ireg_h;
---          ireg_i    <= ireg_i;
---          ireg_j    <= ireg_j;
---          ireg_k    <= ireg_k;
---          ireg_m    <= ireg_m;
-            ireg_n    <= ireg_n;
-            ireg_p    <= ireg_n;
+            ireg_p    <= ireg_p;
       
           else
---          ireg_a    <= inst;
---          ireg_b    <= inst;
-            ireg_c    <= inst;
---          ireg_d    <= inst;
---          ireg_e    <= inst;
-            ireg_f    <= inst;
             ireg_g    <= inst;
---          ireg_h    <= inst;
---          ireg_i    <= inst;
---          ireg_j    <= inst;
---          ireg_k    <= inst;
---          ireg_m    <= inst;
-            ireg_n    <= inst;
             ireg_p    <= inst;
 
           end if;
