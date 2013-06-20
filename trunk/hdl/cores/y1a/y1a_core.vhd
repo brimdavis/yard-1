@@ -244,12 +244,8 @@ architecture arch1 of y1a_core is
   -- instruction register & copies
   --
   signal ireg     : std_logic_vector(INST_MSB downto 0);
-  signal ireg_g   : std_logic_vector(INST_MSB downto 0);
-  signal ireg_p   : std_logic_vector(INST_MSB downto 0);
   
   attribute syn_keep of ireg    : signal is true;
-  attribute syn_keep of ireg_g  : signal is true;
-  attribute syn_keep of ireg_p  : signal is true;
 
   --
   -- stack signals
@@ -299,7 +295,6 @@ architecture arch1 of y1a_core is
   -- remaining instruction decode aliases in use in top level
   --
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  alias arith_skip_nocarry  : std_logic is ireg(11);
 
 
 ------------------------------------------------------------------------------
@@ -416,6 +411,8 @@ begin
   ------------------------------------------------------------------------------
   --
   -- operand selection
+  --
+  --  TODO: split into datapath/decode blocks
   --
   B_op_sel: block
 
@@ -709,6 +706,8 @@ begin
   --
   -- FLIP instruction  ( universal bit swapper )
   --
+  --  TODO: split into datapath/decode blocks
+  --
   GT_flip: if CFG.bit_flip generate
 
     --
@@ -872,32 +871,34 @@ begin
   -- writeback mux
   --    replaces old TBUF writeback code with mux cascade
   --
+  --  TODO: split into datapath/decode blocks
+  --
   wb_mux : block
 
-      signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
-      signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
+    signal wb_muxa : std_logic_vector(ALU_MSB downto 0);
+    signal wb_muxb : std_logic_vector(ALU_MSB downto 0);
 
-      attribute syn_keep of wb_muxa  : signal is true;
-      attribute syn_keep of wb_muxb  : signal is true;
+    attribute syn_keep of wb_muxa  : signal is true;
+    attribute syn_keep of wb_muxb  : signal is true;
 
-      --
-      -- local instruction register
-      --
-      signal ireg           : std_logic_vector(INST_MSB downto 0);
+    --
+    -- local instruction register
+    --
+    signal ireg           : std_logic_vector(INST_MSB downto 0);
 
-      --
-      -- local instruction decode
-      --
-      alias inst_type    : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
-      alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+    --
+    -- local instruction decode
+    --
+    alias inst_type    : std_logic_vector(TYPE_MSB downto 0)   is ireg(15 downto 14);
+    alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   
-      alias arith_op     : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
+    alias arith_op     : std_logic_vector(OP_MSB   downto 0)   is ireg(13 downto 12);
 
-      alias shift_grp    : std_logic                             is ireg(11);
-      alias shift_signed : std_logic                             is ireg(10);
-      alias shift_dir    : std_logic                             is ireg( 9);
+    alias shift_grp    : std_logic                             is ireg(11);
+    alias shift_signed : std_logic                             is ireg(10);
+    alias shift_dir    : std_logic                             is ireg( 9);
 
-      alias lea_bit      : std_logic                             is ireg( 8);
+    alias lea_bit      : std_logic                             is ireg( 8);
 
     begin
 
@@ -953,39 +954,70 @@ begin
   --
   -- skip condition logic
   --
-  I_skip_dcd: skip_dcd
-    generic map
-      ( CFG          => CFG )
-
-    port map
-      (
-        ireg         => ireg_g,
-
---      skip_sense   => skip_sense,  
---      skip_type    => skip_type,   
---      skip_cp_sel  => skip_cp_sel, 
---      skip_ra_type => skip_ra_type,
---
---      sel_opa      => sel_opa,     
---      opb_const    => opb_const,   
-
-        ain          => ain,         
-        bin          => bin,        
-
-        flag_reg     => flag_reg,    
-
-        skip_cond    => skip_cond   
-      );
-
+  --  TODO: split into datapath/decode blocks
   --
-  -- register input flags before use
-  --
-  process(clk)
+  B_skip_ctl : block
+
+    --
+    -- local instruction register
+    --
+    signal ireg           : std_logic_vector(INST_MSB downto 0);
+
     begin
-      if rising_edge(clk) then
-        flag_reg <= in_flags;
-      end if;
-    end process;
+
+      I_skip_dcd: skip_dcd
+        generic map
+          ( CFG          => CFG )
+
+        port map
+          (
+            ireg         => ireg,
+
+--          skip_sense   => skip_sense,  
+--          skip_type    => skip_type,   
+--          skip_cp_sel  => skip_cp_sel, 
+--          skip_ra_type => skip_ra_type,
+--    
+--          sel_opa      => sel_opa,     
+--          opb_const    => opb_const,   
+
+            ain          => ain,         
+            bin          => bin,        
+
+            flag_reg     => flag_reg,    
+
+            skip_cond    => skip_cond   
+          );
+
+      --
+      -- register input flags before use
+      --
+      process(clk)
+        begin
+          if rising_edge(clk) then
+            flag_reg <= in_flags;
+          end if;
+        end process;
+
+      --
+      -- local instruction register
+      --
+      P_ireg: process
+      begin
+        wait until rising_edge(clk);
+
+        if sync_rst = '1' then
+          ireg  <= ( others => '0');
+
+        elsif dcd_stall = '0' then
+          ireg  <= inst;
+
+        end if;
+
+      end process;
+
+
+    end block B_skip_ctl;
 
 
   ------------------------------------------------------------------------------
@@ -994,6 +1026,9 @@ begin
   --
   ------------------------------------------------------------------------------
 
+  --
+  -- TODO: move stall logic into state_ctl block
+  --
   I_stall_dcd: stall_dcd
     generic map
       ( CFG         => CFG )
@@ -1040,40 +1075,72 @@ begin
 
 
   --
+  -- processor state control
   --
+  --  TODO: split into datapath/decode blocks
   --
-  I_state_ctl : state_ctl
-    generic map
-      ( CFG          => CFG )
+  B_state_ctl : block
 
-    port map
-      (
-        clk                => clk,
-        sync_rst           => sync_rst,
+    --
+    -- local instruction register
+    --
+    signal ireg           : std_logic_vector(INST_MSB downto 0);
 
-        d_stall            => d_stall,      
+    alias arith_skip_nocarry  : std_logic is ireg(11);
 
-        skip_cond          => skip_cond,   
-        arith_skip_nocarry => arith_skip_nocarry,
-        arith_cout         => arith_cout,
+    begin
+
+      I_state_ctl : state_ctl
+        generic map
+          ( CFG          => CFG )
+
+        port map
+          (
+            clk                => clk,
+            sync_rst           => sync_rst,
+
+            d_stall            => d_stall,      
+
+            skip_cond          => skip_cond,   
+            arith_skip_nocarry => arith_skip_nocarry,
+            arith_cout         => arith_cout,
 
 
-        ireg               => ireg_p,
+            ireg               => ireg,
 
-        ain                => ain,      
-        imm_reg            => imm_reg,
+            ain                => ain,      
+            imm_reg            => imm_reg,
 
 
-        rsp_pc             => rsp_pc,
-        rsp_sr             => rsp_sr,
+            rsp_pc             => rsp_pc,
+            rsp_sr             => rsp_sr,
 
-        st_reg_out         => st_reg,
+            st_reg_out         => st_reg,
 
-        pc_reg_out         => pc_reg,
-        next_pc_out        => next_pc,
+            pc_reg_out         => pc_reg,
+            next_pc_out        => next_pc,
 
-        pc_reg_p1_out      => pc_reg_p1
-      );
+            pc_reg_p1_out      => pc_reg_p1
+          );
+
+      --
+      -- local instruction register
+      --
+      P_ireg: process
+      begin
+        wait until rising_edge(clk);
+
+        if sync_rst = '1' then
+          ireg  <= ( others => '0');
+
+        elsif dcd_stall = '0' then
+          ireg  <= inst;
+
+        end if;
+
+      end process;
+
+    end block B_state_ctl;
 
 
   --
@@ -1099,38 +1166,6 @@ begin
       end if;
  
    end process;
-
-
-  --
-  -- register fanout for ireg
-  --
-  G_ireg_fanout : if TRUE generate
-    begin
-
-      --
-      -- copies of instruction register to limit fanout
-      --
-      P_pipe_reg: process
-        begin
-          wait until rising_edge(clk);
-   
-          if sync_rst = '1' then
-            ireg_g    <= ( others => '0');
-            ireg_p    <= ( others => '0');
-   
-          elsif ( dcd_stall = '1' ) then
-            ireg_g    <= ireg_g;
-            ireg_p    <= ireg_p;
-      
-          else
-            ireg_g    <= inst;
-            ireg_p    <= inst;
-
-          end if;
-   
-        end process;
-
-    end generate G_ireg_fanout;
 
 
   --    

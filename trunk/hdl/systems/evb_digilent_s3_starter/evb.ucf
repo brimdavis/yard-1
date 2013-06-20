@@ -200,7 +200,7 @@ NET "led<0>"   LOC = "k12" | IOSTANDARD = LVCMOS33;
 ##################
 
 #INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
-#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X39Y30 ;
+#AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X39Y24 ;
 
 INST "blk_mem1/RAM3" LOC = "RAMB16_X1Y5" ;
 INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
