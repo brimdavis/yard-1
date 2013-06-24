@@ -41,14 +41,18 @@ entity skip_dcd is
 
   port
     (   
-      ireg       : in  std_logic_vector(INST_MSB downto 0);
+      clk       : in  std_logic;
+      sync_rst  : in  std_logic;
 
-      ain          : in  std_logic_vector(ALU_MSB downto 0);
-      bin          : in  std_logic_vector(ALU_MSB downto 0);
+      inst      : in  std_logic_vector(INST_MSB downto 0);
+      stall     : in  std_logic;
 
-      flag_reg     : in  std_logic_vector(15 downto 0);
+      ain       : in  std_logic_vector(ALU_MSB downto 0);
+      bin       : in  std_logic_vector(ALU_MSB downto 0);
 
-      skip_cond    : out std_logic
+      flag_reg  : in  std_logic_vector(15 downto 0);
+
+      skip_cond : out std_logic
     );
 
 end skip_dcd;
@@ -88,6 +92,11 @@ architecture arch1 of skip_dcd is
   signal cb_v   : std_logic;
 
   --
+  -- local instruction register
+  --
+  signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+  --
   --
   --
   alias skip_sense    : std_logic                    is ireg(11);
@@ -101,6 +110,23 @@ architecture arch1 of skip_dcd is
 
 
 begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
 
   --
   -- mux for skip-on-bit

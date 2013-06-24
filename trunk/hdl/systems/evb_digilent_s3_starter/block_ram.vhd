@@ -83,14 +83,15 @@ begin
   loc_wdat <= d_wdat;
 
   --
-  -- data and byte enables
+  -- data and byte write enables
   --
   d_en  <= NOT d_cs_l;
 
-  d_we3 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(3));
-  d_we2 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(2));
-  d_we1 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(1));
-  d_we0 <= ( NOT d_wr_l ) AND ( NOT d_wr_en_l(0));
+  d_we3 <= NOT d_wr_en_l(3);
+  d_we2 <= NOT d_wr_en_l(2);
+  d_we1 <= NOT d_wr_en_l(1);
+  d_we0 <= NOT d_wr_en_l(0);
+
 
   RAM3 : RAMB16_S9_S9 
     generic map

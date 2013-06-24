@@ -39,15 +39,11 @@ entity state_ctl is
       clk                : in  std_logic;
       sync_rst           : in  std_logic;
 
-
+      inst               : in  std_logic_vector(INST_MSB downto 0);
       d_stall            : in  std_logic; 
 
       skip_cond          : in  std_logic;
-      arith_skip_nocarry : in  std_logic;
       arith_cout         : in  std_logic;
-
-
-      ireg               : in  std_logic_vector(INST_MSB downto 0);
 
       ain                : in  std_logic_vector(ALU_MSB downto 0);
       imm_reg            : in  std_logic_vector(ALU_MSB downto 0);
@@ -55,6 +51,8 @@ entity state_ctl is
       rsp_pc             : in  std_logic_vector(PC_MSB downto 0);
       rsp_sr             : in  std_logic_vector(SR_MSB downto 0);
 
+
+      dcd_stall          : out std_logic;
 
       st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 
@@ -72,50 +70,78 @@ architecture arch1 of state_ctl is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
-  signal dcd_stall        : std_logic;
+  attribute syn_keep : boolean;
 
-  signal next_pc          : std_logic_vector(PC_MSB downto 0);
 
-  signal pc_reg           : std_logic_vector(PC_MSB downto 0);
-  signal pc_reg_p1        : std_logic_vector(PC_MSB downto 0);
+  signal stall                : std_logic;
+  attribute syn_keep of stall : signal is TRUE;
 
-  signal st_reg           : std_logic_vector(SR_MSB downto 0);
-  alias  ex_null          : std_logic is st_reg(SR_MSB);
+  signal next_pc              : std_logic_vector(PC_MSB downto 0);
 
-  signal next_null_sr     : std_logic_vector(7 downto 0);
-  alias  null_sr          : std_logic_vector(7 downto 0) is st_reg(SR_MSB downto SR_MSB - 7 );
+  signal pc_reg               : std_logic_vector(PC_MSB downto 0);
+  signal pc_reg_p1            : std_logic_vector(PC_MSB downto 0);
 
-  signal ext_bra_offset   : std_logic_vector(ALU_MSB downto 0);
+  signal st_reg               : std_logic_vector(SR_MSB downto 0);
+  alias  ex_null              : std_logic is st_reg(SR_MSB);
 
-  signal spam_length_mask : std_logic_vector(7 downto 0);
+  signal next_null_sr         : std_logic_vector(7 downto 0);
+  alias  null_sr              : std_logic_vector(7 downto 0) is st_reg(SR_MSB downto SR_MSB - 7 );
+
+  signal ext_bra_offset       : std_logic_vector(ALU_MSB downto 0);
+
+  signal spam_length_mask     : std_logic_vector(7 downto 0);
+
+  --
+  -- instruction register
+  --
+  signal ireg                 : std_logic_vector(INST_MSB downto 0);
 
   --
   -- local instruction decode aliases
   --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias inst_fld              : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
 
-  alias bra_long   : std_logic is ireg(11);
-  alias ext_bit    : std_logic is ireg(11);
-  alias ret_type   : std_logic is ireg(10);
-  alias dslot_null : std_logic is ireg(9);
+  alias arith_skip_nocarry    : std_logic is ireg(11);
+  alias bra_long              : std_logic is ireg(11);
+  alias ext_bit               : std_logic is ireg(11);
+  alias ret_type              : std_logic is ireg(10);
+  alias dslot_null            : std_logic is ireg(9);
 
-  alias bra_offset : std_logic_vector(8 downto 0) is ireg(8 downto 0);
+  alias bra_offset            : std_logic_vector(8 downto 0) is ireg(8 downto 0);
 
-  alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
+  alias ext_grp               : std_logic_vector(3 downto 0) is ireg(7 downto 4);
 
   --
   -- SPAM instruction fields
   --
-  alias spam_mode : std_logic_vector(2 downto 0) is ireg(10 downto 8);
-  alias spam_mask : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
+  alias spam_mode             : std_logic_vector(2 downto 0) is ireg(10 downto 8);
+  alias spam_mask             : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
+
 
 begin
 
   --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
+
+  --
   -- decode for stall condition
   --
-  dcd_stall  <=  '1'  when ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) 
-            else '0';
+  stall  <=  '1'  when ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) 
+        else '0';
 
   --
   -- status register
@@ -178,7 +204,7 @@ begin
   --
   -- re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, dcd_stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 
@@ -186,7 +212,7 @@ begin
       -- flow control logic
       --
 
-      if ( dcd_stall = '1' ) then
+      if ( stall = '1' ) then
         --
         -- data stall
         --
@@ -334,7 +360,7 @@ begin
       if sync_rst = '1' then
         pc_reg_p1 <= PC_RST_VEC;
 
-      elsif ( dcd_stall = '1' ) then
+      elsif ( stall = '1' ) then
         pc_reg_p1 <= pc_reg_p1;
   
       else
@@ -348,11 +374,13 @@ begin
   --
   -- connect output ports to internal registers
   --
+  dcd_stall     <= stall;
+
   st_reg_out    <= st_reg;
+
   pc_reg_out    <= pc_reg;
   next_pc_out   <= next_pc;
   pc_reg_p1_out <= pc_reg_p1;
-
     
 end arch1;
 
