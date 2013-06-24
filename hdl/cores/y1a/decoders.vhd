@@ -17,11 +17,12 @@
 --  various instruction decoder components, collected in one file
 --
 
+--  ----------------------------------------------------------------------------
+--  ----------------------------------------------------------------------------
 --
 -- master copy of aliases ( TODO: replace aliases with something better )
 --
   
---  ----------------------
 --  --
 --  -- instruction register aliases for opcode fields ( see constant.vhd )
 --  --    defined here using aliases until I figure out how best to define them 
@@ -115,92 +116,8 @@
 --  alias spam_mode : std_logic_vector(2 downto 0) is ireg(10 downto 8);
 --  alias spam_mask : std_logic_vector(7 downto 0) is ireg( 7 downto 0);
 --
-
-
-------------------------------
--- stall_dcd
-------------------------------
-
-library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.numeric_std.all;
-
-library work;
-  use work.y1_constants.all;
-  use work.y1a_config.all;
-
-
-entity stall_dcd is
-  generic
-    (
-      CFG        : y1a_config_type
-    );
-
-  port
-    (   
-      clk          : in  std_logic;
-      sync_rst     : in  std_logic;
-
-      inst         : in  std_logic_vector(INST_MSB downto 0);
-      d_stall      : in  std_logic;
-
-      dcd_stall    : out std_logic
-    );
-
-end stall_dcd;
-
-
-architecture arch1 of stall_dcd is
-
-  attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
-
-  attribute syn_keep : boolean;
-
-  --
-  -- instruction register
-  --
-  signal ireg        : std_logic_vector(INST_MSB downto 0);
-
-  signal stall       : std_logic;
-  attribute syn_keep of stall : signal is TRUE;
-
-  --
-  -- instruction fields
-  --
-  alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-
-begin
-
-  --
-  -- local instruction register
-  --
-  P_ireg: process
-  begin
-    wait until rising_edge(clk);
-
-    if sync_rst = '1' then
-      ireg  <= ( others => '0');
-
-    elsif stall = '0' then
-      ireg  <= inst;
-
-    end if;
-
-  end process;
-
-  --
-  -- internal copy of stall
-  --
-  stall     <=   '1'  when ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) )
-            else '0';
-
-  --
-  -- connect to output port
-  --
-  dcd_stall <= stall;
-
-end arch1;
+--  ----------------------------------------------------------------------------
+--  ----------------------------------------------------------------------------
 
 
 ------------------------------
@@ -482,7 +399,6 @@ end arch1;
 ------------------------------
 -- ea_dcd
 ------------------------------
-
 
 library ieee;
   use ieee.std_logic_1164.all;

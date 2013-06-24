@@ -361,14 +361,18 @@ package y1a_comps is
       );
     port
       (
-        ireg         : in  std_logic_vector(INST_MSB downto 0);
+        clk       : in  std_logic;
+        sync_rst  : in  std_logic;
 
-        ain          : in  std_logic_vector(ALU_MSB downto 0);
-        bin          : in  std_logic_vector(ALU_MSB downto 0);
+        inst      : in  std_logic_vector(INST_MSB downto 0);
+        stall     : in  std_logic;
 
-        flag_reg     : in  std_logic_vector(15 downto 0);
+        ain       : in  std_logic_vector(ALU_MSB downto 0);
+        bin       : in  std_logic_vector(ALU_MSB downto 0);
 
-        skip_cond    : out std_logic
+        flag_reg  : in  std_logic_vector(15 downto 0);
+
+        skip_cond : out std_logic
       );
   end component;
 
@@ -412,27 +416,6 @@ package y1a_comps is
 
        );
   end component;
-
-
-  component stall_dcd is
-    generic
-      (
-        CFG        : y1a_config_type
-      );
-  
-    port
-      (   
-        clk          : in  std_logic;
-        sync_rst     : in  std_logic;
-  
-        inst         : in  std_logic_vector(INST_MSB downto 0);
-        d_stall      : in  std_logic;
-
-        dcd_stall    : out std_logic
-      );
-  
-  end component;
-
 
 
   component dbus_ctl is
@@ -560,15 +543,11 @@ package y1a_comps is
         clk                : in  std_logic;
         sync_rst           : in  std_logic;
 
-
+        inst               : in  std_logic_vector(INST_MSB downto 0);
         d_stall            : in  std_logic; 
 
         skip_cond          : in  std_logic;
-        arith_skip_nocarry : in  std_logic;
         arith_cout         : in  std_logic;
-
-
-        ireg               : in  std_logic_vector(INST_MSB downto 0);
 
         ain                : in  std_logic_vector(ALU_MSB downto 0);
         imm_reg            : in  std_logic_vector(ALU_MSB downto 0);
@@ -576,6 +555,8 @@ package y1a_comps is
         rsp_pc             : in  std_logic_vector(PC_MSB downto 0);
         rsp_sr             : in  std_logic_vector(SR_MSB downto 0);
 
+
+        dcd_stall          : out std_logic;
 
         st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 

@@ -56,6 +56,8 @@ architecture arch1 of dbus_ctl is
   attribute syn_hier : string;
   attribute syn_hier of arch1: architecture is "hard";
 
+  signal valid_wr    : std_logic;
+
   --
   -- instruction register
   --
@@ -64,9 +66,9 @@ architecture arch1 of dbus_ctl is
   --
   --
   --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-  alias mem_size   : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
-  alias lea_bit    : std_logic                             is ireg(8);
+  alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
+  alias mem_size     : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
+  alias lea_bit      : std_logic                             is ireg(8);
 
 begin
 
@@ -87,6 +89,15 @@ begin
 
   end process;
 
+
+  --
+  -- common decode for writes
+  --
+  valid_wr <=  '1'   when     ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
+                        AND ( ex_null = '0' )
+          else '0';
+
+
   --
   --   original design:
   --      assumed async read RAM fast enough for single cycle reads
@@ -98,26 +109,25 @@ begin
   --
   --
 
-  d_en_l <=  '0'   when (
+
+  d_en_l   <=  '0'   when (
                               (   inst_fld = OPM_LD ) 
                           OR  (   inst_fld = OPM_LDI )
                           OR  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
                         )
                         AND ( ex_null = '0' )
-        else '1';
+          else '1';
 
 
-  d_wr_l <=  '0'   when     ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
-                        AND ( ex_null = '0' )
-        else '1';
+  d_wr_l   <=  NOT valid_wr;
 
   
-  d_rd_l <=  '0'   when (
+  d_rd_l   <=  '0'   when (
                               ( inst_fld = OPM_LD ) 
                           OR  ( inst_fld = OPM_LDI )
                         )
                         AND ( ex_null = '0' )
-        else '1';
+          else '1';
 
   --
   -- byte enables
@@ -125,22 +135,29 @@ begin
   gen_wen32: if ALU_WIDTH = 32 generate
     begin
 
-      -- first cut at byte write enables, should add enable gating
+      -- added byte write enable gating so memories can look at just byte write enables
 
         d_wr_en_l 
-            <=   B"0000"  when ( mem_size = MEM_32_SP ) AND ( ea_lsbs(1 downto 0) = "00" )
-           else  B"0000"  when ( mem_size = MEM_32    ) AND ( ea_lsbs(1 downto 0) = "00" )
+            <=   B"0000"  when ( mem_size = MEM_32_SP ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
+           else  B"0000"  when ( mem_size = MEM_32    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
 
-           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "00" )    
-           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "10" )    
+           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
+           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
 
-           else  B"0111"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "00" )    
-           else  B"1011"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "01" )    
-           else  B"1101"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "10" )    
-           else  B"1110"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "11" )    
+           else  B"0111"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
+           else  B"1011"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "01" ) AND ( valid_wr = '1' )    
+           else  B"1101"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
+           else  B"1110"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "11" ) AND ( valid_wr = '1' )    
   
            else  B"1111" ;
   
     end generate gen_wen32;
  
 end arch1;
+
+
+
+
+
+
+

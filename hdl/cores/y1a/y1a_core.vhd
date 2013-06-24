@@ -262,11 +262,6 @@ architecture arch1 of y1a_core is
   signal irq_enable : std_logic;
   
   --
-  -- input flag register
-  --
-  signal flag_reg : std_logic_vector(15 downto 0);
-  
-  --
   -- skip logic
   --
   signal skip_cond : std_logic;
@@ -954,14 +949,14 @@ begin
   --
   -- skip condition logic
   --
-  --  TODO: split into datapath/decode blocks
+  --  TODO: split into datapath/decode blocks ???
   --
   B_skip_ctl : block
 
     --
-    -- local instruction register
+    -- input flag register
     --
-    signal ireg           : std_logic_vector(INST_MSB downto 0);
+    signal flag_reg : std_logic_vector(15 downto 0);
 
     begin
 
@@ -971,7 +966,11 @@ begin
 
         port map
           (
-            ireg         => ireg,
+            clk          => clk, 
+            sync_rst     => sync_rst,
+
+            inst         => inst,
+            stall        => dcd_stall,      
 
 --          skip_sense   => skip_sense,  
 --          skip_type    => skip_type,   
@@ -999,24 +998,6 @@ begin
           end if;
         end process;
 
-      --
-      -- local instruction register
-      --
-      P_ireg: process
-      begin
-        wait until rising_edge(clk);
-
-        if sync_rst = '1' then
-          ireg  <= ( others => '0');
-
-        elsif dcd_stall = '0' then
-          ireg  <= inst;
-
-        end if;
-
-      end process;
-
-
     end block B_skip_ctl;
 
 
@@ -1025,25 +1006,6 @@ begin
   -- control and program sequencing
   --
   ------------------------------------------------------------------------------
-
-  --
-  -- TODO: move stall logic into state_ctl block
-  --
-  I_stall_dcd: stall_dcd
-    generic map
-      ( CFG         => CFG )
-
-    port map
-      (
-        clk          => clk, 
-        sync_rst     => sync_rst,
-
-        inst         => inst,
-        d_stall      => d_stall,      
-
-        dcd_stall    => dcd_stall
-      );
-
 
   --
   -- irq edge detect logic
@@ -1077,43 +1039,35 @@ begin
   --
   -- processor state control
   --
-  --  TODO: split into datapath/decode blocks
+  --  TODO: split into datapath/decode blocks ???
   --
   B_state_ctl : block
-
-    --
-    -- local instruction register
-    --
-    signal ireg           : std_logic_vector(INST_MSB downto 0);
-
-    alias arith_skip_nocarry  : std_logic is ireg(11);
 
     begin
 
       I_state_ctl : state_ctl
         generic map
-          ( CFG          => CFG )
+          ( CFG                => CFG )
 
         port map
           (
             clk                => clk,
             sync_rst           => sync_rst,
 
+            inst               => inst,
             d_stall            => d_stall,      
 
             skip_cond          => skip_cond,   
-            arith_skip_nocarry => arith_skip_nocarry,
             arith_cout         => arith_cout,
-
-
-            ireg               => ireg,
 
             ain                => ain,      
             imm_reg            => imm_reg,
 
-
             rsp_pc             => rsp_pc,
             rsp_sr             => rsp_sr,
+
+
+            dcd_stall          => dcd_stall,
 
             st_reg_out         => st_reg,
 
@@ -1122,23 +1076,6 @@ begin
 
             pc_reg_p1_out      => pc_reg_p1
           );
-
-      --
-      -- local instruction register
-      --
-      P_ireg: process
-      begin
-        wait until rising_edge(clk);
-
-        if sync_rst = '1' then
-          ireg  <= ( others => '0');
-
-        elsif dcd_stall = '0' then
-          ireg  <= inst;
-
-        end if;
-
-      end process;
 
     end block B_state_ctl;
 
