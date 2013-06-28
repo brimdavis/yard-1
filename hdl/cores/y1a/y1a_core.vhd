@@ -701,50 +701,39 @@ begin
   --
   -- FLIP instruction  ( universal bit swapper )
   --
-  --  TODO: split into datapath/decode blocks
-  --
   GT_flip: if CFG.bit_flip generate
 
-    --
-    -- local instruction register
-    --
-    signal ireg           : std_logic_vector(INST_MSB downto 0);
-
-    --
-    --
-    --
-    alias shift_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
+    signal flip_const  : std_logic_vector(4 downto 0);
 
     begin
 
       I_flip: flip
         port map
          (
-           bsel  => shift_const,
+           bsel  => flip_const,
 
            din   => ain,
 
            dout  => flip_dat
          );
 
-      --
-      -- local instruction register
-      --
-      P_ireg: process
-      begin
-        wait until rising_edge(clk);
+      I_flip_dcd: flip_dcd
+        generic map
+          ( CFG              => CFG )
+  
+        port map
+          (
+            clk              => clk, 
+            sync_rst         => sync_rst,
+  
+            inst             => inst,
+            stall            => dcd_stall,      
 
-        if sync_rst = '1' then
-          ireg  <= ( others => '0');
-
-        elsif dcd_stall = '0' then
-          ireg  <= inst;
-
-        end if;
-
-      end process;
+            fld_flip_const   => flip_const 
+          );
 
     end generate GT_flip;
+
 
   GF_flip: if NOT CFG.bit_flip generate
 
