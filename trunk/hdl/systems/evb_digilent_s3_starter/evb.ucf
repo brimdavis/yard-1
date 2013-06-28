@@ -202,46 +202,22 @@ NET "led<0>"   LOC = "k12" | IOSTANDARD = LVCMOS33;
 #INST "I_evb_core" AREA_GROUP = "AG_I_evb_core" ;
 #AREA_GROUP "AG_I_evb_core" RANGE = SLICE_X0Y47:SLICE_X39Y24 ;
 
+#INST "blk_mem1/RAM3" LOC = "RAMB16_X1Y5" ;
+#INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
+#INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y5" ;
+#INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
+
 INST "blk_mem1/RAM3" LOC = "RAMB16_X1Y5" ;
-INST "blk_mem1/RAM2" LOC = "RAMB16_X1Y4" ;
-INST "blk_mem1/RAM1" LOC = "RAMB16_X0Y5" ;
+INST "blk_mem1/RAM2" LOC = "RAMB16_X0Y5" ;
+INST "blk_mem1/RAM1" LOC = "RAMB16_X1Y4" ;
 INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
 
 
-INST "I_evb_core/B_cg.I_cgen" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen" ;
-AREA_GROUP "AG_I_evb_core/B_cg.I_cgen" RANGE = SLICE_X32Y47:SLICE_X35Y30 ;
+INST "I_evb_core/B_rstack.I_stack" AREA_GROUP = "AG_I_evb_core/B_rstack.I_stack" ;
+AREA_GROUP "AG_I_evb_core/B_rstack.I_stack" RANGE = SLICE_X0Y47:SLICE_X1Y30 ;
 
-INST "I_evb_core/B_cg.I_cgen_dcd" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_cg.I_cgen_dcd" RANGE = SLICE_X32Y29:SLICE_X35Y26 ;
-
-
-INST "I_evb_core/B_addsub.I_addsub" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub" ;
-AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub" RANGE = SLICE_X25Y47:SLICE_X26Y30 ;
-
-INST "I_evb_core/B_addsub.I_addsub_dcd" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub_dcd" RANGE = SLICE_X25Y29:SLICE_X26Y26 ;
-
-
-INST "I_evb_core/B_logicals.I_logicals" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals" ;
-AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals" RANGE = SLICE_X22Y47:SLICE_X23Y30 ;
-
-INST "I_evb_core/B_logicals.I_logicals_dcd" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals_dcd" RANGE = SLICE_X22Y29:SLICE_X23Y26 ;
-
-
-INST "I_evb_core/GF_barrel.I_shift_dcd" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_dcd" ;
-AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_dcd" RANGE = SLICE_X30Y29:SLICE_X31Y26 ;
-
-INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
-AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X30Y47:SLICE_X31Y30 ;
-
-
-
-INST "I_evb_core/B_ea.I_ea_calc" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_calc" ;
-AREA_GROUP "AG_I_evb_core/B_ea.I_ea_calc" RANGE = SLICE_X19Y47:SLICE_X21Y28 ;
-
-INST "I_evb_core/B_ea.I_ea_dcd" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_ea.I_ea_dcd" RANGE = SLICE_X19Y44:SLICE_X21Y26 ;
+INST "I_evb_core/B_rstack.I_rstack_dcd" AREA_GROUP = "AG_I_evb_core/B_rstack.I_rstack_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_rstack.I_rstack_dcd" RANGE = SLICE_X0Y29:SLICE_X1Y26 ;
 
 
 INST "I_evb_core/B_pcr.I_pcr_calc" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc" ;
@@ -252,50 +228,36 @@ AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" RANGE = SLICE_X2Y29:SLICE_X3Y26 
 
 
 INST "I_evb_core/B_state_ctl.I_state_ctl" AREA_GROUP = "AG_I_evb_core/B_state_ctl.I_state_ctl" ;
-AREA_GROUP "AG_I_evb_core/B_state_ctl.I_state_ctl" RANGE = SLICE_X4Y47:SLICE_X6Y26 ;
+AREA_GROUP "AG_I_evb_core/B_state_ctl.I_state_ctl" RANGE = SLICE_X4Y47:SLICE_X7Y26 ;
 
 
 INST "I_evb_core/B_skip_ctl.I_skip_dcd" AREA_GROUP = "AG_I_evb_core/B_skip_ctl.I_skip_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_skip_ctl.I_skip_dcd" RANGE = SLICE_X7Y47:SLICE_X9Y26 ;
-
-
-INST "I_evb_core/B_reg_extend.I_reg_extend" AREA_GROUP = "AG_I_evb_core/B_reg_extend.I_reg_extend" ;
-AREA_GROUP "AG_I_evb_core/B_reg_extend.I_reg_extend" RANGE = SLICE_X10Y47:SLICE_X10Y30 ;
-
-INST "I_evb_core/B_reg_extend.I_reg_extend_dcd" AREA_GROUP = "AG_I_evb_core/B_reg_extend.I_reg_extend_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_reg_extend.I_reg_extend_dcd" RANGE = SLICE_X10Y29:SLICE_X10Y26 ;
-
-
-INST "I_evb_core/B_rstack.I_stack" AREA_GROUP = "AG_I_evb_core/B_rstack.I_stack" ;
-AREA_GROUP "AG_I_evb_core/B_rstack.I_stack" RANGE = SLICE_X0Y47:SLICE_X1Y30 ;
-
-INST "I_evb_core/B_rstack.I_rstack_dcd" AREA_GROUP = "AG_I_evb_core/B_rstack.I_rstack_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_rstack.I_rstack_dcd" RANGE = SLICE_X0Y29:SLICE_X1Y26 ;
-
-
-INST "I_evb_core/B_dbus.I_ld_mux" AREA_GROUP = "AG_I_evb_core/B_dbus.I_ld_mux" ;
-AREA_GROUP "AG_I_evb_core/B_dbus.I_ld_mux" RANGE = SLICE_X11Y47:SLICE_X14Y30 ;
-
-INST "I_evb_core/B_dbus.I_ld_mux_dcd" AREA_GROUP = "AG_I_evb_core/B_dbus.I_ld_mux_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_dbus.I_ld_mux_dcd" RANGE = SLICE_X11Y29:SLICE_X14Y26 ;
+AREA_GROUP "AG_I_evb_core/B_skip_ctl.I_skip_dcd" RANGE = SLICE_X6Y47:SLICE_X9Y26 ;
 
 
 INST "I_evb_core/B_dbus.I_st_mux_dcd" AREA_GROUP = "AG_I_evb_core/B_dbus.I_st_mux_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_dbus.I_st_mux_dcd" RANGE = SLICE_X28Y29:SLICE_X29Y26 ;
+AREA_GROUP "AG_I_evb_core/B_dbus.I_st_mux_dcd" RANGE = SLICE_X10Y29:SLICE_X11Y26 ;
 
 INST "I_evb_core/B_dbus.I_st_mux" AREA_GROUP = "AG_I_evb_core/B_dbus.I_st_mux" ;
-AREA_GROUP "AG_I_evb_core/B_dbus.I_st_mux" RANGE = SLICE_X28Y47:SLICE_X29Y30 ;
+AREA_GROUP "AG_I_evb_core/B_dbus.I_st_mux" RANGE = SLICE_X10Y47:SLICE_X11Y30 ;
+
+
+INST "I_evb_core/B_dbus.I_ld_mux" AREA_GROUP = "AG_I_evb_core/B_dbus.I_ld_mux" ;
+AREA_GROUP "AG_I_evb_core/B_dbus.I_ld_mux" RANGE = SLICE_X12Y47:SLICE_X15Y30 ;
+
+INST "I_evb_core/B_dbus.I_ld_mux_dcd" AREA_GROUP = "AG_I_evb_core/B_dbus.I_ld_mux_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_dbus.I_ld_mux_dcd" RANGE = SLICE_X12Y29:SLICE_X15Y26 ;
 
 
 INST "I_evb_core/inst*" AREA_GROUP = "AG_I_evb_core/inst" ;
-AREA_GROUP "AG_I_evb_core/inst" RANGE = SLICE_X15Y29:SLICE_X18Y26 ;
+AREA_GROUP "AG_I_evb_core/inst" RANGE = SLICE_X14Y29:SLICE_X19Y26 ;
 
 
 INST "I_evb_core/B_rf.I_regfile" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile" ;
-AREA_GROUP "AG_I_evb_core/B_rf.I_regfile" RANGE = SLICE_X16Y47:SLICE_X18Y30 ;
+AREA_GROUP "AG_I_evb_core/B_rf.I_regfile" RANGE = SLICE_X16Y47:SLICE_X19Y30 ;
 
 INST "I_evb_core/B_rf.I_regfile_dcd" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_rf.I_regfile_dcd" RANGE = SLICE_X16Y29:SLICE_X18Y26 ;
+AREA_GROUP "AG_I_evb_core/B_rf.I_regfile_dcd" RANGE = SLICE_X16Y29:SLICE_X19Y26 ;
 
 #
 # individually place register file MRAMs in ascending bit order
@@ -332,6 +294,48 @@ INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem3"  LOC = "SLICE_X16Y32" ;
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem2"  LOC = "SLICE_X18Y32" ;
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem1"  LOC = "SLICE_X16Y31" ;
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem"   LOC = "SLICE_X18Y31" ;
+
+
+INST "I_evb_core/B_ea.I_ea_calc" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_calc" ;
+AREA_GROUP "AG_I_evb_core/B_ea.I_ea_calc" RANGE = SLICE_X20Y47:SLICE_X23Y28 ;
+
+INST "I_evb_core/B_ea.I_ea_dcd" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_ea.I_ea_dcd" RANGE = SLICE_X20Y47:SLICE_X23Y26 ;
+
+
+INST "I_evb_core/B_addsub.I_addsub" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub" ;
+AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub" RANGE = SLICE_X24Y47:SLICE_X25Y30 ;
+
+INST "I_evb_core/B_addsub.I_addsub_dcd" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_addsub.I_addsub_dcd" RANGE = SLICE_X24Y29:SLICE_X25Y26 ;
+
+
+INST "I_evb_core/B_logicals.I_logicals" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals" ;
+AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals" RANGE = SLICE_X26Y47:SLICE_X27Y30 ;
+
+INST "I_evb_core/B_logicals.I_logicals_dcd" AREA_GROUP = "AG_I_evb_core/B_logicals.I_logicals_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_logicals.I_logicals_dcd" RANGE = SLICE_X26Y29:SLICE_X27Y26 ;
+
+
+INST "I_evb_core/B_reg_extend.I_reg_extend" AREA_GROUP = "AG_I_evb_core/B_reg_extend.I_reg_extend" ;
+AREA_GROUP "AG_I_evb_core/B_reg_extend.I_reg_extend" RANGE = SLICE_X28Y47:SLICE_X29Y30 ;
+
+INST "I_evb_core/B_reg_extend.I_reg_extend_dcd" AREA_GROUP = "AG_I_evb_core/B_reg_extend.I_reg_extend_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_reg_extend.I_reg_extend_dcd" RANGE = SLICE_X28Y29:SLICE_X29Y26 ;
+
+
+INST "I_evb_core/GF_barrel.I_shift_dcd" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_dcd" ;
+AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_dcd" RANGE = SLICE_X30Y29:SLICE_X31Y26 ;
+
+INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
+AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X30Y47:SLICE_X31Y30 ;
+
+
+INST "I_evb_core/B_cg.I_cgen" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen" ;
+AREA_GROUP "AG_I_evb_core/B_cg.I_cgen" RANGE = SLICE_X32Y47:SLICE_X35Y30 ;
+
+INST "I_evb_core/B_cg.I_cgen_dcd" AREA_GROUP = "AG_I_evb_core/B_cg.I_cgen_dcd" ;
+AREA_GROUP "AG_I_evb_core/B_cg.I_cgen_dcd" RANGE = SLICE_X32Y29:SLICE_X35Y26 ;
 
 
 

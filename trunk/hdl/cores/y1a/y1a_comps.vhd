@@ -274,6 +274,23 @@ package y1a_comps is
       );
   end component;
 
+  component flip_dcd is
+    generic
+      (
+        CFG              : y1a_config_type
+      );
+    port
+      (   
+        clk              : in  std_logic;
+        sync_rst         : in  std_logic;
+  
+        inst             : in  std_logic_vector(INST_MSB downto 0);
+        stall            : in  std_logic;
+
+        fld_flip_const  : out std_logic_vector(4 downto 0) 
+      );
+  end component;
+
   
   component ea_calc is
     port

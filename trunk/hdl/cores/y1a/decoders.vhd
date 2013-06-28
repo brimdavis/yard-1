@@ -1024,6 +1024,79 @@ end arch1;
 
 
 ------------------------------
+-- flip_dcd
+------------------------------
+
+library ieee;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+
+library work;
+  use work.y1_constants.all;
+  use work.y1a_config.all;
+
+
+entity flip_dcd is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
+
+  port
+    (   
+      clk            : in  std_logic;
+      sync_rst       : in  std_logic;
+
+      inst           : in  std_logic_vector(INST_MSB downto 0);
+      stall          : in  std_logic;
+
+      fld_flip_const : out std_logic_vector(4 downto 0) 
+    );
+
+end flip_dcd;
+
+
+architecture arch1 of flip_dcd is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
+
+  --
+  -- instruction register
+  --
+  signal ireg           : std_logic_vector(INST_MSB downto 0);
+
+  --
+  -- instruction field aliases 
+  --
+  alias flip_const  : std_logic_vector(4 downto 0) is ireg( 8 downto 4);
+
+begin
+
+  --
+  -- local instruction register
+  --
+  P_ireg: process
+  begin
+    wait until rising_edge(clk);
+
+    if sync_rst = '1' then
+      ireg  <= ( others => '0');
+
+    elsif stall = '0' then
+      ireg  <= inst;
+
+    end if;
+
+  end process;
+
+
+  fld_flip_const  <= flip_const;
+
+end arch1;
+
+
+------------------------------
 -- reg_extend_dcd
 ------------------------------
 
