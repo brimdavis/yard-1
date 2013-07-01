@@ -447,10 +447,16 @@ architecture arch1 of ea_dcd is
   signal ireg           : std_logic_vector(INST_MSB downto 0);
 
   --
-  -- internal copies
+  -- internal signals
   --
-  signal i_dcd_LDI      : boolean;
-  signal i_dcd_mode_SP  : boolean;
+  signal i_dcd_LDI          : boolean;
+  signal i_dcd_mode_SP      : boolean;
+
+  signal early_dcd_LDI      : boolean;
+  signal early_dcd_mode_SP  : boolean;
+  signal early_dcd_src_mux  : boolean;
+  signal early_ldi_offset   : std_logic_vector(11 downto 0);
+  signal early_sp_offset    : std_logic_vector( 3 downto 0);
 
 
   --
@@ -458,9 +464,10 @@ architecture arch1 of ea_dcd is
   --
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   alias mem_mode   : std_logic is ireg(11);
-  alias mem_size   : std_logic_vector(1 downto 0) is ireg(10 downto 9);
-  alias sel_opb    : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
-  alias sp_offset  : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
+  alias mem_size   : std_logic_vector( 1 downto 0) is ireg(10 downto 9);
+  alias sel_opb    : std_logic_vector( 3 downto 0) is ireg( 7 downto 4);
+  alias sp_offset  : std_logic_vector( 3 downto 0) is ireg( 7 downto 4);
+
   alias ldi_offset : std_logic_vector(11 downto 0) is ireg(11 downto 0);
 
 
@@ -468,16 +475,32 @@ begin
 
   --
   -- local instruction register
+  -- early decode of addressing control fields
   --
   P_ireg: process
   begin
     wait until rising_edge(clk);
 
     if sync_rst = '1' then
-      ireg  <= ( others => '0');
+      ireg               <= ( others => '0');
+
+      early_dcd_LDI      <= FALSE;
+      early_dcd_mode_SP  <= FALSE;
+      early_dcd_src_mux  <= FALSE;  
+
+      early_ldi_offset   <= ( others => '0');
+      early_sp_offset    <= ( others => '0');
 
     elsif stall = '0' then
-      ireg  <= inst;
+      ireg               <= inst;
+
+      early_dcd_LDI      <= ( inst(15 downto 12) = OPM_LDI   );
+      early_dcd_mode_SP  <= ( inst(10 downto  9) = MEM_32_SP );
+
+      early_dcd_src_mux  <= ( inst(15 downto 12) = OPM_LDI  ) OR ( ( inst(7 downto 4) = REG_PC ) AND ( NOT ( inst(10 downto 9) = MEM_32_SP ) ) );
+
+      early_ldi_offset   <= inst(11 downto 0);
+      early_sp_offset    <= inst( 7 downto 4);
 
     end if;
 
@@ -487,22 +510,30 @@ begin
   --
   -- instruction decodes
   --
-  i_dcd_LDI      <= ( inst_fld = OPM_LDI   );
 
-  i_dcd_mode_SP  <= ( mem_size = MEM_32_SP );
-
-  dcd_src_mux    <=  i_dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT i_dcd_mode_SP ) );
+--
+-- commented out, using early decodes
+--
+--  i_dcd_LDI      <= ( inst_fld = OPM_LDI   );
+--
+--  i_dcd_mode_SP  <= ( mem_size = MEM_32_SP );
+--
+--  dcd_src_mux    <=  i_dcd_LDI OR ( ( sel_opb = REG_PC ) AND ( NOT i_dcd_mode_SP ) );
+--
 
   --
   -- copy internals to outputs
   --
-  dcd_LDI      <= i_dcd_LDI;    
-  dcd_mode_SP  <= i_dcd_mode_SP;
+  dcd_src_mux    <= early_dcd_src_mux;
+
+  dcd_LDI        <= early_dcd_LDI;    
+
+  dcd_mode_SP    <= early_dcd_mode_SP;
 
   fld_mem_mode   <= mem_mode;
 
-  fld_sp_offset  <= sp_offset; 
-  fld_ldi_offset <= ldi_offset;
+  fld_sp_offset  <= early_sp_offset; 
+  fld_ldi_offset <= early_ldi_offset;
 
 end arch1;
 

@@ -257,43 +257,107 @@ INST "I_evb_core/B_rf.I_regfile" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile" ;
 AREA_GROUP "AG_I_evb_core/B_rf.I_regfile" RANGE = SLICE_X16Y47:SLICE_X19Y30 ;
 
 INST "I_evb_core/B_rf.I_regfile_dcd" AREA_GROUP = "AG_I_evb_core/B_rf.I_regfile_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_rf.I_regfile_dcd" RANGE = SLICE_X16Y29:SLICE_X19Y26 ;
+AREA_GROUP "AG_I_evb_core/B_rf.I_regfile_dcd" RANGE = SLICE_X16Y39:SLICE_X19Y26 ;
 
 #
-# individually place register file MRAMs in ascending bit order
+# individually place register file MRAMs and imm_reg bits in ascending bit order
 #
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem31" LOC = "SLICE_X16Y46" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_31"      LOC = "SLICE_X17Y46" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem30" LOC = "SLICE_X18Y46" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_30"      LOC = "SLICE_X19Y46" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem29" LOC = "SLICE_X16Y45" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_29"      LOC = "SLICE_X17Y45" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem28" LOC = "SLICE_X18Y45" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_28"      LOC = "SLICE_X19Y45" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem27" LOC = "SLICE_X16Y44" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_27"      LOC = "SLICE_X17Y44" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem26" LOC = "SLICE_X18Y44" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_26"      LOC = "SLICE_X19Y44" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem25" LOC = "SLICE_X16Y43" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_25"      LOC = "SLICE_X17Y43" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem24" LOC = "SLICE_X18Y43" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_24"      LOC = "SLICE_X19Y43" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem23" LOC = "SLICE_X16Y42" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_23"      LOC = "SLICE_X17Y42" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem22" LOC = "SLICE_X18Y42" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_22"      LOC = "SLICE_X19Y42" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem21" LOC = "SLICE_X16Y41" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_21"      LOC = "SLICE_X17Y41" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem20" LOC = "SLICE_X18Y41" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_20"      LOC = "SLICE_X19Y41" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem19" LOC = "SLICE_X16Y40" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_19"      LOC = "SLICE_X17Y40" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem18" LOC = "SLICE_X18Y40" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_18"      LOC = "SLICE_X19Y40" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem17" LOC = "SLICE_X16Y39" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_17"      LOC = "SLICE_X17Y39" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem16" LOC = "SLICE_X18Y39" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_16"      LOC = "SLICE_X19Y39" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem15" LOC = "SLICE_X16Y38" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_15"      LOC = "SLICE_X17Y38" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem14" LOC = "SLICE_X18Y38" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_14"      LOC = "SLICE_X19Y38" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem13" LOC = "SLICE_X16Y37" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_13"      LOC = "SLICE_X17Y37" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem12" LOC = "SLICE_X18Y37" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_12"      LOC = "SLICE_X19Y37" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem11" LOC = "SLICE_X16Y36" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_11"      LOC = "SLICE_X17Y36" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem10" LOC = "SLICE_X18Y36" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_10"      LOC = "SLICE_X19Y36" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem9"  LOC = "SLICE_X16Y35" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_9"       LOC = "SLICE_X17Y35" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem8"  LOC = "SLICE_X18Y35" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_8"       LOC = "SLICE_X19Y35" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem7"  LOC = "SLICE_X16Y34" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_7"       LOC = "SLICE_X17Y34" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem6"  LOC = "SLICE_X18Y34" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_6"       LOC = "SLICE_X19Y34" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem5"  LOC = "SLICE_X16Y33" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_5"       LOC = "SLICE_X17Y33" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem4"  LOC = "SLICE_X18Y33" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_4"       LOC = "SLICE_X19Y33" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem3"  LOC = "SLICE_X16Y32" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_3"       LOC = "SLICE_X17Y32" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem2"  LOC = "SLICE_X18Y32" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_2"       LOC = "SLICE_X19Y32" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem1"  LOC = "SLICE_X16Y31" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_1"       LOC = "SLICE_X17Y31" ;
+
 INST "I_evb_core/B_rf.I_regfile/inst_Mram_mem"   LOC = "SLICE_X18Y31" ;
+INST "I_evb_core/B_rf.I_regfile/imm_reg_0"       LOC = "SLICE_X19Y31" ;
+
 
 
 INST "I_evb_core/B_ea.I_ea_calc" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_calc" ;
@@ -301,6 +365,12 @@ AREA_GROUP "AG_I_evb_core/B_ea.I_ea_calc" RANGE = SLICE_X20Y47:SLICE_X23Y28 ;
 
 INST "I_evb_core/B_ea.I_ea_dcd" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_dcd" ;
 AREA_GROUP "AG_I_evb_core/B_ea.I_ea_dcd" RANGE = SLICE_X20Y47:SLICE_X23Y26 ;
+
+#
+# restrict ea adder carry chain to force placement leaving room for one column of muxes
+#
+#INST "I_evb_core/B_ea.I_ea_calc/Madd_ea_dat_cy<*>" AREA_GROUP = "AG_I_evb_core/B_ea.I_ea_calc/Madd_ea_dat_cy" ;
+#AREA_GROUP "AG_I_evb_core/B_ea.I_ea_calc/Madd_ea_dat_cy" RANGE = SLICE_X21Y47:SLICE_X21Y32 ;
 
 
 INST "I_evb_core/B_addsub.I_addsub" AREA_GROUP = "AG_I_evb_core/B_addsub.I_addsub" ;
