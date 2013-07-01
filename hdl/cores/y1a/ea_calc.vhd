@@ -71,14 +71,14 @@ begin
   --
   ea_off_mux <=  
 
-          imm_reg                                
-    when  ( mem_mode  = '1' ) AND ( NOT ( dcd_mode_SP OR dcd_LDI ) )
- 
-    else  ( ALU_MSB downto  6 => '0') & sp_offset  & B"00" 
-    when  dcd_mode_SP AND ( NOT dcd_LDI )
-
-    else  ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" 
+          ( ALU_MSB downto 14 => '0') & ldi_offset & B"00" 
     when  dcd_LDI  
+
+    else  ( ALU_MSB downto  6 => '0') & sp_offset  & B"00" 
+    when  dcd_mode_SP  -- AND ( NOT dcd_LDI )                              -- moved LDI ahead in priority to remove AND term
+
+    else  imm_reg                                
+    when  ( mem_mode  = '1' )  -- AND ( NOT ( dcd_mode_SP OR dcd_LDI ) )   -- moved LDI and dcd_mode_SP ahead in priority to remove AND term
 
     else  ALU_ZERO
     ;  
