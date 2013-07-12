@@ -131,7 +131,7 @@ begin
   --
   -- mux for skip-on-bit
   --
-  GT_csob: if CFG.skip_on_bit generate
+  GT_csob: if CFG.isa.skip_on_bit generate
     begin
       c_bit  <= ain(to_integer(unsigned(opb_const)));
     end generate GT_csob;
@@ -139,7 +139,7 @@ begin
   --
   --   if bit test is disabled, uses sign bit instead
   --
-  GF_csob: if NOT CFG.skip_on_bit generate
+  GF_csob: if NOT CFG.isa.skip_on_bit generate
     begin
       c_bit  <= ain(ALU_MSB);
     end generate GF_csob;
@@ -202,7 +202,7 @@ begin
   -- should look into merging this subtractor with original ALU at some point
   --
 
-  GF_csc: if NOT CFG.skip_compare generate
+  GF_csc: if NOT CFG.isa.skip_compare generate
     cb_n <= '0';
     cb_c <= '0';
     cb_v <= '0';
@@ -210,7 +210,7 @@ begin
   end generate GF_csc;
   
 
-  GT_csc: if CFG.skip_compare generate
+  GT_csc: if CFG.isa.skip_compare generate
 
     skip_b: block
        signal wide_diff : std_logic_vector(ALU_MSB+2 downto 0);

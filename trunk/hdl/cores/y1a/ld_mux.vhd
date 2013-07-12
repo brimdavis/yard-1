@@ -64,14 +64,14 @@ begin
   --
   -- check for illegal config/ALU width settings
   --
-  assert ( CFG.non_native_load AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.non_native_load )
+  assert ( CFG.isa.non_native_load AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.isa.non_native_load )
     report "Unsupported load configuration flag and/or ALU_WIDTH settings."
     severity error;
 
   --
   --
   --
-  GF_cnnl: if CFG.non_native_load = FALSE generate
+  GF_cnnl: if CFG.isa.non_native_load = FALSE generate
     begin
 
       mem_wb_bus <=  d_rdat             when  dcd_quad_ld
@@ -83,7 +83,7 @@ begin
   --
   -- mux rewritten per byte lane to reduce synthesis logic levels
   --
-  GT_cnnl: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_load = TRUE ) generate
+  GT_cnnl: if ( ALU_WIDTH = 32 ) and ( CFG.isa.non_native_load = TRUE ) generate
     begin
 
       --
