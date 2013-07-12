@@ -89,9 +89,6 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-  use ieee.std_logic_unsigned."+";
-  use ieee.std_logic_unsigned."-";
-
 library work;
   use work.y1_constants.all;
   use work.y1a_config.all;
@@ -292,26 +289,6 @@ architecture arch1 of y1a_core is
   alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
 
 
-------------------------------------------------------------------------------
---
---  change this next flag with care
---    left over from conversion from unpipelined CLB RAM of the XC4000 family 
---    to pipelined blockram of the Spartan-II
---
---  set to TRUE if instruction memory is async, or clocked on falling edge to hide latency
---
---  set to FALSE if instruction memory is registered with a one clock delay 
---
-
---
--- CFG_REG_I_ADDR :
---   TRUE  : register i_addr from next pc logic to drive memory address
---   FALSE : remove address register, (puts ifetch into end of previous EX cycle)
---
-constant CFG_REG_I_ADDR : boolean := TRUE;
-
---
---
 ------------------------------------------------------------------------------
 
 
@@ -563,7 +540,7 @@ begin
   --  TODO: implement barrel shifter
   --
 
-  GT_barrel: if CFG.barrel_shift generate
+  GT_barrel: if CFG.isa.barrel_shift generate
     begin
 
       assert FALSE
@@ -573,7 +550,7 @@ begin
     end generate GT_barrel;
 
 
-  GF_barrel: if NOT CFG.barrel_shift generate
+  GF_barrel: if NOT CFG.isa.barrel_shift generate
 
     signal shift_grp    : std_logic;
     signal shift_signed : std_logic;
@@ -623,7 +600,7 @@ begin
 --  --
 --  -- bit seek instructions ( find first bit, bit count )
 --  --
---   GT_seek: if CFG.bit_seek generate
+--   GT_seek: if CFG.isa.bit_seek generate
 --     begin
 -- 
 --       I_ffb: ffb
@@ -642,7 +619,7 @@ begin
 --   
 --     end generate GT_seek;
 -- 
---   GF_seek: if NOT CFG.bit_seek generate
+--   GF_seek: if NOT CFG.isa.bit_seek generate
 --     begin
 -- 
 --       ffb_dat    <= ( others => '0' );
@@ -701,7 +678,7 @@ begin
   --
   -- FLIP instruction  ( universal bit swapper )
   --
-  GT_flip: if CFG.bit_flip generate
+  GT_flip: if CFG.isa.bit_flip generate
 
     signal flip_const  : std_logic_vector(4 downto 0);
 
@@ -735,7 +712,7 @@ begin
     end generate GT_flip;
 
 
-  GF_flip: if NOT CFG.bit_flip generate
+  GF_flip: if NOT CFG.isa.bit_flip generate
 
     begin
 
@@ -1232,15 +1209,15 @@ begin
   
       --
       -- generate registered or non-registered inst. address bus
-      --   see comments near CFG_REG_I_ADDR flag declaration
+      --   see comments near CFG.hw.REG_I_ADDR flag declaration
       --
-      GT_iaddr: if CFG_REG_I_ADDR = TRUE generate
+      GT_iaddr: if CFG.hw.reg_i_addr = TRUE generate
          begin
            i_addr   <= pc_reg;
            i_sel    <= pc_reg(1);
          end generate GT_iaddr;
 
-      GF_iaddr: if CFG_REG_I_ADDR = FALSE generate
+      GF_iaddr: if CFG.hw.reg_i_addr = FALSE generate
          begin
            i_addr <= next_pc;
            i_sel  <= next_pc(1);

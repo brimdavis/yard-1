@@ -14,7 +14,7 @@
 --
 -- Y1A processor configuration record
 --
---   - defines configuration record type
+--   - defines configuration record types
 --
 --   - creates default configurations
 --
@@ -27,9 +27,8 @@
 
 package y1a_config is
 
-
   --
-  -- Configuration flags:
+  -- ISA Configuration flags:
   --
   --   non_native_load : 
   --   non_native_store:  
@@ -54,63 +53,110 @@ package y1a_config is
   --
   --   skip_compare: enable signed/unsigned reg <=> reg skip conditions
   --
+  type y1a_isa_config_type is 
+    record
+      non_native_load  : boolean;
+      non_native_store : boolean;
+ 
+      barrel_shift     : boolean;
+      bit_flip         : boolean;
+ 
+      skip_on_bit      : boolean;
+      skip_compare     : boolean;
+    end record;
 
 
+  --
+  --  reg_i_addr:
+  --
+  --    change this flag with care
+  --      left over from conversion from unpipelined CLB RAM of the XC4000 family 
+  --      to pipelined blockram of the Spartan-II
+  --
+  --    set to TRUE if instruction memory is async, or clocked on falling edge to hide latency
+  --
+  --    set to FALSE if instruction memory is registered with a one clock delay 
+  --
+  type y1a_hw_config_type is 
+    record
+      reg_i_addr       : boolean;
+    end record;
+
+
+  --
+  -- composite configuration record:
+  --
   type y1a_config_type is 
     record
- 
-     non_native_load  : boolean;
-     non_native_store : boolean;
- 
-     barrel_shift     : boolean;
-     bit_flip         : boolean;
- 
-     skip_on_bit      : boolean;
-     skip_compare     : boolean;
- 
+      isa             : y1a_isa_config_type;
+      hw              : y1a_hw_config_type;
     end record;
  
  
   constant DEFAULT_CONFIG : y1a_config_type :=
     (
-     non_native_load  => TRUE,
-     non_native_store => TRUE,
- 
-     barrel_shift     => FALSE,
-     bit_flip         => FALSE,
- 
-     skip_on_bit      => TRUE,
-     skip_compare     => TRUE
-   );
+      isa =>
+        (
+          non_native_load  => TRUE,
+          non_native_store => TRUE,
+    
+          barrel_shift     => FALSE,
+          bit_flip         => FALSE,
+    
+          skip_on_bit      => TRUE,
+          skip_compare     => TRUE
+        ),
 
+      hw =>
+        (
+          reg_i_addr       => TRUE
+        )
+
+    );
+ 
  
   constant TINY_CONFIG : y1a_config_type :=
     (
-     non_native_load  => FALSE,
-     non_native_store => FALSE,
- 
-     barrel_shift     => FALSE,
-     bit_flip         => FALSE,
- 
-     skip_on_bit      => TRUE,
-     skip_compare     => TRUE
+      isa =>
+        (
+          non_native_load  => FALSE,
+          non_native_store => FALSE,
+  
+          barrel_shift     => FALSE,
+          bit_flip         => FALSE,
+  
+          skip_on_bit      => TRUE,
+          skip_compare     => TRUE
+        ),
+
+      hw =>
+        (
+          reg_i_addr       => TRUE
+        )
     );
- 
+
  
   constant BIG_CONFIG : y1a_config_type :=
     (
-     non_native_load  => TRUE,
-     non_native_store => TRUE,
- 
---   barrel_shift     => TRUE,  -- not implemented yet
-     barrel_shift     => FALSE,
+      isa =>
+        (
+          non_native_load  => TRUE,
+          non_native_store => TRUE,
+     
+     --   barrel_shift     => TRUE,  -- not implemented yet
+          barrel_shift     => FALSE,
+  
+          bit_flip         => TRUE,
+      
+          skip_on_bit      => TRUE,
+          skip_compare     => TRUE
+        ),
 
-     bit_flip         => TRUE,
- 
-     skip_on_bit      => TRUE,
-     skip_compare     => TRUE
+      hw =>
+        (
+          reg_i_addr       => TRUE
+        )
     );
-
 
  
 end package y1a_config;

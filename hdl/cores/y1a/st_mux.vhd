@@ -75,7 +75,7 @@ begin
   --
   -- check for illegal config/ALU width settings
   --
-  assert ( CFG.non_native_store AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.non_native_store )
+  assert ( CFG.isa.non_native_store AND ( ALU_WIDTH = 32 ) ) OR ( NOT CFG.isa.non_native_store )
     report "Unsupported store configuration flag and/or ALU_WIDTH settings."
     severity error;
 
@@ -83,7 +83,7 @@ begin
   --
   -- non-native stores disabled: memory write bus driven directly from ain
   --
-  GF_cnns: if NOT CFG.non_native_store generate                                           
+  GF_cnns: if NOT CFG.isa.non_native_store generate                                           
     begin                                                                                     
                                                                                               
       d_wdat
@@ -98,7 +98,7 @@ begin
   --
   -- non-native stores enabled: fill all memory write bus lanes with the desired field
   --
-  GT_cnns: if ( ALU_WIDTH = 32 ) and ( CFG.non_native_store ) generate            
+  GT_cnns: if ( ALU_WIDTH = 32 ) and ( CFG.isa.non_native_store ) generate            
     begin                                                                                    
                                                                                               
       d_wdat  
