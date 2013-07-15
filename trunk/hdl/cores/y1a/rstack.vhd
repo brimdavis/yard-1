@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2012  Brian Davis
+-- (C) COPYRIGHT 2000-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -15,6 +15,10 @@
 -- Y1A stack module
 --
 --   push/pop PC & SR
+--
+
+--
+-- TODO: move RSTACK_DEPTH and friends out of y1_constants and into hardware configuration record
 --
 
 library ieee;
@@ -55,18 +59,18 @@ architecture arch1 of rstack is
   type rs_pc_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (PC_MSB downto 0);
   type rs_sr_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (SR_MSB downto 0);
 
-  signal rs_pc : rs_pc_type := (others => (others => '0') );
-  signal rs_sr : rs_sr_type := (others => (others => '0') );
+  signal rs_pc      : rs_pc_type := (others => (others => '0') );
+  signal rs_sr      : rs_sr_type := (others => (others => '0') );
 
   -- BMD XST use sep. signals for RAM read data so XST finds RAM's
   signal rs_pc_dat  : std_logic_vector  (PC_MSB downto 0);
   signal rs_sr_dat  : std_logic_vector  (SR_MSB downto 0);
 
-  signal rsp_adr  : std_logic_vector(RSP_MSB downto 0);
-  signal rsp_last : std_logic_vector(RSP_MSB downto 0);
+  signal rsp_adr    : std_logic_vector(RSP_MSB downto 0);
+  signal rsp_last   : std_logic_vector(RSP_MSB downto 0);
 
-  signal pc_reg : std_logic_vector (PC_MSB downto 0);
-  signal sr_reg : std_logic_vector (SR_MSB downto 0);
+  signal pc_reg     : std_logic_vector (PC_MSB downto 0);
+  signal sr_reg     : std_logic_vector (SR_MSB downto 0);
 
 begin
 

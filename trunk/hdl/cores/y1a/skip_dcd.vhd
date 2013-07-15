@@ -28,10 +28,13 @@ library work;
   use work.y1_constants.all;
   use work.y1a_config.all;
 
+  -- >>>>>>>>>>>>>>>>>>>
   -- pragma translate_off
+  --
   use work.y1a_probe_pkg.all;
+  --
   -- pragma translate_on
-
+  -- <<<<<<<<<<<<<<<<<<<
 
 entity skip_dcd is
   generic
@@ -276,13 +279,15 @@ begin
   --
   ------------------------------------------------------------------------------
 
+  -- >>>>>>>>>>>>>>>>>>>
   -- pragma translate_off
-
+  --
   B_sc_prb : block
     begin
       y1a_probe_sigs.skipc <= skip_cond_a & c_bit & cb_n & cb_c & cb_v & cb_z;
     end block B_sc_prb;
-
+  --
   -- pragma translate_on
+  -- <<<<<<<<<<<<<<<<<<<
 
 end arch1;
