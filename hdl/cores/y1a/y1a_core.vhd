@@ -98,16 +98,18 @@ library work;
 -- simulation-only probes
 --
 
--- pragma translate_off
+-- >>>>>>>>>>>>>>>>>>>
+-- pragma translate_off         
+--
   use work.y1a_probe_pkg.all;
+--
 -- pragma translate_on
+-- <<<<<<<<<<<<<<<<<<<
 
 
 entity y1a_core is 
   generic
-    (
-      CFG        : y1a_config_type := DEFAULT_CONFIG
-    );
+    ( CFG        : y1a_config_type := DEFAULT_CONFIG );
 
   port
     (
@@ -261,12 +263,14 @@ architecture arch1 of y1a_core is
   --
   -- skip logic
   --
-  signal skip_cond : std_logic;
+  signal skip_cond  : std_logic;
 
   --
-  -- IMMediate register
+  -- Frame Pointer, Stack Pointer, IMMediate registers
   --
-  signal imm_reg   : std_logic_vector(ALU_MSB downto 0);
+  signal imm_reg    : std_logic_vector(ALU_MSB downto 0);
+  signal fp_reg     : std_logic_vector(ALU_MSB downto 0);
+  signal sp_reg     : std_logic_vector(ALU_MSB downto 0);
 
   --
   -- early instruction decodes
@@ -318,6 +322,8 @@ begin
             rd1       => ar, 
             rd2       => br,
 
+            fp_reg    => fp_reg,
+            sp_reg    => sp_reg,
             imm_reg   => imm_reg
           );
 
@@ -794,6 +800,9 @@ begin
             ldi_offset     => ldi_offset,
 
             bin            => bin,      
+
+            fp_reg         => fp_reg,   
+            sp_reg         => sp_reg,   
             imm_reg        => imm_reg,   
     
             pc_reg_p1      => pc_reg_p1, 
@@ -938,14 +947,6 @@ begin
             inst         => inst,
             stall        => dcd_stall,      
 
---          skip_sense   => skip_sense,  
---          skip_type    => skip_type,   
---          skip_cp_sel  => skip_cp_sel, 
---          skip_ra_type => skip_ra_type,
---    
---          sel_opa      => sel_opa,     
---          opb_const    => opb_const,   
-
             ain          => ain,         
             bin          => bin,        
 
@@ -1057,8 +1058,6 @@ begin
  
       if sync_rst = '1' then
         ireg      <= ( others => '0');
-
---      elsif ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) then
 
       elsif ( dcd_stall = '1' ) then
         ireg      <= ireg;
@@ -1395,8 +1394,9 @@ begin
   -- drive simulation probe signals 
   --
 
+  -- >>>>>>>>>>>>>>>>>>>
   -- pragma translate_off
-
+  --
   B_probe : block
     begin
       y1a_probe_sigs.ain        <= ain;
@@ -1421,8 +1421,9 @@ begin
       y1a_probe_sigs.ea_dat     <= ea_dat;
 
     end block B_probe;
-
+  --
   -- pragma translate_on
+  -- <<<<<<<<<<<<<<<<<<<
   
 end arch1;
  

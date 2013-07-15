@@ -51,6 +51,8 @@ entity regfile is
       rd1      : out std_logic_vector (RF_DAT_MSB  downto 0);
       rd2      : out std_logic_vector (RF_DAT_MSB  downto 0);
 
+      fp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
+      sp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
       imm_reg  : out std_logic_vector (RF_DAT_MSB  downto 0)
     );
 
@@ -82,15 +84,32 @@ begin
 
 
   --
-  -- IMM register snooping
-  --   registers found here live outside of register file RAM,
-  --   to allow reads & updates independent of normal two port 
-  --   register file accesses
+  -- IMM/FP/SP register snooping
+  --   registers found here live outside of register file RAM, to allow reads 
+  --   independently from the normal two port register file accesses
   --
 
   P_snoop_reg: process
     begin
       wait until rising_edge(clk);
+
+      if sync_rst = '1' then
+        fp_reg  <= ( others => '0');
+
+      elsif ( we = '1' ) AND ( wa = REG_FP ) then
+        fp_reg <= wd;
+
+      end if;
+
+
+      if sync_rst = '1' then
+        sp_reg  <= ( others => '0');
+
+      elsif ( we = '1' ) AND ( wa = REG_SP ) then
+        sp_reg <= wd;
+
+      end if;
+
 
       if sync_rst = '1' then
         imm_reg <= ( others => '0');

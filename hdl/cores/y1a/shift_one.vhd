@@ -80,7 +80,7 @@ begin
             when  (shift_dir = '1') AND ( shift_const = B"0_0010")    -- shift by two
 
             else  ain(ALU_MSB-1 downto 0) & shift1_lsb                -- LSL/ROL as default
-            ;
 --          when  (shift_dir = '1') AND ( shift_const = B"0_0001")    -- shift by one (default, 'when' commented out)
+            ;
 
 end arch1;
