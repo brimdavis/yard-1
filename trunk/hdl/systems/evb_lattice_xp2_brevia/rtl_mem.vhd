@@ -21,7 +21,6 @@
 --   - falling edge clk used to hide BRAM register latency
 --
 
-
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -112,17 +111,23 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we3 = '1' then
           ram_b3(to_integer(unsigned(d_addr))) <= din3;
         end if;
 
         dout3 <= ram_b3( to_integer( unsigned(d_addr) ) );
-        iout3 <= ram_b3( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
 
       end if;
 
+    end process;
+
+  process(clk)
+    begin
+      if falling_edge(clk) then
+        iout3 <= ram_b3( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
+      end if;
     end process;
 
   din3 <= loc_wdat(31 downto 24);
@@ -135,17 +140,23 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' )  then
 
         if d_we2 = '1' then
           ram_b2(to_integer(unsigned(d_addr))) <= din2;
         end if;
 
         dout2 <= ram_b2( to_integer( unsigned(d_addr) ) );
-        iout2 <= ram_b2( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
 
       end if;
 
+    end process;
+
+  process(clk)
+    begin
+      if falling_edge(clk) then
+        iout2 <= ram_b2( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
+      end if;
     end process;
 
   din2 <= loc_wdat(23 downto 16);
@@ -158,17 +169,23 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we1 = '1' then
           ram_b1(to_integer(unsigned(d_addr))) <= din1;
         end if;
 
         dout1 <= ram_b1( to_integer( unsigned(d_addr) ) );
-        iout1 <= ram_b1( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
 
       end if;
 
+    end process;
+
+  process(clk)
+    begin
+      if falling_edge(clk) then
+        iout1 <= ram_b1( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
+      end if;
     end process;
 
   din1 <= loc_wdat(15 downto 8);
@@ -181,17 +198,23 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we0 = '1' then
           ram_b0(to_integer(unsigned(d_addr))) <= din0;
         end if;
 
         dout0 <= ram_b0( to_integer( unsigned(d_addr) ) );
-        iout0 <= ram_b0( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
 
       end if;
 
+    end process;
+
+  process(clk)
+    begin
+      if falling_edge(clk) then
+        iout0 <= ram_b0( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
+      end if;
     end process;
 
   din0 <= loc_wdat(7 downto 0);
