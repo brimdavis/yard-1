@@ -143,7 +143,7 @@ parse_loop:
 
     imm12   #CMD_TAB    ; r14 = address of command character lookup table
 
-match_loop:
+.match_loop:
     ld.ub   r11, (r14)  ; r11 = next table command byte
 
     inc     r14         ; bump r14 to next entry
@@ -152,12 +152,12 @@ match_loop:
     bra     parse_loop
 
     when.eq r0,r11      ; check for match
-    bra     got_it
+    bra     .got_it
 
     add     r13,#1      ; increment byte address pointer
-    bra     match_loop
+    bra     .match_loop
 
-got_it:
+.got_it:
     ld.ub    r11, (r13)     ; r11 = command subroutine address
 
     bsr     get_char_echo   ; get & echo one character after command letter
@@ -188,13 +188,13 @@ cmd_dump:
     mov     r13, r1             ; r13 = byte count
     and     r13, #$0000_1fff    ; limit loop iterations to 8K-1
 
-next_line:
+.next_line:
     mov     r0, r12     ; print address
     bsr     phex32
 
     mov     r11,#16     ; load line byte counter
 
-dump_loop:
+.dump_loop:
     bsr     space
 
     ld.ub   r0, (r12)   ; read next memory byte
@@ -208,11 +208,11 @@ dump_loop:
     dec     r11         ; decrement line byte counter
 
     when.nz r11
-    bra     dump_loop   
+    bra     .dump_loop   
 
     bsr     send_crlf   ; end of line
 
-    bra     next_line
+    bra     .next_line
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -240,7 +240,7 @@ cmd_modify:
     bsr     ghex
     mov     r4, r1
 
-next_byte:
+.next_byte:
 
 ; get the data byte
     bsr     ghex
@@ -251,7 +251,7 @@ next_byte:
 
 ; check returned ghex terminator value to see if we're done 
     when.z  r0
-    bra     next_byte   ; zero -> space, so go get another byte
+    bra     .next_byte   ; zero -> space, so go get another byte
 
     rts                 
 
@@ -288,7 +288,7 @@ ghex:
 ; initialize working value in r1
     mov r1,#0
 
-gloop:
+.gloop:
     bsr     get_char_echo
 
 ; bail out on a space or other ctl. char
@@ -316,7 +316,7 @@ gloop:
 ; or in new nybble
     or      r1, r0
 
-    bra     gloop
+    bra     .gloop
 
 ;
 ; print 8/16/32 bit hex value in r0
@@ -343,7 +343,7 @@ phex:
     rsub    r14,#32     ; initial rotate of r0 by 32-N bits left to move desired field into MS nybble
     bsr     rol_r1_imm  
 
-hloop:
+.hloop:
     bsr     rol_r1_four ; rotate MS nybble into the LS nybble
 
     mov     r0, r1      ; copy to r0 and mask 
@@ -362,7 +362,7 @@ hloop:
     sub     r3,#4       ; decrement bit count
 
     when.gtz  r3
-    bra     hloop
+    bra     .hloop
 
     rts
 
@@ -424,9 +424,9 @@ space:
 send_char:
 
 ; loop until transmitter ready flag = 1
-tx_wait:
+.tx_wait:
     skip.fs #FLAG_TX_RDY
-    bra     tx_wait
+    bra     .tx_wait
 
     st      r0, (r9)    ; write data to TX
     rts
@@ -460,9 +460,9 @@ get_char_echo:
 get_char:
 
 ; loop until there's something in the buffer
-rx_empty:
+.rx_empty:
     skip.fs #FLAG_RX_AVAIL
-    bra     rx_empty
+    bra     .rx_empty
 
     ld      r0, (r9)    ; read data from RX
     rts

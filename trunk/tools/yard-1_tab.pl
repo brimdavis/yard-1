@@ -490,8 +490,8 @@ sub ps_arri
 
     'lsl'  =>  { type =>  'SHIFT'  , opc => '0111001bbbbbaaaa' , ps => \&ps_sr, name => "Logical Shift Left"        },
                                                      
-    'ror'  =>  { type =>  'ROTATE' , opc => '0111100bbbbbaaaa' , ps => \&ps_sr, name => "Rotate Right"              },
-    'rol'  =>  { type =>  'ROTATE' , opc => '0111101bbbbbaaaa' , ps => \&ps_sr, name => "Rotate Left"               }
+    'ror'  =>  { type =>  'ROTATE' , opc => '0111100bbbbbaaaa' , ps => \&ps_sr, name => "ROtate Right"              },
+    'rol'  =>  { type =>  'ROTATE' , opc => '0111101bbbbbaaaa' , ps => \&ps_sr, name => "ROtate Left"               }
 
   );
 
