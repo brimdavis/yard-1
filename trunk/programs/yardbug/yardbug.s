@@ -124,7 +124,7 @@ parse_loop:
 ; convert any alpha char. a-z to upper case A-Z
 ;  ( this code also clobbers some punctuation chars )
 ;
-    skip.bc r0, #6           ; D6 is set for all ASCII letters
+    when.bs r0, #6           ; D6 is set for all ASCII letters
     and     r0, #$FFFF_FFDF  ; clear D5 : $60-7f -> $40-5f
 
 
@@ -148,10 +148,10 @@ match_loop:
 
     inc     r14         ; bump r14 to next entry
 
-    skip.nz r11         ; bail out if at end of table
+    when.z  r11         ; bail out if at end of table
     bra     parse_loop
 
-    skip.ne r0,r11      ; check for match
+    when.eq r0,r11      ; check for match
     bra     got_it
 
     add     r13,#1      ; increment byte address pointer
@@ -180,7 +180,7 @@ cmd_dump:
 ; if user entry was terminated with a space, read byte count; else dump 16 bytes
     mov     r1,#16      ; load default count
 
-    skip.nz  r0         ; check return code of last ghex call ( r0=0 for a space )
+    when.z  r0         ; check return code of last ghex call ( r0=0 for a space )
     bsr     ghex        ; get user byte count  
 
     dec     r1          ; decrement byte count ( loop counter counts N-1..0 )
@@ -207,7 +207,7 @@ dump_loop:
 
     dec     r11         ; decrement line byte counter
 
-    skip.z  r11
+    when.nz r11
     bra     dump_loop   
 
     bsr     send_crlf   ; end of line
@@ -250,7 +250,7 @@ next_byte:
     inc     r4
 
 ; check returned ghex terminator value to see if we're done 
-    skip.nz  r0
+    when.z  r0
     bra     next_byte   ; zero -> space, so go get another byte
 
     rts                 
@@ -293,7 +293,7 @@ gloop:
 
 ; bail out on a space or other ctl. char
     sub       r0, #$20
-    skip.gtz  r0
+    when.lez  r0
     rts
 
 ;
@@ -352,7 +352,7 @@ hloop:
 ; hex to ASCII conversion
     sub     r0, #9
 
-    skip.gtz   r0
+    when.lez  r0
     sub     r0, #7
 
     add     r0, #$40
@@ -361,7 +361,7 @@ hloop:
 
     sub     r3,#4       ; decrement bit count
 
-    skip.lez  r3
+    when.gtz  r3
     bra     hloop
 
     rts
@@ -400,7 +400,7 @@ pstr:
     ld.ub  r0,(r14)     ; get next byte of string
     inc    r14          ; bump pointer to next character
 
-    skip.nz r0          ; bail out if zero terminator
+    when.z r0           ; bail out if zero terminator
     rts
 
     bsr  send_char      ; send character
@@ -442,7 +442,7 @@ get_char_echo:
 
     mov     r10,#$0d    
 
-    skip.ne r10,r0      ; if CR echo both CR & LF
+    when.eq r10,r0      ; if CR echo both CR & LF
     bra     send_crlf   ; note that send_crlf will return r0=0 to the caller in place of CR
 
                         ; else echo the original character
