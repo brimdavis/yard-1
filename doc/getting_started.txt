@@ -1,19 +1,31 @@
 
 Installation:
 
- - unzip the project .zip file to a directory such as c:\projects\yard
+  - Pick a location for the project; e.g. C:\projects\yard
 
-     preferably a path without spaces, as some of the FPGA tools take issue with spacey paths
+     - preferably a path without spaces, as some of the FPGA tools take issue with spacey paths
 
- - all tools are run from a command shell ( see next section )
+  
+  - From the repository:
 
- - example install:
+     - check out the SVN trunk to the project directory, i.e. c:\projects\yard
 
-    > md c:\projects
-    > cd c:\projects
-    > unzip PATH_TO_DOWNLOADED_FILE\yard-1_v-0-0-2-alpha.zip
-    > dir yard
 
+  - From a zip file (none available at the moment, eventually will be in project downloads) :
+
+     - unzip the project .zip file to a directory such as c:\projects\yard
+
+       preferably a path without spaces, as some of the FPGA tools take issue with spacey paths
+
+     - example install:
+
+       > md c:\projects
+       > cd c:\projects
+       > unzip PATH_TO_DOWNLOADED_FILE\yard-1_v-0-0-2-alpha.zip
+       > dir yard
+
+
+  - All tools are run from a command shell ( see next section for path setup )
 
 
 Command Shell path setup:
