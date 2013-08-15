@@ -14,6 +14,13 @@ FPGA Software:
 
  The required FPGA tools are free (as in free beer)
 
+   Currently using Webpack 9.2 SP4 for the Xilinx Spartan3 demo 
+ project, and Lattice Diamond 1.4 for the Lattice XP2 demo project.
+ 
+   Later S/W versions will likely work, but will probably require 
+ changes to the project and constraint files due to differences in 
+ the FPGA development tools.
+
 
  Xilinx Webpack: 
 
@@ -25,7 +32,7 @@ FPGA Software:
       WebPACK_SFD_92i.zip      9.2i Webpack single file download 
       9_2_04i_win.exe          Service Pack 4
 
-    Aas of August 2011, the files can be found here:
+    As of August 2011, the files can be found here:
 
     http://www.xilinx.com/support/download/index.htm
 
@@ -38,9 +45,13 @@ FPGA Software:
 
  Lattice Diamond: 
 
-    http://www.latticesemi.com/products/designsoftware/diamond/index.cfm
+    Lattice Diamond 1.4
 
-    Free license supports many Lattice families.
+    Site registration required.
+
+    Free license supports many Lattice device families.
+
+    http://www.latticesemi.com/products/designsoftware/diamond/index.cfm
 
 
 ================================================================
