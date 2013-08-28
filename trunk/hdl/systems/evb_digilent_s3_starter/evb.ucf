@@ -1,120 +1,127 @@
+#
+# placement constraints for EVB demo design 
+# Xilinx/Digilent S3 Starter Kit
+#
+
+#
+# timing constraints
+#
 NET "clk50_in" TNM_NET = "clk";
 TIMESPEC "TS_clk" = PERIOD "clk" 20 ns HIGH 50 %;
 
-NET "clk50_in" LOC = "t9" | IOSTANDARD = LVCMOS33 ; 
+#
+# pin constraints
+#
+NET "clk50_in"      LOC = "t9" | IOSTANDARD = LVCMOS33 ; 
 
-NET "rx_bit"   LOC = "t13" | IOSTANDARD = LVCMOS33 ; 
-NET "tx_bit"   LOC = "r13" | IOSTANDARD = LVCMOS33 ; 
+NET "rx_bit"        LOC = "t13" | IOSTANDARD = LVCMOS33 ; 
+NET "tx_bit"        LOC = "r13" | IOSTANDARD = LVCMOS33 ; 
 
-NET "pb<3>"    LOC = "l14" | IOSTANDARD = LVCMOS33; 
-NET "pb<2>"    LOC = "l13" | IOSTANDARD = LVCMOS33; 
-NET "pb<1>"    LOC = "m14" | IOSTANDARD = LVCMOS33; 
-NET "pb<0>"    LOC = "m13" | IOSTANDARD = LVCMOS33; 
+NET "pb<3>"         LOC = "l14" | IOSTANDARD = LVCMOS33; 
+NET "pb<2>"         LOC = "l13" | IOSTANDARD = LVCMOS33; 
+NET "pb<1>"         LOC = "m14" | IOSTANDARD = LVCMOS33; 
+NET "pb<0>"         LOC = "m13" | IOSTANDARD = LVCMOS33; 
 
-NET "sw<7>"    LOC = "k13" | IOSTANDARD = LVCMOS33; 
-NET "sw<6>"    LOC = "k14" | IOSTANDARD = LVCMOS33; 
-NET "sw<5>"    LOC = "j13" | IOSTANDARD = LVCMOS33; 
-NET "sw<4>"    LOC = "j14" | IOSTANDARD = LVCMOS33; 
-NET "sw<3>"    LOC = "h13" | IOSTANDARD = LVCMOS33; 
-NET "sw<2>"    LOC = "h14" | IOSTANDARD = LVCMOS33; 
-NET "sw<1>"    LOC = "g12" | IOSTANDARD = LVCMOS33; 
-NET "sw<0>"    LOC = "f12" | IOSTANDARD = LVCMOS33; 
+NET "sw<7>"         LOC = "k13" | IOSTANDARD = LVCMOS33; 
+NET "sw<6>"         LOC = "k14" | IOSTANDARD = LVCMOS33; 
+NET "sw<5>"         LOC = "j13" | IOSTANDARD = LVCMOS33; 
+NET "sw<4>"         LOC = "j14" | IOSTANDARD = LVCMOS33; 
+NET "sw<3>"         LOC = "h13" | IOSTANDARD = LVCMOS33; 
+NET "sw<2>"         LOC = "h14" | IOSTANDARD = LVCMOS33; 
+NET "sw<1>"         LOC = "g12" | IOSTANDARD = LVCMOS33; 
+NET "sw<0>"         LOC = "f12" | IOSTANDARD = LVCMOS33; 
 
-NET "led<7>"   LOC = "p11" | IOSTANDARD = LVCMOS33; 
-NET "led<6>"   LOC = "p12" | IOSTANDARD = LVCMOS33; 
-NET "led<5>"   LOC = "n12" | IOSTANDARD = LVCMOS33; 
-NET "led<4>"   LOC = "p13" | IOSTANDARD = LVCMOS33; 
-NET "led<3>"   LOC = "n14" | IOSTANDARD = LVCMOS33; 
-NET "led<2>"   LOC = "l12" | IOSTANDARD = LVCMOS33; 
-NET "led<1>"   LOC = "p14" | IOSTANDARD = LVCMOS33; 
-NET "led<0>"   LOC = "k12" | IOSTANDARD = LVCMOS33; 
+NET "led<7>"        LOC = "p11" | IOSTANDARD = LVCMOS33; 
+NET "led<6>"        LOC = "p12" | IOSTANDARD = LVCMOS33; 
+NET "led<5>"        LOC = "n12" | IOSTANDARD = LVCMOS33; 
+NET "led<4>"        LOC = "p13" | IOSTANDARD = LVCMOS33; 
+NET "led<3>"        LOC = "n14" | IOSTANDARD = LVCMOS33; 
+NET "led<2>"        LOC = "l12" | IOSTANDARD = LVCMOS33; 
+NET "led<1>"        LOC = "p14" | IOSTANDARD = LVCMOS33; 
+NET "led<0>"        LOC = "k12" | IOSTANDARD = LVCMOS33; 
 
+net "sel_digit<3>"  loc = "e13" | IOSTANDARD = LVCMOS33; 
+net "sel_digit<2>"  loc = "f14" | IOSTANDARD = LVCMOS33; 
+net "sel_digit<1>"  loc = "g14" | IOSTANDARD = LVCMOS33; 
+net "sel_digit<0>"  loc = "d14" | IOSTANDARD = LVCMOS33; 
+
+net "seg_a"         loc = "e14" | IOSTANDARD = LVCMOS33; 
+net "seg_b"         loc = "g13" | IOSTANDARD = LVCMOS33;
+net "seg_c"         loc = "n15" | IOSTANDARD = LVCMOS33;
+net "seg_d"         loc = "p15" | IOSTANDARD = LVCMOS33;
+net "seg_e"         loc = "r16" | IOSTANDARD = LVCMOS33;
+net "seg_f"         loc = "f13" | IOSTANDARD = LVCMOS33;
+net "seg_g"         loc = "n16" | IOSTANDARD = LVCMOS33;
+net "seg_dp"        loc = "p16" | IOSTANDARD = LVCMOS33;
+
+net "ram_addr<17>"  loc = "l3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<16>"  loc = "k5"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<15>"  loc = "k3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<14>"  loc = "j3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<13>"  loc = "j4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<12>"  loc = "h4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<11>"  loc = "h3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<10>"  loc = "g5"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<9>"   loc = "e4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<8>"   loc = "e3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<7>"   loc = "f4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<6>"   loc = "f3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<5>"   loc = "g4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<4>"   loc = "l4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<3>"   loc = "m3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<2>"   loc = "m4"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<1>"   loc = "n3"  | IOSTANDARD = LVCMOS33;
+net "ram_addr<0>"   loc = "l5"  | IOSTANDARD = LVCMOS33;
+
+net "ram_we_l"      loc = "g3"	| IOSTANDARD = LVCMOS33;
+net "ram_oe_l"      loc = "k4"	| IOSTANDARD = LVCMOS33;
+
+net "ram_a_ce_l"    loc = "p7"	| IOSTANDARD = LVCMOS33;
+net "ram_a_lb"      loc = "p6"	| IOSTANDARD = LVCMOS33;
+net "ram_a_ub"      loc = "t4"	| IOSTANDARD = LVCMOS33;
+
+net "ram_b_ce_l"    loc = "n5"  | IOSTANDARD = LVCMOS33;
+net "ram_b_lb"      loc = "p5"  | IOSTANDARD = LVCMOS33;
+net "ram_b_ub"      loc = "r4"  | IOSTANDARD = LVCMOS33;
+
+net "ram_a_dat<15>" loc = "r1"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<14>" loc = "p1"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<13>" loc = "l2"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<12>" loc = "j2"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<11>" loc = "h1"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<10>" loc = "f2"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<9>"  loc = "p8"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<8>"  loc = "d3"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<7>"  loc = "b1"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<6>"  loc = "c1"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<5>"  loc = "c2"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<4>"  loc = "r5"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<3>"  loc = "t5"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<2>"  loc = "r6"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<1>"  loc = "t8"  | IOSTANDARD = LVCMOS33;
+net "ram_a_dat<0>"  loc = "n7"  | IOSTANDARD = LVCMOS33;
+
+
+net "ram_b_dat<15>" loc = "n1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<14>" loc = "m1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<13>" loc = "k2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<12>" loc = "c3"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<11>" loc = "f5"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<10>" loc = "g1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<9>"  loc = "e2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<8>"  loc = "d2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<7>"  loc = "d1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<6>"  loc = "e1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<5>"  loc = "g2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<4>"  loc = "j1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<3>"  loc = "k1"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<2>"  loc = "m2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<1>"  loc = "n2"  | IOSTANDARD = LVCMOS33;
+net "ram_b_dat<0>"  loc = "p2"  | IOSTANDARD = LVCMOS33;
 
 
 #
-#net "clk50_in"  loc = "t9";
 #net "clkusr_in" loc = "d9";
-#
-#net "rs232_b_tx" loc = "xx";
-#net "rs232_b_rx" loc = "xx";
-#
-#net "digit<3>" loc = "e13";
-#net "digit<2>" loc = "f14";
-#net "digit<1>" loc = "g14";
-#net "digit<0>" loc = "d14";
-#
-#net "seg_a" loc = "e14";
-#net "seg_b" loc = "g13";
-#net "seg_c" loc = "n15";
-#net "seg_d" loc = "p15";
-#net "seg_e" loc = "r16";
-#net "seg_f" loc = "f13";
-#net "seg_g" loc = "n16";
-#net "seg_dp" loc = "p16";
-#
-#net "ram_addr<17>" loc = "l3";
-#net "ram_addr<16>" loc = "k5";
-#net "ram_addr<15>" loc = "k3";
-#net "ram_addr<14>" loc = "j3";
-#net "ram_addr<13>" loc = "j4";
-#net "ram_addr<12>" loc = "h4";
-#net "ram_addr<11>" loc = "h3";
-#net "ram_addr<10>" loc = "g5";
-#net "ram_addr<9>" loc = "e4";
-#net "ram_addr<8>" loc = "e3";
-#net "ram_addr<7>" loc = "f4";
-#net "ram_addr<6>" loc = "f3";
-#net "ram_addr<5>" loc = "g4";
-#net "ram_addr<4>" loc = "l4";
-#net "ram_addr<3>" loc = "m3";
-#net "ram_addr<2>" loc = "m4";
-#net "ram_addr<1>" loc = "n3";
-#net "ram_addr<0>" loc = "l5";
-#
-#net "ram_we_l" loc = "g3";
-#net "ram_oe_l" loc = "k4";
-#
-#net "ram_a_dat<15>" loc = "r1";
-#net "ram_a_dat<14>" loc = "p1";
-#net "ram_a_dat<13>" loc = "l2";
-#net "ram_a_dat<12>" loc = "j2";
-#net "ram_a_dat<11>" loc = "h1";
-#net "ram_a_dat<10>" loc = "f2";
-#net "ram_a_dat<9>" loc = "p8";
-#net "ram_a_dat<8>" loc = "d3";
-#net "ram_a_dat<7>" loc = "b1";
-#net "ram_a_dat<6>" loc = "c1";
-#net "ram_a_dat<5>" loc = "c2";
-#net "ram_a_dat<4>" loc = "r5";
-#net "ram_a_dat<3>" loc = "t5";
-#net "ram_a_dat<2>" loc = "r6";
-#net "ram_a_dat<1>" loc = "t8";
-#net "ram_a_dat<0>" loc = "n7";
-#
-#net "ram_a_ce_l" loc = "p7";
-#net "ram_a_lb" loc = "p6";
-#net "ram_a_ub" loc = "t4";
-#
-#net "ram_b_dat<15>" loc = "n1";
-#net "ram_b_dat<14>" loc = "m1";
-#net "ram_b_dat<13>" loc = "k2";
-#net "ram_b_dat<12>" loc = "c3";
-#net "ram_b_dat<11>" loc = "f5";
-#net "ram_b_dat<10>" loc = "g1";
-#net "ram_b_dat<9>" loc = "e2";
-#net "ram_b_dat<8>" loc = "d2";
-#net "ram_b_dat<7>" loc = "d1";
-#net "ram_b_dat<6>" loc = "e1";
-#net "ram_b_dat<5>" loc = "g2";
-#net "ram_b_dat<4>" loc = "j1";
-#net "ram_b_dat<3>" loc = "k1";
-#net "ram_b_dat<2>" loc = "m2";
-#net "ram_b_dat<1>" loc = "n2";
-#net "ram_b_dat<0>" loc = "p2";
-#
-#net "ram_b_ce_l" loc = "n5";
-#net "ram_b_lb" loc = "p5";
-#net "ram_b_ub" loc = "r4";
 #
 #net "xcf_din"   loc = "m11";
 #net "xcf_init" loc = "n9";
@@ -225,7 +232,6 @@ AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
 
 INST "I_evb_core/B_pcr.I_pcr_calc_dcd" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" ;
 AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" RANGE = SLICE_X2Y29:SLICE_X3Y26 ;
-
 
 INST "I_evb_core/B_state_ctl.I_state_ctl" AREA_GROUP = "AG_I_evb_core/B_state_ctl.I_state_ctl" ;
 AREA_GROUP "AG_I_evb_core/B_state_ctl.I_state_ctl" RANGE = SLICE_X4Y47:SLICE_X7Y26 ;
