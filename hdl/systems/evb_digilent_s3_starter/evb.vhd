@@ -42,15 +42,48 @@ library work;
 entity evb is
   port
     (   
-      clk50_in  : in  std_logic;
+      clk50_in   : in  std_logic;
 
-      rx_bit    : in  std_logic;
-      tx_bit    : out std_logic;
+      rx_bit     : in  std_logic;
+      tx_bit     : out std_logic;
 
-      pb        : in  std_logic_vector(3 downto 0); 
-      sw        : in  std_logic_vector(7 downto 0); 
+      pb         : in  std_logic_vector(3 downto 0); 
+      sw         : in  std_logic_vector(7 downto 0); 
 
-      led       : out std_logic_vector(7 downto 0)
+      led        : out std_logic_vector(7 downto 0);
+
+      --
+      -- the following EVB I/O lines are not presently used,
+      -- but are included here to tie off unused ports
+      --
+      sel_digit  : out std_logic_vector(3 downto 0);
+
+      seg_a      : out std_logic;
+      seg_b      : out std_logic;
+      seg_c      : out std_logic;
+      seg_d      : out std_logic;
+      seg_e      : out std_logic;
+      seg_f      : out std_logic;
+      seg_g      : out std_logic;
+      seg_dp     : out std_logic;
+
+      ram_addr   : out std_logic_vector(17 downto 0);
+
+      ram_we_l   : out std_logic;
+      ram_oe_l   : out std_logic;
+
+      ram_a_dat  : inout  std_logic_vector(15 downto 0);
+
+      ram_a_ce_l : out std_logic;
+      ram_a_lb   : out std_logic;
+      ram_a_ub   : out std_logic;
+
+      ram_b_dat  : inout  std_logic_vector(15 downto 0);
+
+      ram_b_ce_l : out std_logic;
+      ram_b_lb   : out std_logic;
+      ram_b_ub   : out std_logic
+
     );
 
 end evb;
@@ -398,8 +431,8 @@ begin
      begin
       wait until rising_edge(clk);
 
-      -- LSB's of PC
-      -- led <= y1a_probe_sigs.pc_reg_p1(7 downto 0);
+--      -- LSB's of PC
+--      led <= y1a_probe_sigs.pc_reg_p1(7 downto 0);
 
       -- UART receive data
       led <= rx_dat;
@@ -414,6 +447,39 @@ begin
   -- end-of-bus data mux source
   --
   spare_rdat <= ( others => '0' );
+
+
+  --
+  -- tie off unused EVB I/O pins
+  --
+  sel_digit  <= ( others => '1' );
+
+  seg_a      <= '1';
+  seg_b      <= '1';
+  seg_c      <= '1';
+  seg_d      <= '1';
+  seg_e      <= '1';
+  seg_f      <= '1';
+  seg_g      <= '1';
+  seg_dp     <= '1';
+
+  ram_addr   <= ( others => '1' );
+
+  ram_we_l   <= '1';
+  ram_oe_l   <= '1';
+
+  ram_a_dat  <= ( others => 'Z' );
+
+  ram_a_ce_l <= '1';
+  ram_a_lb   <= '1';
+  ram_a_ub   <= '1';
+
+  ram_a_dat  <= ( others => 'Z' );
+
+  ram_b_ce_l <= '1';
+  ram_b_lb   <= '1';
+  ram_b_ub   <= '1';
+
 
 end evb1;
 
