@@ -87,12 +87,12 @@ begin
   --
   -- inst. bus out
   --
-  i_dat  <=   loc_i_dat;
+  i_dat    <=  loc_i_dat;
 
   --
   -- data bus 
   --
-  d_rdat  <= loc_rdat;
+  d_rdat   <=  loc_rdat;
 
   --
   -- internal bus and control signals
