@@ -29,9 +29,6 @@
         <Source name="../../../cores/y1a/addsub.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../../../cores/y1a/bitcnt.vhd" type="VHDL" type_short="VHDL">
-            <Options top_module="bitcnt"/>
-        </Source>
         <Source name="../../../cores/y1a/cgen.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
@@ -40,9 +37,6 @@
         </Source>
         <Source name="../../../cores/y1a/ea_calc.vhd" type="VHDL" type_short="VHDL">
             <Options/>
-        </Source>
-        <Source name="../../../cores/y1a/ffb.vhd" type="VHDL" type_short="VHDL">
-            <Options top_module="ffb"/>
         </Source>
         <Source name="../../../cores/y1a/flip.vhd" type="VHDL" type_short="VHDL">
             <Options/>

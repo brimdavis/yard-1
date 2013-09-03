@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2012  Brian Davis
+-- (C) COPYRIGHT 2000-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -42,7 +42,7 @@ library work;
 entity evb is
   port
     (   
-      clk50_in  : in  std_logic;
+      clk_in    : in  std_logic;
 
       rx_bit    : in  std_logic;
       tx_bit    : out std_logic;
@@ -61,76 +61,76 @@ architecture evb1 of evb is
   --
   -- clock and control 
   --
-  signal clk   : std_logic; 
+  signal clk         : std_logic; 
 
-  signal sync_rst : std_logic; 
-  signal rst_l    : std_logic; 
+  signal sync_rst    : std_logic; 
+  signal rst_l       : std_logic; 
 
-  signal irq_l : std_logic; 
+  signal irq_l       : std_logic; 
   
   --
   -- instruction bus
   --
-  signal i_en_l  : std_logic;   
-  signal i_rd_l  : std_logic;   
-  
-  signal i_addr  : std_logic_vector(PC_MSB downto 0);
-  signal i_dat   : std_logic_vector(I_DAT_MSB downto 0);
+  signal i_en_l      : std_logic;   
+  signal i_rd_l      : std_logic;   
+                   
+  signal i_addr      : std_logic_vector(PC_MSB downto 0);
+  signal i_dat       : std_logic_vector(I_DAT_MSB downto 0);
   
   --
   -- data bus
   --
-  signal d_en_l  : std_logic;   
-  signal d_rd_l  : std_logic;   
-  signal d_wr_l  : std_logic;   
-  signal d_wr_en_l : std_logic_vector(3 downto 0);  
+  signal d_en_l      : std_logic;   
+  signal d_rd_l      : std_logic;   
+  signal d_wr_l      : std_logic;   
+  signal d_wr_en_l   : std_logic_vector(3 downto 0);  
   
-  signal d_addr  : std_logic_vector(ADDR_MSB downto 0);
-  signal d_rdat  : std_logic_vector(D_DAT_MSB downto 0);
-  signal d_wdat  : std_logic_vector(D_DAT_MSB downto 0);
+  signal d_addr      : std_logic_vector(ADDR_MSB downto 0);
+  signal d_rdat      : std_logic_vector(D_DAT_MSB downto 0);
+  signal d_wdat      : std_logic_vector(D_DAT_MSB downto 0);
   
-  signal d_stall    : std_logic;    
+  signal d_stall     : std_logic;    
   
   --
   -- data bus mux structure
   --
-  signal blkram_rdat  : std_logic_vector(D_DAT_MSB downto 0);
-  signal uart_rdat    : std_logic_vector(D_DAT_MSB downto 0);
-  signal io_rdat      : std_logic_vector(D_DAT_MSB downto 0);
-  signal spare_rdat   : std_logic_vector(D_DAT_MSB downto 0);
+  signal blkram_rdat : std_logic_vector(D_DAT_MSB downto 0);
+  signal uart_rdat   : std_logic_vector(D_DAT_MSB downto 0);
+  signal io_rdat     : std_logic_vector(D_DAT_MSB downto 0);
+  signal spare_rdat  : std_logic_vector(D_DAT_MSB downto 0);
 
   --
   -- local decodes
   --
-  signal ram_cs_l    : std_logic;   
+  signal ram_cs_l         : std_logic;   
 
-  signal dcd_uart    : std_logic;   
-  signal dcd_uart_wr : std_logic;   
-  signal dcd_uart_rd : std_logic;   
+  signal dcd_uart         : std_logic;   
+  signal dcd_uart_wr      : std_logic;   
+  signal dcd_uart_rd      : std_logic;   
   signal dcd_uart_rd_done : std_logic;  
   
   --
   -- uart support signals
   --
-  signal baud_16x : std_logic;  
+  signal baud_16x    : std_logic;  
 
-  signal tx_rdy   : std_logic;  
-  signal rx_avail : std_logic;  
+  signal tx_rdy      : std_logic;  
+  signal rx_avail    : std_logic;  
 
-  signal rx_dat   : std_logic_vector(7 downto 0);
-  
+  signal rx_dat      : std_logic_vector(7 downto 0);
+
   --
   -- I/O ports
   --
-  signal out_reg1 : std_logic_vector(7 downto 0);
-  signal in_reg1  : std_logic_vector(7 downto 0);
+  signal out_reg1    : std_logic_vector(7 downto 0);
+  signal in_reg1     : std_logic_vector(7 downto 0);
 
-  signal in_flags : std_logic_vector(15 downto 0);
+  signal in_flags    : std_logic_vector(15 downto 0);
 
 
 begin
 
-  clk <= clk50_in;
+  clk <= clk_in;
 
   --
   -- pushbutton debouncers for reset & IRQ signals
