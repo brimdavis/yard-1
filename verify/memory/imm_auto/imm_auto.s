@@ -17,6 +17,8 @@
 
     org $0
 
+    nop   ; temporarily needed to keep verify count valid ( fix verify to ignore nulled instructions )
+
 ;
 ; check near 0, +max, -min, 
 ; these should fit in short constant mode

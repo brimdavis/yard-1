@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2013  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -66,6 +66,9 @@ targ4:
 
 ; branch forward ~512 instructions
     bra     targ5
+
+; extra nop prevents false hit count for targ6 ( need to make verify ignore nulled fetches )
+    nop  
 
 targ6:
     nop
