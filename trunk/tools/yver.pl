@@ -9,7 +9,7 @@
 
 #-------------------------------------------------------------------------------
 #
-# Copyright (c) 2001-2011, B. Davis
+# Copyright (c) 2001-2013, B. Davis
 #
 # released under the BSD 2-clause license, see license/bsd_2-clause.txt
 #
@@ -19,12 +19,12 @@
 #
 # Limitations & Bugs:
 #
-#   - only one verify directive allowed per address
+#   - TODO: currently allows only one verify directive allowed per address, allow multiple
 #
-#   - confused by pipeline load stalls, need to monitor stall bit
+#   - FIXME: confused by pipeline load stalls, need to monitor stall bit
 #     workaround: stick NOP between load and verify in test code
 #
-#   - doesn't understand alternate register names, use only r0..r15 in verify statements
+#   - FIXME: doesn't understand alternate register names, use only r0..r15 in verify statements
 #
 #-------------------------------------------------------------------------------
 
@@ -69,7 +69,7 @@ $D1 = 0;
 $errors = 0;
 
 #
-# Read .vfy file, build associative arrays for address matching
+# Read .vfy file, build hashes for address matching
 #
  while ($line = <VFY_F>)
    {
@@ -79,11 +79,14 @@ $errors = 0;
 
      $address = oct ( "0x" . $rec[1] );
 
-     $line_num{$address} = $rec[0];
-     $type{$address}     = $rec[2];
-     $reg{$address}      = $rec[3];
-     $value{$address}    = $rec[4];
+     $line_num{$address}     = $rec[0];
+     $type{$address}         = $rec[2];
+     $expect_count{$address} = $rec[3]; 
+     $reg{$address}          = $rec[4];
+     $value{$address}        = $rec[5];
+
      $valid{$address}    = 1;
+     $hits{$address}     = 0;
 
      if ($D1) { printf ("%08x %s %s %s \n", $address, $line_num{$address}, $reg{$address}, $value{$address}) };
 
@@ -118,11 +121,14 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
          if ($valid{$address})
            {
              $matched = 1;
+
              $v_addr  = $address;
              $v_type  = $type{$address};
              $v_reg   = $reg{$address};
              $v_line_num = $line_num{$address};
              $v_value = oct( "0x" . $value{$address} );
+
+             $hits{$address}  += 1;
 
              if ($D1) { printf VRF_F ("Matched: %08x %s %s %08x \n", $address, $v_line_num, $v_reg, $v_value); }
            }
@@ -181,12 +187,12 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
                    }
                  elsif ( $sim_regs{$v_reg} == $v_value )
                    {
-                     printf VRF_F (" Passed test @ %08x   %s\n", $address, $v_line_num );
+                     printf VRF_F (" Passed test  @ %08x   %s\n", $address, $v_line_num );
                    }
                  else
                    {
                      $errors++;
-                     printf VRF_F (" Failed test @ %08x   %s\n", $address, $v_line_num );
+                     printf VRF_F (" Failed test  @ %08x   %s\n", $address, $v_line_num );
                      printf VRF_F ("   Expecting %s = %08x, was %08x\n", $v_reg,$v_value, $sim_regs{$v_reg} );
                    }
                }
@@ -194,12 +200,12 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
              elsif ( $v_type eq 'FAIL' ) 
                {
                  $errors++;
-                 printf VRF_F (" Failed test @ %08x   %s\n", $address, $v_line_num );
+                 printf VRF_F (" Failed test  @ %08x   %s\n", $address, $v_line_num );
                }
  
              elsif ( $v_type eq 'PASS' ) 
                {
-                 printf VRF_F (" Passed test @ %08x   %s\n", $address, $v_line_num );
+                 printf VRF_F (" Passed test  @ %08x   %s\n", $address, $v_line_num );
                }
  
              else
@@ -215,6 +221,23 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
    } # end while
 
 
+printf VRF_F ("\n");
+
+#
+# check hit counts
+#
+foreach $address ( sort keys(%line_num) )  
+  {
+    if ($D1) { printf ( "  %08x  %d %d\n", $address, $hits{$address}, $expect_count{$address}); }
+
+    if ( ( $expect_count{$address} >= 0) && ( $hits{$address} != $expect_count{$address} ) )
+      {
+        $errors++;
+        printf VRF_F (" Failed count @ %08x   %s\n", $address, $line_num{$address} );
+        printf VRF_F ("   Expected %d, was %d\n", $expect_count{$address}, $hits{$address} );
+      }
+
+  }
 
 #
 # tidy up

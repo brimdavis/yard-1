@@ -20,9 +20,12 @@ set YARD_PERL=perl
 ::
 :: select a VHDL simulator 
 ::
+:: Currently Supported:
 ::  GHDL         GHDL              GHDL
-::  MODELSIM     Model Technology  Modelsim
 ::  SIMILI       Symphony EDA      VHDL Simili
+::
+:: Planned:
+::  MODELSIM     Model Technology  Modelsim
 ::  ALDEC        Aldec             Active-HDL or Riviera
 ::  ISIM         Xilinx            Isim
 ::

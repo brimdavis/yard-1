@@ -1204,15 +1204,29 @@ sub ps_verify
   my $reg;
   my $val;
   my $status;
+  my $count;
+
+
+#
+# TODO : add parsing of optional verify count field
+#
+# defaults:
+#     FAIL -1
+#     PASS  1
+#     REG   1
+#
 
 
   if( $operands[0] eq "pass")
     {
       if ($pass == 2)
         {
+          # TODO: parse count field
+          $count = 1;
+
           printf $LST_F ("                     %s\n", $raw_line);
 
-          printf $VFY_F ("[%s:%d] %08x PASS\n", $asm_filename, $line_num, $last_address );
+          printf $VFY_F ("[%s:%d] %08x PASS %d\n", $asm_filename, $line_num, $last_address, 1 );
           if ($D1) { printf JNK_F (".vpass: addr = %08x\n", $last_address ); }
         } 
 
@@ -1222,9 +1236,12 @@ sub ps_verify
     {
       if ($pass == 2)
         {
+          # TODO: parse count field
+          $count = -1;
+
           printf $LST_F ("                     %s\n", $raw_line);
 
-          printf $VFY_F ("[%s:%d] %08x FAIL\n", $asm_filename, $line_num, $last_address );
+          printf $VFY_F ("[%s:%d] %08x FAIL %d\n", $asm_filename, $line_num, $last_address, $count );
           if ($D1) { printf JNK_F (".vfail: addr = %08x\n", $last_address ); }
         } 
     } 
@@ -1233,7 +1250,7 @@ sub ps_verify
     {
       check_argument_count($#operands, 2);
       check_data_register($operands[0]);
-  
+
       if ($pass == 2)
         {
           # check if opb is an immediate constant
@@ -1255,13 +1272,15 @@ sub ps_verify
               $val = 0;
             } 
 
+          # TODO: parse count field
+          $count = 1;
+
           printf $LST_F ("                     %s\n", $raw_line);
 
-          printf $VFY_F   ("[%s:%d] %08x REG  %s %08x\n", $asm_filename, $line_num, $last_address, $operands[0], $val );
-          if ($D1) { printf $JNK_F (".verify: addr, reg, value = %08x, %s, %08x\n", $last_address, $operands[0], $val ); }
+          printf $VFY_F   ("[%s:%d] %08x REG %d %s %08x\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val );
+          if ($D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x\n", $last_address, $count, $operands[0], $val ); }
 
         } 
-
     } 
 }
 
