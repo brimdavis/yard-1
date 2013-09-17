@@ -1208,7 +1208,9 @@ sub ps_verify
 
 
 #
-# TODO : add parsing of optional verify count field
+# TODO: factor out count checking into common subroutine
+#
+# added parsing of optional verify count field
 #
 # defaults:
 #     FAIL -1
@@ -1216,13 +1218,32 @@ sub ps_verify
 #     REG   1
 #
 
-
-  if( $operands[0] eq "pass")
+  if( lc($operands[0]) eq "pass")
     {
       if ($pass == 2)
         {
-          # TODO: parse count field
-          $count = 1;
+          # check for optional count
+          if( ! $operands[1] )
+            {
+              $count = 1;
+            }
+
+          elsif($operands[1] =~ /^#(.+)$/) 
+            { 
+              ($status, $count) = extract_word($1);
+  
+              if ($status != 0 )
+                {
+                  do_error("Undefined immediate constant");
+                  $count = 1;
+                }
+            }
+
+          else
+            {
+              do_error("Expecting immediate constant");
+              $count = 1;
+            } 
 
           printf $LST_F ("                     %s\n", $raw_line);
 
@@ -1232,12 +1253,33 @@ sub ps_verify
 
     } 
 
-  elsif($operands[0] eq "fail")
+  elsif(lc($operands[0]) eq "fail")
     {
       if ($pass == 2)
         {
-          # TODO: parse count field
-          $count = -1;
+          # check for optional count
+          if( ! $operands[1] )
+            {
+              $count = -1;
+            }
+
+          elsif($operands[1] =~ /^#(.+)$/) 
+            { 
+              ($status, $count) = extract_word($1);
+  
+              if ($status != 0 )
+                {
+                  do_error("Undefined immediate constant");
+                  $count = 0;
+                }
+
+            }
+
+          else
+            {
+              do_error("Expecting immediate constant");
+              $count = -1;
+            } 
 
           printf $LST_F ("                     %s\n", $raw_line);
 
@@ -1248,7 +1290,7 @@ sub ps_verify
 
   else
     {
-      check_argument_count($#operands, 2);
+      #check_argument_count($#operands, 2);
       check_data_register($operands[0]);
 
       if ($pass == 2)
@@ -1272,8 +1314,28 @@ sub ps_verify
               $val = 0;
             } 
 
-          # TODO: parse count field
-          $count = 1;
+          # check for optional count
+          if( ! $operands[2] )
+            {
+              $count = 1;
+            }
+          elsif($operands[2] =~ /^#(.+)$/) 
+            { 
+              ($status, $count) = extract_word($1);
+  
+              if ($status != 0 )
+                {
+                  do_error("Undefined immediate constant");
+                  $count = 1;
+                }
+
+            }
+
+          else
+            {
+              do_error("Expecting immediate constant");
+              $count = 1;
+            } 
 
           printf $LST_F ("                     %s\n", $raw_line);
 
