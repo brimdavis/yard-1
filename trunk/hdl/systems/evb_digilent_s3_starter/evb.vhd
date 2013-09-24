@@ -381,7 +381,7 @@ begin
   --
   -- 8 bit input port
   --
-  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1 )
+  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1, spare_rdat )
     begin
  
       if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then

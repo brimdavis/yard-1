@@ -283,23 +283,17 @@ begin
   --
   ---------------------------------
   P_rx_shift: process
+
     begin
 
       wait until rising_edge(clk);
 
       --
-      -- shift reg & flag logic
+      -- RX shift reg & control
       --
       if s_rst = '1' then
-        rx_rdy_local <= '0';
         rd_dat <= ( others => '0' );
         rx_sr  <= ( others => '1' );
-
-      elsif (rd_en = '1') AND ( rx_rdy_local = '1' ) then
-        --
-        -- read : clear flag
-        --
-        rx_rdy_local <= '0';
 
       elsif (en_16x = '1') AND (rx_done = '1') then
         --
@@ -325,16 +319,40 @@ begin
       elsif (rx_rdy_local = '0') AND (rx_done = '1') AND (rx_sr(10) = '1') AND (rx_sr(1) = '0') then
         --
         -- rdy flag not already set AND finished shifting AND have valid start/stop framing bits :
-        --    set rx flag 
         --    copy rx shift register to read data register
         --
-        rx_rdy_local <= '1';
         rd_dat <= rx_sr( 9 downto 2);
 
         -- workaround to prevent re-executing this state after a rd_en until a new byte arrives
         rx_sr  <= ( others => '1' );
 
       end if;
+
+      --
+      -- flag logic for receive data ready 
+      --
+      --  TODO: add overrun detection
+      --
+      if s_rst = '1' then
+        rx_rdy_local <= '0';
+
+      elsif (rd_en = '1') AND ( rx_rdy_local = '1' ) then
+        --
+        -- read : clear flag
+        --
+        rx_rdy_local <= '0';
+
+      elsif (rx_rdy_local = '0') AND (rx_done = '1') AND (rx_sr(10) = '1') AND (rx_sr(1) = '0') then
+        --
+        -- rdy flag not already set AND finished shifting AND have valid start/stop framing bits :
+        --    set rx flag 
+        --
+        rx_rdy_local <= '1';
+
+      end if;
+
+
+
 
     end process;
 
