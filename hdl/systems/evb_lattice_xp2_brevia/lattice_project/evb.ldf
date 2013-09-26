@@ -86,7 +86,7 @@
         <Source name="../../../cores/y1a/y1a_core.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../rom_dat.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../roms/rom_dat.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../rtl_mem.vhd" type="VHDL" type_short="VHDL">
