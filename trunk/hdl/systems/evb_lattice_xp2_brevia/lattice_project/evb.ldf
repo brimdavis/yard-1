@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BaliProject version="1.3" title="evb" device="LFXP2-5E-6TN144C" synthesis="synplify" default_implementation="impl_1">
+<BaliProject version="2.0" title="evb" device="LFXP2-5E-6TN144C" synthesis="synplify" default_implementation="impl_1">
     <Options>
         <Option name="HDL type" value="VHDL"/>
     </Options>
