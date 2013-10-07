@@ -89,7 +89,7 @@
         <Source name="../../roms/rom_dat.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
-        <Source name="../rtl_mem.vhd" type="VHDL" type_short="VHDL">
+        <Source name="../../evb_common/block_ram/rtl/rtl_mem.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="../evb.vhd" type="VHDL" type_short="VHDL">
