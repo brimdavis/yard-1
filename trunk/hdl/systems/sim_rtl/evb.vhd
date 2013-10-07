@@ -195,7 +195,7 @@ begin
         d_rdat    => blkram_rdat,
         d_wdat    => d_wdat,
 
-        i_addr    => i_addr(12 downto 1),
+        i_addr    => i_addr(12 downto 2),
         i_dat     => i_dat
       );
 

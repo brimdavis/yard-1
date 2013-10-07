@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2008-2013  Brian Davis
+-- (C) COPYRIGHT 2008-2012  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -12,7 +12,9 @@
 ---------------------------------------------------------------
 
 --
--- Y1A inferred blockram
+-- Y1A inferred blockram 
+--
+--   - modified for ice40 family, use two memories to create dual port
 --
 --   - dual port BRAM for data & instruction memory 
 --
@@ -41,19 +43,21 @@ entity rtl_mem is
       d_wr_l    : in  std_logic;
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
-      d_addr    : in  std_logic_vector(10 downto 0);
+      d_addr    : in  std_logic_vector;
       d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
       d_wdat    : in  std_logic_vector(D_DAT_MSB downto 0);
 
-      i_addr    : in  std_logic_vector(11 downto 0);
+      i_addr    : in  std_logic_vector;
       i_dat     : out std_logic_vector(I_DAT_MSB downto 0)
     );
-
 
 end rtl_mem;
 
 
 architecture arch1 of rtl_mem is
+
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is "hard";
 
   signal loc_rdat, loc_wdat : std_logic_vector (ALU_MSB downto 0);
   signal loc_i_dat          : std_logic_vector (31 downto 0);
@@ -65,10 +69,35 @@ architecture arch1 of rtl_mem is
   signal dout3, dout2, dout1, dout0 : std_logic_vector(7 downto 0);
   signal iout3, iout2, iout1, iout0 : std_logic_vector(7 downto 0);
 
-  signal ram_b3 : mem_type  := mem_dat_b3;
-  signal ram_b2 : mem_type  := mem_dat_b2;
-  signal ram_b1 : mem_type  := mem_dat_b1;
-  signal ram_b0 : mem_type  := mem_dat_b0;
+  signal ram_b3_I : mem_type  := mem_dat_b3;
+  signal ram_b3_D : mem_type  := mem_dat_b3;
+
+  signal ram_b2_I : mem_type  := mem_dat_b2;
+  signal ram_b2_D : mem_type  := mem_dat_b2;
+
+  signal ram_b1_I : mem_type  := mem_dat_b1;
+  signal ram_b1_D : mem_type  := mem_dat_b1;
+
+  signal ram_b0_I : mem_type  := mem_dat_b0;
+  signal ram_b0_D : mem_type  := mem_dat_b0;
+
+
+  --
+  -- prevent Synplify from wrapping RAMs with write bypass logic
+  --
+  attribute syn_ramstyle : string;
+
+  attribute syn_ramstyle of ram_b3_I : signal is "no_rw_check";
+  attribute syn_ramstyle of ram_b3_D : signal is "no_rw_check";
+
+  attribute syn_ramstyle of ram_b2_I : signal is "no_rw_check";
+  attribute syn_ramstyle of ram_b2_D : signal is "no_rw_check";
+
+  attribute syn_ramstyle of ram_b1_I : signal is "no_rw_check";
+  attribute syn_ramstyle of ram_b1_D : signal is "no_rw_check";
+
+  attribute syn_ramstyle of ram_b0_I : signal is "no_rw_check";
+  attribute syn_ramstyle of ram_b0_D : signal is "no_rw_check";
 
 
 begin
@@ -76,42 +105,40 @@ begin
   --
   -- inst. bus out
   --
-  i_dat  <=   loc_i_dat;
+  i_dat    <=  loc_i_dat;
 
   --
-  -- data bus out
+  -- data bus 
   --
-  d_rdat <= loc_rdat;
+  d_rdat   <=  loc_rdat;
 
   --
   -- internal bus and control signals
   --
   loc_wdat <= d_wdat;
 
-  d_en     <= NOT d_cs_l;
+  d_en  <= NOT d_cs_l;
 
-  d_we3    <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(3));
-  d_we2    <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(2));
-  d_we1    <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(1));
-  d_we0    <= d_en AND ( NOT d_wr_l ) AND ( NOT d_wr_en_l(0));
+  d_we3 <= NOT d_wr_en_l(3);
+  d_we2 <= NOT d_wr_en_l(2);
+  d_we1 <= NOT d_wr_en_l(1);
+  d_we0 <= NOT d_wr_en_l(0);
 
   --
   -- infer byte lane 3 dual port
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we3 = '1' then
-          ram_b3(to_integer(unsigned(d_addr))) <= din3;
+          ram_b3_D(to_integer(unsigned(d_addr))) <= din3;
+          ram_b3_I(to_integer(unsigned(d_addr))) <= din3;
         end if;
 
-        dout3 <= ram_b3( to_integer( unsigned(d_addr) ) );
+        dout3 <= ram_b3_D( to_integer( unsigned(d_addr) ) );
+        iout3 <= ram_b3_I( to_integer( unsigned(i_addr) ) );
 
-      end if;
-
-      if falling_edge(clk) then
-        iout3 <= ram_b3( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -126,18 +153,16 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we2 = '1' then
-          ram_b2(to_integer(unsigned(d_addr))) <= din2;
+          ram_b2_D(to_integer(unsigned(d_addr))) <= din2;
+          ram_b2_I(to_integer(unsigned(d_addr))) <= din2;
         end if;
 
-        dout2 <= ram_b2( to_integer( unsigned(d_addr) ) );
+        dout2 <= ram_b2_D( to_integer( unsigned(d_addr) ) );
+        iout2 <= ram_b2_I( to_integer( unsigned(i_addr) ) );
 
-      end if;
-
-      if falling_edge(clk) then
-        iout2 <= ram_b2( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -152,18 +177,16 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we1 = '1' then
-          ram_b1(to_integer(unsigned(d_addr))) <= din1;
+          ram_b1_D(to_integer(unsigned(d_addr))) <= din1;
+          ram_b1_I(to_integer(unsigned(d_addr))) <= din1;
         end if;
 
-        dout1 <= ram_b1( to_integer( unsigned(d_addr) ) );
+        dout1 <= ram_b1_D( to_integer( unsigned(d_addr) ) );
+        iout1 <= ram_b1_I( to_integer( unsigned(i_addr) ) );
 
-      end if;
-
-      if falling_edge(clk) then
-        iout1 <= ram_b1( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
@@ -178,18 +201,16 @@ begin
   --
   process(clk)
     begin
-      if falling_edge(clk) then
+      if falling_edge(clk) AND ( d_en = '1' ) then
 
         if d_we0 = '1' then
-          ram_b0(to_integer(unsigned(d_addr))) <= din0;
+          ram_b0_D(to_integer(unsigned(d_addr))) <= din0;
+          ram_b0_I(to_integer(unsigned(d_addr))) <= din0;
         end if;
 
-        dout0 <= ram_b0( to_integer( unsigned(d_addr) ) );
+        dout0 <= ram_b0_D( to_integer( unsigned(d_addr) ) );
+        iout0 <= ram_b0_I( to_integer( unsigned(i_addr) ) );
 
-      end if;
-
-      if falling_edge(clk) then
-        iout0 <= ram_b0( to_integer( unsigned(i_addr(i_addr'left downto 1)) ) );
       end if;
 
     end process;
