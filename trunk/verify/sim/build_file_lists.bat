@@ -6,10 +6,16 @@
 ::
 
 ::
-:: TODO - change prefixes to relative paths when YARD_SIM_TARGET=GHDL 
+:: GHDL bug workaround: change prefixes to relative paths when YARD_SIM_TARGET=GHDL 
 ::
+
+IF "%YARD_SIM%"=="GHDL" (
+set YC=..\..\..\hdl\cores\y1a\
+set YV=..\..\..\hdl\systems\sim_rtl\
+) ELSE (
 set YC=%YARD_HOME%\HDL\cores\y1a\
 set YV=%YARD_SIM_TARGET%\
+)
 
 
 ::
