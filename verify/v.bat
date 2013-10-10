@@ -1,5 +1,7 @@
 ::
-:: verify script, call with path to subdirectory containing test
+:: verify script, call with path to subdirectory containing test, e.g. :
+::
+:: C:\Projects\yard\verify>v alu\addsub1
 ::
 
 ::
@@ -15,7 +17,7 @@ call ymovit  %1\%~n1      || exit /b 1
 call sim\build_file_lists.bat
 
 ::
-:: cd to the simulation directory defined by %YARD_SIM%
+:: use the simulation directory defined by %YARD_SIM%
 ::
 cd sim\%YARD_SIM%
 
