@@ -1,0 +1,38 @@
+vhdl work "$YC/y1_constants.vhd"
+vhdl work "$YC/y1a_config.vhd"
+vhdl work "$YC/y1a_comps.vhd"
+vhdl work "$YC/y1a_probe_pkg.vhd"
+vhdl work "$YC/rf.vhd"
+vhdl work "$YC/pw2_rom.vhd"
+vhdl work "$YC/cgen.vhd"
+vhdl work "$YC/addsub.vhd"
+vhdl work "$YC/logicals.vhd"
+vhdl work "$YC/shift_one.vhd"
+vhdl work "$YC/flip.vhd"
+vhdl work "$YC/ffb.vhd"
+vhdl work "$YC/bitcnt.vhd"
+vhdl work "$YC/rstack.vhd"
+vhdl work "$YC/ea_calc.vhd"
+vhdl work "$YC/pcr_calc.vhd"
+vhdl work "$YC/dbus_ctl.vhd"
+vhdl work "$YC/st_mux.vhd"
+vhdl work "$YC/ld_mux.vhd"
+vhdl work "$YC/skip_dcd.vhd"
+vhdl work "$YC/reg_extend.vhd" 
+vhdl work "$YC/state_ctl.vhd" 
+vhdl work "$YC/decoders.vhd"
+vhdl work "$YC/y1a_probe.vhd"
+vhdl work "$YC/y1a_core.vhd"
+
+vhdl work "$YV/rom_dat.vhd"
+vhdl work "$YV/../evb_common/block_ram/rtl/rtl_mem.vhd"
+vhdl work "$YV/evb.vhd"
+vhdl work "$YV/evb_tb.vhd"
+
+
+
+
+ 
+
+
+
