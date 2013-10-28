@@ -51,11 +51,11 @@ entity blk_mem is
       d_wr_l    : in  std_logic;
       d_wr_en_l : in  std_logic_vector(3 downto 0); 
 
-      d_addr    : in  std_logic_vector (10 downto 0);
+      d_addr    : in  std_logic_vector (12 downto 2);
       d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
       d_wdat    : in  std_logic_vector(D_DAT_MSB downto 0);
 
-      i_addr    : in  std_logic_vector  (11 downto 0);
+      i_addr    : in  std_logic_vector  (12 downto 2);
       i_dat     : out std_logic_vector(I_DAT_MSB downto 0)
     );
 
@@ -119,7 +119,7 @@ begin
 
     port map
      (
-      ADDRA => i_addr (11 downto 1),
+      ADDRA => i_addr,
 
       DIPA  => ( others => '0' ),
       DIPB  => ( others => '0' ),
@@ -132,7 +132,7 @@ begin
       WEA   => '0',
       SSRA  => '0', 
 
-      ADDRB => d_addr(10 downto 0),
+      ADDRB => d_addr,
 
       DIB   => loc_wdat(31 downto 24),
       DOB   => loc_rdat(31 downto 24),
@@ -170,7 +170,7 @@ begin
 
     port map
     (
-      ADDRA => i_addr (11 downto 1),
+      ADDRA => i_addr,
 
       DIPA  => ( others => '0' ),
       DIPB  => ( others => '0' ),
@@ -183,7 +183,7 @@ begin
       WEA   => '0',
       SSRA  => '0', 
 
-      ADDRB => d_addr( 10 downto 0),
+      ADDRB => d_addr,
 
       DIB   => loc_wdat(23 downto 16),
       DOB   => loc_rdat(23 downto 16),
@@ -221,7 +221,7 @@ begin
 
     port map
     (
-      ADDRA => i_addr (11 downto 1),
+      ADDRA => i_addr,
 
       DIPA  => ( others => '0' ),
       DIPB  => ( others => '0' ),
@@ -234,7 +234,7 @@ begin
       WEA   => '0',
       SSRA  => '0', 
 
-      ADDRB => d_addr( 10 downto 0),
+      ADDRB => d_addr,
       DIB   => loc_wdat(15 downto  8),
       DOB   => loc_rdat(15 downto  8),
 
@@ -271,7 +271,7 @@ begin
 
     port map
     (
-      ADDRA => i_addr (11 downto 1),
+      ADDRA => i_addr,
 
       DIPA  => ( others => '0' ),
       DIPB  => ( others => '0' ),
@@ -284,7 +284,7 @@ begin
       WEA   => '0',
       SSRA  => '0', 
 
-      ADDRB => d_addr( 10 downto 0),
+      ADDRB => d_addr,
       DIB   => loc_wdat( 7 downto  0),
       DOB   => loc_rdat( 7 downto  0),
 
