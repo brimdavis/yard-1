@@ -242,6 +242,7 @@ begin
   -- shared memory spaces using dual port block RAM
   -- d_addr is currently hardcoded for 32 bit processor
   --
+--  blk_mem1 : entity work.rtl_mem
   blk_mem1 : entity work.blk_mem
     port map 
       (
@@ -256,7 +257,7 @@ begin
         d_rdat    => blkram_rdat,
         d_wdat    => d_wdat,
 
-        i_addr    => i_addr(12 downto 1),
+        i_addr    => i_addr(12 downto 2),
         i_dat     => i_dat
       );
 

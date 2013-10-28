@@ -14,12 +14,12 @@ ngdbuild -intstyle xflow -dd _ngo -nt timestamp -insert_keep_hierarchy -uc ..\..
 if errorlevel 1 exit /b 1
 
 ::
-:: map/par settings, changed par seed to "-t 3"
+:: map/par settings, changed par seed to "-t 2"
 ::
 map  -intstyle xflow     -p xc3s200-ft256-4 -timing -logic_opt on -ol high -xe c -t 1 -cm area -detail -l -pr b -k 4 -power off -o evb_map.ncd evb.ngd evb.pcf
 if errorlevel 1 exit /b 1
 
-par  -intstyle xflow     -w -ol high -xe c -t 3 evb_map.ncd evb.ncd evb.pcf
+par  -intstyle xflow     -w -ol high -xe c -t 2 evb_map.ncd evb.ncd evb.pcf
 if errorlevel 1 exit /b 1
 
 ::

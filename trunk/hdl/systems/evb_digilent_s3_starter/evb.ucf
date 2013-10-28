@@ -219,6 +219,11 @@ INST "blk_mem1/RAM2" LOC = "RAMB16_X0Y5" ;
 INST "blk_mem1/RAM1" LOC = "RAMB16_X1Y4" ;
 INST "blk_mem1/RAM0" LOC = "RAMB16_X0Y4" ;
 
+#INST "blk_mem1/Mram_ram_b3" LOC = "RAMB16_X1Y5" ;
+#INST "blk_mem1/Mram_ram_b2" LOC = "RAMB16_X0Y5" ;
+#INST "blk_mem1/Mram_ram_b1" LOC = "RAMB16_X1Y4" ;
+#INST "blk_mem1/Mram_ram_b0" LOC = "RAMB16_X0Y4" ;
+
 
 INST "I_evb_core/B_rstack.I_stack" AREA_GROUP = "AG_I_evb_core/B_rstack.I_stack" ;
 AREA_GROUP "AG_I_evb_core/B_rstack.I_stack" RANGE = SLICE_X0Y47:SLICE_X1Y30 ;
