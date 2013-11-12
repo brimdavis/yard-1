@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2012  Brian Davis
+-- (C) COPYRIGHT 2000-2013  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -36,7 +36,7 @@ end pw2_rom;
 architecture arch1 of pw2_rom is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   type rom_type is array (natural range <>) of std_logic_vector (31 downto 0);
 

@@ -51,7 +51,7 @@ end reg_extend;
 architecture arch1 of reg_extend is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
 
   --

@@ -62,7 +62,7 @@ end regfile;
 architecture arch1 of regfile is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   type rf_type is array (natural range <>) of std_logic_vector (RF_DAT_MSB downto 0);
 

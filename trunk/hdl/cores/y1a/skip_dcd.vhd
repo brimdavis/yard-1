@@ -64,7 +64,7 @@ end skip_dcd;
 architecture arch1 of skip_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   signal skip_cond_a : std_logic;
 

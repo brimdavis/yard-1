@@ -48,7 +48,7 @@ end shift_one;
 architecture arch1 of shift_one is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   signal shift_msb  : std_logic;
   signal shift1_lsb : std_logic;

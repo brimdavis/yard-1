@@ -54,7 +54,7 @@ end rstack;
 architecture arch1 of rstack is
 
 --  attribute syn_hier : string;
---  attribute syn_hier of arch1: architecture is "hard";
+--  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   type rs_pc_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (PC_MSB downto 0);
   type rs_sr_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (SR_MSB downto 0);
@@ -71,6 +71,15 @@ architecture arch1 of rstack is
 
   signal pc_reg     : std_logic_vector (PC_MSB downto 0);
   signal sr_reg     : std_logic_vector (SR_MSB downto 0);
+
+
+  attribute syn_ramstyle : string;
+
+--  attribute syn_ramstyle of rs_pc : signal is "no_rw_check";
+--  attribute syn_ramstyle of rs_pc : signal is "distributed";
+--
+--  attribute syn_ramstyle of rs_sr : signal is "no_rw_check";
+--  attribute syn_ramstyle of rs_sr : signal is "distributed";
 
 begin
 

@@ -169,7 +169,7 @@ begin
   I_evb_core: entity work.y1a_core
     generic map
       ( 
-        CFG         => DEFAULT_CONFIG
+        CFG         => DEFAULT_Y1A_CONFIG
       )
 
     port map

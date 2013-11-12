@@ -160,7 +160,7 @@ end ld_mux_dcd;
 architecture arch1 of ld_mux_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -249,7 +249,7 @@ end st_mux_dcd;
 architecture arch1 of st_mux_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -335,7 +335,7 @@ end rstack_dcd;
 architecture arch1 of rstack_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -439,7 +439,7 @@ end ea_dcd;
 architecture arch1 of ea_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -576,7 +576,7 @@ end regfile_dcd;
 architecture arch1 of regfile_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -676,7 +676,7 @@ end cgen_dcd;
 architecture arch1 of cgen_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -755,7 +755,7 @@ end addsub_dcd;
 architecture arch1 of addsub_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -834,7 +834,7 @@ end logicals_dcd;
 architecture arch1 of logicals_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -913,7 +913,7 @@ end pcr_calc_dcd;
 architecture arch1 of pcr_calc_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -1011,7 +1011,7 @@ end shift_dcd;
 architecture arch1 of shift_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -1090,7 +1090,7 @@ end flip_dcd;
 architecture arch1 of flip_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register
@@ -1166,7 +1166,7 @@ end reg_extend_dcd;
 architecture arch1 of reg_extend_dcd is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- instruction register

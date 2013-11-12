@@ -28,6 +28,17 @@
 package y1a_config is
 
   --
+  -- EDA tool config
+  --
+  -- using global string constant because record element didn't meet "locally static" requirement for architecture attributes
+  --
+  -- FIXME: fixed length of four syn_hier string hack works for "soft", "firm", "hard"
+  --        write string pad/chomp functions instead
+  --
+  constant CFG_EDA_SYN_HIER : string(1 to 4) := "hard";
+
+
+  --
   -- ISA Configuration flags:
   --
   --   non_native_load : 
@@ -66,6 +77,59 @@ package y1a_config is
     end record;
 
 
+  constant DEFAULT_ISA_CONFIG : y1a_isa_config_type :=
+    (
+      non_native_load  => TRUE,
+      non_native_store => TRUE,
+    
+      barrel_shift     => FALSE,
+      bit_flip         => FALSE,
+    
+      skip_on_bit      => TRUE,
+      skip_compare     => TRUE
+    );
+ 
+  constant TINY_ISA_CONFIG : y1a_isa_config_type :=
+    (
+      non_native_load  => FALSE,
+      non_native_store => FALSE,
+  
+      barrel_shift     => FALSE,
+      bit_flip         => FALSE,
+  
+      skip_on_bit      => TRUE,
+      skip_compare     => FALSE
+    );
+
+  constant SMALL_ISA_CONFIG : y1a_isa_config_type :=
+    (
+      non_native_load  => FALSE,
+      non_native_store => FALSE,
+  
+      barrel_shift     => FALSE,
+      bit_flip         => FALSE,
+  
+      skip_on_bit      => TRUE,
+      skip_compare     => TRUE
+    );
+
+  constant BIG_ISA_CONFIG : y1a_isa_config_type :=
+    (
+      non_native_load  => TRUE,
+      non_native_store => TRUE,
+    
+    --barrel_shift     => TRUE,  -- not implemented yet
+      barrel_shift     => FALSE,
+  
+      bit_flip         => TRUE,
+     
+      skip_on_bit      => TRUE,
+      skip_compare     => TRUE
+    );
+
+
+  --
+  -- HW config
   --
   --  reg_i_addr:
   --
@@ -82,9 +146,15 @@ package y1a_config is
       reg_i_addr       : boolean;
     end record;
 
+  constant DEFAULT_HW_CONFIG : y1a_hw_config_type :=
+    (
+      reg_i_addr => TRUE
+    );
+
+
 
   --
-  -- composite configuration record:
+  -- composite configuration record
   --
   type y1a_config_type is 
     record
@@ -92,73 +162,32 @@ package y1a_config is
       hw              : y1a_hw_config_type;
     end record;
  
- 
-  constant DEFAULT_CONFIG : y1a_config_type :=
+
+  constant DEFAULT_Y1A_CONFIG : y1a_config_type :=
     (
-      isa =>
-        (
-          non_native_load  => TRUE,
-          non_native_store => TRUE,
-    
-          barrel_shift     => FALSE,
-          bit_flip         => FALSE,
-    
-          skip_on_bit      => TRUE,
-          skip_compare     => TRUE
-        ),
-
-      hw =>
-        (
-          reg_i_addr       => TRUE
-        )
-
-    );
- 
- 
-  constant TINY_CONFIG : y1a_config_type :=
-    (
-      isa =>
-        (
-          non_native_load  => FALSE,
-          non_native_store => FALSE,
-  
-          barrel_shift     => FALSE,
-          bit_flip         => FALSE,
-  
-          skip_on_bit      => TRUE,
-          skip_compare     => TRUE
-        ),
-
-      hw =>
-        (
-          reg_i_addr       => TRUE
-        )
+      isa => DEFAULT_ISA_CONFIG,
+      hw  => DEFAULT_HW_CONFIG
     );
 
- 
-  constant BIG_CONFIG : y1a_config_type :=
+  constant TINY_Y1A_CONFIG : y1a_config_type :=
     (
-      isa =>
-        (
-          non_native_load  => TRUE,
-          non_native_store => TRUE,
-     
-     --   barrel_shift     => TRUE,  -- not implemented yet
-          barrel_shift     => FALSE,
-  
-          bit_flip         => TRUE,
-      
-          skip_on_bit      => TRUE,
-          skip_compare     => TRUE
-        ),
-
-      hw =>
-        (
-          reg_i_addr       => TRUE
-        )
+      isa => TINY_ISA_CONFIG,
+      hw  => DEFAULT_HW_CONFIG
     );
 
- 
+  constant SMALL_Y1A_CONFIG : y1a_config_type :=
+    (
+      isa => SMALL_ISA_CONFIG,
+      hw  => DEFAULT_HW_CONFIG
+    );
+
+  constant BIG_Y1A_CONFIG : y1a_config_type :=
+    (
+      isa => BIG_ISA_CONFIG,
+      hw  => DEFAULT_HW_CONFIG
+    );
+
+
 end package y1a_config;
  
  
