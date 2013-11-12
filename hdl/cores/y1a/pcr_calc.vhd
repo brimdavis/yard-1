@@ -47,7 +47,7 @@ end pcr_calc;
 architecture arch1 of pcr_calc is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   signal pc_p1_ext   : std_logic_vector(ALU_MSB downto 0);
   signal pcr_offset  : std_logic_vector(ALU_MSB downto 0);

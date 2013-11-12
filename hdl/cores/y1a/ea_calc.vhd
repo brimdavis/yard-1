@@ -61,7 +61,7 @@ end ea_calc;
 architecture arch1 of ea_calc is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   signal ea_off_mux   : std_logic_vector(ALU_MSB downto 0);
 

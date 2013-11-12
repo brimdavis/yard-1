@@ -109,7 +109,7 @@ library work;
 
 entity y1a_core is 
   generic
-    ( CFG        : y1a_config_type := DEFAULT_CONFIG );
+    ( CFG        : y1a_config_type := DEFAULT_Y1A_CONFIG );
 
   port
     (
@@ -162,7 +162,7 @@ architecture arch1 of y1a_core is
   -- 
   -- prevent optimizations across core interface
   --
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- global signals

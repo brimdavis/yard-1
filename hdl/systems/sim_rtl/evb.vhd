@@ -121,7 +121,7 @@ begin
   evb_core: entity work.y1a_core
     generic map
       (
-        CFG       =>  BIG_CONFIG
+        CFG       =>  BIG_Y1A_CONFIG
       )
     port map
       (

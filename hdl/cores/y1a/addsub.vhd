@@ -51,7 +51,7 @@ end addsub;
 architecture arch1 of addsub is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   --
   -- addsub signals are padded in width for carry-in, carry/borrow-out logic

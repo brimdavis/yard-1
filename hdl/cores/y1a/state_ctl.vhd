@@ -68,7 +68,7 @@ end state_ctl;
 architecture arch1 of state_ctl is
 
   attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is "hard";
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
   attribute syn_keep : boolean;
 
