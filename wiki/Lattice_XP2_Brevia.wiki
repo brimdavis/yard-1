@@ -5,13 +5,15 @@ Summary of the build results for the Lattice XP2 Brevia board.
 
 = Details =
 
-Development SW and code version used:
+== Development S/W and code versions used: ==
   * Lattice Diamond 2.2
   * checkout of svn r124
   * XP2 Brevia project is located in /hdl/systems/evb_lattice_xp2_brevia 
 
-Timing Results:
+== Timing Results: ==
 {{{
+Preference Summary
+
 FREQUENCY NET "clk_in_c" 50.000000 MHz (0 errors)
             4096 items scored, 0 timing errors detected.
 Report:   53.090MHz is the maximum frequency for this preference.
@@ -24,7 +26,7 @@ Score: 0 (setup), 0 (hold)
 Cumulative negative slack: 0 (0+0)
 }}}
 
-Device Usage ( Y1A core + BRAM + UART + I/O ):
+== Device Usage ( Y1A core + BRAM + UART + I/O ): ==
 {{{
 Target Vendor:  LATTICE
 Target Device:  LFXP2-5ETQFP144
