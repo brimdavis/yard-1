@@ -1,0 +1,47 @@
+#summary example design for Lattice XP2 Brevia evaluation board
+
+= Introduction =
+Summary of the build results for the Lattice XP2 Brevia board.
+
+= Details =
+
+Development SW and code version used:
+  * Lattice Diamond 2.2
+  * checkout of svn r124
+  * XP2 Brevia project is located in /hdl/systems/evb_lattice_xp2_brevia 
+
+Timing Results:
+{{{
+FREQUENCY NET "clk_in_c" 50.000000 MHz (0 errors)
+            4096 items scored, 0 timing errors detected.
+Report:   53.090MHz is the maximum frequency for this preference.
+
+Timing summary (Setup and Hold):
+---------------
+
+Timing errors: 0 (setup), 0 (hold)
+Score: 0 (setup), 0 (hold)
+Cumulative negative slack: 0 (0+0)
+}}}
+
+Device Usage ( Y1A core + BRAM + UART + I/O ):
+{{{
+Target Vendor:  LATTICE
+Target Device:  LFXP2-5ETQFP144
+Target Performance:   6
+
+Design Summary
+   Number of registers:    347
+      PFU registers:    330
+      PIO registers:    17
+   Number of SLICEs:           816 out of  2376 (34%)
+      SLICEs(logic/ROM):       750 out of  1971 (38%)
+      SLICEs(logic/ROM/RAM):    66 out of   405 (16%)
+          As RAM:           66 out of   405 (16%)
+          As Logic/ROM:      0 out of   405 (0%)
+   Number of logic LUT4s:     983
+   Number of distributed RAM:  66 (132 LUT4s)
+   Number of ripple logic:    105 (210 LUT4s)
+   Number of shift registers:   0
+   Total number of LUT4s:     1325
+}}}
