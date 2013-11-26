@@ -1,0 +1,69 @@
+#summary build results for the Digilent/Xilinx Spartan-3 Starter Board
+
+= Introduction =
+Summary of the build results for the Digilent/Xilinx Spartan-3 Starter Board.
+
+= Details =
+
+== Development S/W and code versions used: ==
+  * Xilinx Webpack 9.2.04i
+  * checkout of svn r124
+  * design is located in /hdl/systems/evb_digilent_s3_starter
+
+== Timing Results: ==
+{{{
+1 constraint not met.
+
+Data Sheet report:
+-----------------
+All values displayed in nanoseconds (ns)
+
+Clock to Setup on destination clock clk50_in
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+clk50_in       |   19.847|   10.053|   10.301|         |
+---------------+---------+---------+---------+---------+
+
+Timing summary:
+---------------
+Timing errors: 5  Score: 417
+
+Constraints cover 1339149 paths, 0 nets, and 5121 connections
+
+Design statistics:
+   Minimum period:  20.602ns{1}   (Maximum frequency:  48.539MHz)
+}}}
+
+== Device Usage ( Y1A core + BRAM + UART + I/O ): ==
+{{{
+Target Device  : xc3s200
+Target Package : ft256
+Target Speed   : -4
+
+Design Summary
+--------------
+Number of errors:      0
+Number of warnings:  266
+Logic Utilization:
+  Number of Slice Flip Flops:         333 out of   3,840    8%
+  Number of 4 input LUTs:             981 out of   3,840   25%
+Logic Distribution:
+  Number of occupied Slices:                          695 out of   1,920   36%
+    Number of Slices containing only related logic:     695 out of     695  100%
+    Number of Slices containing unrelated logic:          0 out of     695    0%
+      *See NOTES below for an explanation of the effects of unrelated logic
+Total Number of 4 input LUTs:          1,199 out of   3,840   31%
+  Number used as logic:                981
+  Number used as a route-thru:         129
+  Number used for Dual Port RAMs:       64
+    (Two LUTs used per Dual Port RAM)
+  Number used as 16x1 RAMs:             23
+  Number used as Shift registers:        2
+  Number of bonded IOBs:               92 out of     173   53%
+    IOB Flip Flops:                    17
+  Number of Block RAMs:                4 out of      12   33%
+  Number of GCLKs:                     1 out of       8   12%
+
+}}}
