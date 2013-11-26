@@ -1,4 +1,4 @@
-#summary example design for Lattice XP2 Brevia evaluation board
+#summary build results for the Lattice XP2 Brevia evaluation board
 
 = Introduction =
 Summary of the build results for the Lattice XP2 Brevia board.
