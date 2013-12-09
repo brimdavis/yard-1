@@ -236,7 +236,7 @@ use strict;
 #use integer;
 
 # turn debug prints on or off here
-our $D1 = 1;
+use constant D1 => 0;
 
 #-------------------------------------------------------------
 # globals
@@ -296,6 +296,7 @@ my %labels = ();
 our %imms = ();
 our $imm_table_num;          
 my  $imm_seq;          
+my  $last_imm_seq;          
 
 #
 # line parsing
@@ -328,7 +329,7 @@ sub next_imm_label
 {
   my $imm_label = 'I$' . $imm_seq;
 
-  if ($D1) { print $JNK_F ("next_imm_label() : $imm_label, $imm_seq\n"); }
+  if (D1) { print $JNK_F ("next_imm_label() : $imm_label, $imm_seq\n"); }
 
   $imm_seq++;
 
@@ -347,9 +348,13 @@ sub flush_imms
   my @sorted_labels;
 
   #
-  # FIXME: return here if there are no imms to dump in the current imm table 
+  #  return here if there are no imms to dump in the current imm table 
   #  ( to prevent unnecessary aligns )
   #
+  if ( $last_imm_seq == $imm_seq )
+  {
+    return;
+  }
 
   #
   # align to quad word boundary
@@ -368,7 +373,7 @@ sub flush_imms
                           or  lc($a) cmp lc($b) 
                         } keys(%imms) ;
  
-  if ($D1) { print $JNK_F ("flush_imms:\n"); }
+  if (D1) { print $JNK_F ("flush_imms:\n"); }
 
   #
   # using an index for the loop so merge code can look ahead to the next entry
@@ -398,7 +403,7 @@ sub flush_imms
           $duplicate = 0;
         }
 
-        if ($D1) { print $JNK_F ("  $label :   $imms{$label}{value}   $duplicate   $imms{$label}{can_merge}   $imms{$label}{table_num}\n"); }
+        if (D1) { print $JNK_F ("  $label :   $imms{$label}{value}   $duplicate   $imms{$label}{can_merge}   $imms{$label}{table_num}\n"); }
 
         # generate label
         if ( $pass == 1 ) { init_label($label) };
@@ -428,6 +433,8 @@ sub flush_imms
   $next_address = $address;
 
   $imm_table_num++;          
+
+  $last_imm_seq = $imm_seq;
 
 }
 
@@ -584,7 +591,7 @@ sub label_value
   if ($label  =~ /^\./) 
     {
       $label = $label_prefix . $label; 
-      if ($D1) { print  $JNK_F ("prefixed local label: $label\n" ); }  
+      if (D1) { print  $JNK_F ("prefixed local label: $label\n" ); }  
     } 
 
   if ($label eq "@") 
@@ -690,7 +697,7 @@ sub extract_word
 {
   my ($tmp) = @_; 
 
-  if ($D1) { print $JNK_F ("extract_word input = $tmp\n");  }
+  if (D1) { print $JNK_F ("extract_word input = $tmp\n");  }
 
   #
   # leading $ for hex
@@ -700,8 +707,8 @@ sub extract_word
       $tmp = $1;
       $tmp =~ s/_//g; # strip underscores
       $tmp = oct ("0x" . $tmp);  
-      if ($D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
-      if ($D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
+      if (D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
+      if (D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
       return (0, $tmp);
     }
 
@@ -713,8 +720,8 @@ sub extract_word
       $tmp = $1;
       $tmp =~ s/_//g; # strip underscores
       $tmp = oct ("0x" . $tmp);  
-      if ($D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
-      if ($D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
+      if (D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
+      if (D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
       return (0, $tmp);
     }
 
@@ -726,10 +733,10 @@ sub extract_word
       $tmp = $1;
       $tmp =~ s/_//g;  # strip underscores
       $tmp = "0" x (32 - length($tmp))  . $tmp; # pad bit string to 32 characters
-      if ($D1) { printf $JNK_F ("extract_word padded string (bin)=%s\n", $tmp ); }
+      if (D1) { printf $JNK_F ("extract_word padded string (bin)=%s\n", $tmp ); }
       $tmp =  vec( pack("B*", $tmp), 0, 32);  # convert 32 bit binary string to integer
-      if ($D1) { printf $JNK_F ("extract_word bin = 0x%lx\n", $tmp ); }
-      if ($D1) { print  $JNK_F ("extract_word bin, native= $tmp\n" ); }
+      if (D1) { printf $JNK_F ("extract_word bin = 0x%lx\n", $tmp ); }
+      if (D1) { print  $JNK_F ("extract_word bin, native= $tmp\n" ); }
       return (0, $tmp);
     }
 
@@ -741,7 +748,7 @@ sub extract_word
   elsif($tmp =~ /^\'(.+)$/)  
     {
       $tmp = ord($1);
-      if ($D1) { printf $JNK_F ("extract_word character = 0x%lx\n", $tmp ); }
+      if (D1) { printf $JNK_F ("extract_word character = 0x%lx\n", $tmp ); }
       return (0, $tmp);
     }
 
@@ -753,8 +760,8 @@ sub extract_word
       # check for leading '-' here, set sign flag
       $tmp = $1;
       $tmp =~ s/_//g;  # strip underscores
-      if ($D1) { printf $JNK_F ("extract_word dec = 0x%lx\n", $tmp);  }
-      if ($D1) { print  $JNK_F ("extract_word dec, native= $tmp\n" ); }  
+      if (D1) { printf $JNK_F ("extract_word dec = 0x%lx\n", $tmp);  }
+      if (D1) { print  $JNK_F ("extract_word dec, native= $tmp\n" ); }  
       return (0, $tmp);
     }
 
@@ -764,13 +771,13 @@ sub extract_word
   elsif ( label_exists($tmp) ) 
     { 
       $tmp = label_value($tmp);
-      if ($D1) { printf $JNK_F ("extract_word label=%d\n", $tmp); }
+      if (D1) { printf $JNK_F ("extract_word label=%d\n", $tmp); }
       return (0, $tmp);
     }
 
   else 
     {
-      if ($D1) { printf $JNK_F ("extract_word illegal constant or undefined label=%s\n", $tmp); }
+      if (D1) { printf $JNK_F ("extract_word illegal constant or undefined label=%s\n", $tmp); }
       if ($pass == 2) { do_error("Illegal constant or undefined label"); }
       return (2,$tmp);
     }
@@ -797,7 +804,7 @@ sub parse_expression
 
   my @args;
 
-  if ($D1) { printf $JNK_F ("exp: $exp\n"); }
+  if (D1) { printf $JNK_F ("exp: $exp\n"); }
 
   #
   # split pattern returns alternating array of ( {match}, value, match, value )
@@ -810,14 +817,14 @@ sub parse_expression
       if ( ($arg eq '-') || ( $arg eq '+' ) )
         {
           $op = $arg;
-          if ($D1) { printf $JNK_F ("exp.op: $arg\n"); }
+          if (D1) { printf $JNK_F ("exp.op: $arg\n"); }
         }
 
       elsif ( $arg ne '' )
         {
           ($code, $value) = extract_word($arg);
 
-          if ($D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
+          if (D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
 
           if ( $code == 0 )
             {
@@ -837,7 +844,7 @@ sub parse_expression
         }
     }
 
-  if ($D1) { printf $JNK_F ("exp.sum  :$sum :$code\n"); }
+  if (D1) { printf $JNK_F ("exp.sum  :$sum :$code\n"); }
   return($code,$sum);
 }
 
@@ -905,19 +912,23 @@ my %directive_defs =
 
   '.imm_table' =>  { type => 'DIRECTIVE' , ps => \&ps_imm_table, name => ".IMM_TABLE", blab => "generate immediate table"  },
 
-  '.global'    =>  { type => 'DIRECTIVE' , ps => \&ps_global,    name => ".GLOBAL",    blab => "stub: global directive"  },
+  '.global'    =>  { type => 'DIRECTIVE' , ps => \&ps_global,    name => ".GLOBAL",    blab => "stub: .global directive"  },
+  '.local'     =>  { type => 'DIRECTIVE' , ps => \&ps_local,     name => ".LOCAL",     blab => "stub: .local directive"  },
                                                                                      
-  '.section'   =>  { type => 'DIRECTIVE' , ps => \&ps_section,   name => ".SECTION",   blab => "stub: section control directive"  },
+  '.section'   =>  { type => 'DIRECTIVE' , ps => \&ps_section,   name => ".SECTION",   blab => "stub: .section control directive"  },
                                                                                      
   '.set'       =>  { type => 'DIRECTIVE' , ps => \&ps_set,       name => ".SET",       blab => "stub: assembler settings"  },
 
   '.type'      =>  { type => 'DIRECTIVE' , ps => \&ps_type,      name => ".TYPE",      blab => "stub: object type"  },
   '.size'      =>  { type => 'DIRECTIVE' , ps => \&ps_size,      name => ".SIZE",      blab => "stub: object size"  },
-                                                                                     
+                                                                                    
   '.verify'    =>  { type => 'DIRECTIVE' , ps => \&ps_verify,    name => ".VERIFY",    blab => "{ reg,value | pass | fail } : writes condition to .vfy file for simulation"  },
 
   '.error'     =>  { type => 'DIRECTIVE' , ps => \&ps_error,     name => ".ERROR",     blab => "user error message"  },
   '.warn'      =>  { type => 'DIRECTIVE' , ps => \&ps_warn,      name => ".WARN",      blab => "user warning message"  },
+
+
+   'ds.b'      =>  { type => 'DIRECTIVE' , ps => \&ps_ds_b,      name => "DS.B",       blab => "Define Storage, Byte : location counter advanced by size argument"  },
 
 );
 
@@ -1074,7 +1085,7 @@ sub ps_equ
 
   ($status, $val ) = extract_word($operands[0]);
 
-  if ($D1) { printf $JNK_F ("equate  %s = %x\n", $label, $val ); } 
+  if (D1) { printf $JNK_F ("equate  %s = %x\n", $label, $val ); } 
 
   set_label($label_field, $val); 
 
@@ -1110,9 +1121,28 @@ sub ps_global
   my $status;
 
   #
-  # TODO: stub for .section directive
+  # TODO: stub for .global directive
   #
   do_warn("directive stub: .global not implemented yet");
+
+  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+
+}
+
+sub ps_local
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+  my $arg;
+  my $status;
+
+  #
+  # TODO: stub for .local directive
+  #
+  do_warn("directive stub: .local not implemented yet");
 
   if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
@@ -1194,6 +1224,37 @@ sub ps_size
 
 }
 
+
+sub ps_ds_b
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+  my $status;
+  my $size;
+
+  check_argument_count($#operands, 1);
+  ($status, $size) = extract_word($operands[0]);
+
+  if ( ($status != 0 ) || ( $size < 0 ) )
+  {
+    do_error("ds.b directive requires a non-negative size");
+    $size = 0;
+  }
+
+  $next_address = $address + $size;
+
+  if ($pass == 2)
+    {
+      printf $OBJ_F ("@%X\n", $next_address);
+      printf $LST_F ("  %08X           %s\n", $address, $raw_line );
+    }
+
+}
+
+
 sub ps_verify
 {
   my ( $pass      ) = shift;
@@ -1248,7 +1309,7 @@ sub ps_verify
           printf $LST_F ("                     %s\n", $raw_line);
 
           printf $VFY_F ("[%s:%d] %08x PASS %d\n", $asm_filename, $line_num, $last_address, 1 );
-          if ($D1) { printf JNK_F (".vpass: addr = %08x\n", $last_address ); }
+          if (D1) { printf JNK_F (".vpass: addr = %08x\n", $last_address ); }
         } 
 
     } 
@@ -1284,7 +1345,7 @@ sub ps_verify
           printf $LST_F ("                     %s\n", $raw_line);
 
           printf $VFY_F ("[%s:%d] %08x FAIL %d\n", $asm_filename, $line_num, $last_address, $count );
-          if ($D1) { printf JNK_F (".vfail: addr = %08x\n", $last_address ); }
+          if (D1) { printf JNK_F (".vfail: addr = %08x\n", $last_address ); }
         } 
     } 
 
@@ -1340,7 +1401,7 @@ sub ps_verify
           printf $LST_F ("                     %s\n", $raw_line);
 
           printf $VFY_F   ("[%s:%d] %08x REG %d %s %08x\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val );
-          if ($D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x\n", $last_address, $count, $operands[0], $val ); }
+          if (D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x\n", $last_address, $count, $operands[0], $val ); }
 
         } 
     } 
@@ -1429,7 +1490,7 @@ sub parse_directive
   shift @word;
   $start = 0;
 
-  if ($D1)
+  if (D1)
    {
      printf $JNK_F ("\$\#word, (word) : %d %s %s %s\n",$#word,$word[0],$word[1],$word[2]);
    }
@@ -1452,7 +1513,7 @@ sub parse_directive
               @bytes = (@bytes, 0);
             }
 
-          if ($D1) { printf $JNK_F ("dc.s loop bounds=%d  %d\n", 0, $#bytes ); }
+          if (D1) { printf $JNK_F ("dc.s loop bounds=%d  %d\n", 0, $#bytes ); }
 
           for($i=0; $i <= $#bytes; $i++ ) 
             {
@@ -1478,7 +1539,7 @@ sub parse_directive
     {
       $bcount = $#word - ($start+1) + 1;
 
-      if ($D1) { printf $JNK_F ("dc.b loop bounds=%d  %d\n", 0, $bcount-1 ); }
+      if (D1) { printf $JNK_F ("dc.b loop bounds=%d  %d\n", 0, $bcount-1 ); }
 
       for($i=0; $i <= $bcount-1 ; $i++ ) 
         {
@@ -1504,7 +1565,7 @@ sub parse_directive
   # dc.w
   elsif($word[$start] eq "dc.w")
     {
-      if ($D1) { printf $JNK_F ("dc.w loop bounds=%d  %d\n", $start+1, $#word); }
+      if (D1) { printf $JNK_F ("dc.w loop bounds=%d  %d\n", $start+1, $#word); }
 
       if ( ( $address % 2 ) > 0 )
         {
@@ -1535,7 +1596,7 @@ sub parse_directive
   # dc.q
   elsif($word[$start] eq "dc.q")
     {
-      if ($D1) { printf $JNK_F ("dc.q loop bounds=%d  %d\n", $start+1, $#word); }
+      if (D1) { printf $JNK_F ("dc.q loop bounds=%d  %d\n", $start+1, $#word); }
 
       if ( ( $address % 4 ) > 0 )
         {
@@ -1665,7 +1726,7 @@ sub parse_args
 # 
 # dump opcode/directive parsing hashes to junk file
 #
-#  called by main routine when $D1 debug flag is set
+#  called by main routine when D1 debug flag is set
 #
 sub dump_op_hashes
 {
@@ -1712,7 +1773,7 @@ require("yard-1_tab.pl");
 
 parse_args();
 
-if ($D1) { dump_op_hashes(); }
+if (D1) { dump_op_hashes(); }
 
 # write version header to object file
 printf $OBJ_F ("# generated by yas.pl version $VERSION\n");
@@ -1740,6 +1801,7 @@ while( $pass <= 2 )
     $label_prefix = '';
 
     $imm_seq       = 0;          
+    $last_imm_seq  = 0;          
     $imm_table_num = 0;          
 
     #
@@ -1792,7 +1854,7 @@ while( $pass <= 2 )
                 next;
               } 
 
-            if ($D1) 
+            if (D1) 
               {
                 printf $JNK_F ("\nlast address, address, next_address = %08x, %08x, %08x\n", $last_address,$address,$next_address); 
                 printf $JNK_F ("Stripped line: %s\n",$line);
@@ -1808,7 +1870,7 @@ while( $pass <= 2 )
             $operation_field = lc shift @words;
             @operand_fields  = @words;
 
-            if ($D1) { print $JNK_F ("new parse- label_field, operation_field, operand_fields : $label_field, $operation_field, @operand_fields\n"); }
+            if (D1) { print $JNK_F ("new parse- label_field, operation_field, operand_fields : $label_field, $operation_field, @operand_fields\n"); }
 
             # handle any label 
             if ($label_field) { process_label(); }
@@ -1821,27 +1883,27 @@ while( $pass <= 2 )
               {
                 if ( exists $ops{$operation_field}{ps}  )
                   {
-                    if ($D1) { printf $JNK_F ("HOH op dispatch : %s \n",$ops{$operation_field}{type} ) };
-                    if ($D1) { printf $JNK_F ("HOH parse: opcode %s is type %s  op %s\n", $operation_field, $ops{$operation_field}{type}, $ops{$operation_field}{opc}, $ops{$operation_field}{ps}  ); }
+                    if (D1) { printf $JNK_F ("HOH op dispatch : %s \n",$ops{$operation_field}{type} ) };
+                    if (D1) { printf $JNK_F ("HOH parse: opcode %s is type %s  op %s\n", $operation_field, $ops{$operation_field}{type}, $ops{$operation_field}{opc}, $ops{$operation_field}{ps}  ); }
                     &{ $ops{$operation_field}{ps} }($pass, $label_field, $operation_field, @operand_fields);
                   }
 
                 elsif ( exists $directive_defs{$operation_field}{ps}  )
                   {
-                    if ($D1) { printf $JNK_F ("HOH directive dispatch : %s \n",$ops{$operation_field}{type} ) };
-                    if ($D1) { printf $JNK_F ("HOH parse: opcode %s is type %s  op %s\n", $operation_field, $ops{$operation_field}{type}, $ops{$operation_field}{opc}, $ops{$operation_field}{ps}  ); }
+                    if (D1) { printf $JNK_F ("HOH directive dispatch : %s \n",$ops{$operation_field}{type} ) };
+                    if (D1) { printf $JNK_F ("HOH parse: opcode %s is type %s  op %s\n", $operation_field, $ops{$operation_field}{type}, $ops{$operation_field}{opc}, $ops{$operation_field}{ps}  ); }
                     &{ $directive_defs{$operation_field}{ps} }($pass, $label_field, $operation_field, @operand_fields);
                   }
 
                 elsif ( exists $old_directive_defs{$operation_field} )
                   {
-                    if ($D1) { printf $JNK_F ("old directive dispatch : %s \n",$ops{$operation_field}{type} ) };
+                    if (D1) { printf $JNK_F ("old directive dispatch : %s \n",$ops{$operation_field}{type} ) };
                     parse_directive();
                   }
 
                 else
                   {
-                    if ($D1) { printf $JNK_F ("HOH dispatch : no match\n" ) };
+                    if (D1) { printf $JNK_F ("HOH dispatch : no match\n" ) };
                     do_error("Unrecognized instruction or directive \"" . $operation_field . "\"" );
                     printf LST_F ("                     %s\n", $raw_line);
                   }
