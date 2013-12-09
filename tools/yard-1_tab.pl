@@ -259,8 +259,8 @@ sub stuff_op_field
 
     $field_length = $right - $left + 1;
 
-    if ($D1) { printf $JNK_F ("stuff_op_field : opcode %s  field %s  value %s\n",  $opcode, $field, $value  ); }
-    if ($D1) { printf $JNK_F ("stuff_op_field : left %d   right %d   length %d\n",  $left, $right, $field_length  ); }
+    if (D1) { printf $JNK_F ("stuff_op_field : opcode %s  field %s  value %s\n",  $opcode, $field, $value  ); }
+    if (D1) { printf $JNK_F ("stuff_op_field : left %d   right %d   length %d\n",  $left, $right, $field_length  ); }
 
     if ( length($value) > $field_length  ) 
      {
@@ -269,7 +269,7 @@ sub stuff_op_field
 
     substr( $opcode, $left, $field_length ) = $value;
 
-    if ($D1) { printf $JNK_F ("stuff_op_field : result %s\n",  $opcode ); }
+    if (D1) { printf $JNK_F ("stuff_op_field : result %s\n",  $opcode ); }
 
     return $opcode;
   }
@@ -326,7 +326,7 @@ sub ps_lrri
     check_argument_count( $#operands, 2 );
     $ra = check_data_register( $operands[0] );
 
-    if ($D1) { print $JNK_F ("ps_lrri label, operation, operands : $label, $operation, @operands\n"); }
+    if (D1) { print $JNK_F ("ps_lrri label, operation, operands : $label, $operation, @operands\n"); }
 
     if ($pass == 2)
       {
@@ -350,7 +350,7 @@ sub ps_lrri
                 $invert_opb = 1;
               }
    
-            if ($D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
+            if (D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
 
             if ( !$imm  )
               {
@@ -375,7 +375,7 @@ sub ps_lrri
             $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
             $opcode = stuff_op_field( $opcode, 'a', $ra                   );
 
-            if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
+            if (D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
           }
 
         else
@@ -459,7 +459,7 @@ sub ps_arri
             $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
             $opcode = stuff_op_field( $opcode, 'a', $ra                   );
 
-            if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
+            if (D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
           }
 
         else
@@ -553,7 +553,7 @@ sub ps_sr
             $imm = "00001";
           }
 
-        if ($D1) { printf $JNK_F ("shift constant=%d   %s\n",  $offset, $imm  ); }
+        if (D1) { printf $JNK_F ("shift constant=%d   %s\n",  $offset, $imm  ); }
 
         $opcode = stuff_op_field( $opcode, 'a', $ra  );
         $opcode = stuff_op_field( $opcode, 'b', $imm );
@@ -766,7 +766,7 @@ sub ps_ori
             $imm = "00000";
           }
 
-        if ($D1) { printf $JNK_F ("flip constant=%d   %s\n",  $offset, $imm  ); }
+        if (D1) { printf $JNK_F ("flip constant=%d   %s\n",  $offset, $imm  ); }
 
         $opcode = stuff_op_field( $opcode, 'a', $ra );
         $opcode = stuff_op_field( $opcode, 'b', $imm );
@@ -839,7 +839,7 @@ sub ps_mem
     #
     $operands[1] =~ /^(.*)\((.+)\)$/;
 
-    if ($D1) { printf $JNK_F ("MEM fields=%s %s\n",  $1,  $2 ); }
+    if (D1) { printf $JNK_F ("MEM fields=%s %s\n",  $1,  $2 ); }
 
     #
     # TODO: compact this if, too many redundant paths
@@ -1015,7 +1015,7 @@ sub ps_imm12
 
             $opcode = stuff_op_field( $opcode, 'i', $imm );
     
-            if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
+            if (D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
      
           }
       }
@@ -1076,7 +1076,7 @@ sub ps_ldi
         if ( ( $offset % 4 ) > 0 )
           {
             do_error("Unaligned LDI source address");
-            if ($D1) { printf $JNK_F ("offset, offset mod 4=%x  %x\n",  $offset,  $offset % 4); }
+            if (D1) { printf $JNK_F ("offset, offset mod 4=%x  %x\n",  $offset,  $offset % 4); }
           }
 
         $offset = $offset >> 2;
@@ -1091,7 +1091,7 @@ sub ps_ldi
         $offset_str = sprintf("%012b", $offset);
         $opcode = stuff_op_field( $opcode, 'r', $offset_str );
 
-        if ($D1) { printf $JNK_F ("ea12_field=%d   %s    %s\n",  $offset,  $offset_str, substr($opcode,4,12) ); }
+        if (D1) { printf $JNK_F ("ea12_field=%d   %s    %s\n",  $offset,  $offset_str, substr($opcode,4,12) ); }
       }
 
     emit_op($opcode);
@@ -1161,7 +1161,7 @@ sub ps_imm
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
             $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0 };
 
-            if ($D1) { print $JNK_F (" imm table (unknown) : $label, unknown, $imm_table_num\n"); }
+            if (D1) { print $JNK_F (" imm table (unknown) : $label, unknown, $imm_table_num\n"); }
           }
         else
           {
@@ -1174,11 +1174,11 @@ sub ps_imm
                )
 
               { 
-                if ($D1) { print $JNK_F (" imm table ( known imm5|imm12 ) : $label, $offset, $imm_table_num\n"); }
+                if (D1) { print $JNK_F (" imm table ( known imm5|imm12 ) : $label, $offset, $imm_table_num\n"); }
               }
             else
               { 
-                if ($D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
+                if (D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
 
                 # add to imm hash
                 $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset };
@@ -1226,7 +1226,7 @@ sub ps_imm
             $invert_opb = 1;
           }
      
-        if ($D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
+        if (D1) { printf $JNK_F ("operands[1]  offset  inv  imm_field=%s  %d  %d %s\n", $operands[1], $offset, $invert_opb, $imm); }
 
         #
         ###########
@@ -1255,7 +1255,7 @@ sub ps_imm
             $opcode = stuff_op_field( $opcode, 'b', substr( $imm, 2, 5 )  );
             $opcode = stuff_op_field( $opcode, 'a', $data_reg_map{'imm'}   );
 
-            if ($D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
+            if (D1) { printf $JNK_F ("imm_field=%s  %s\n", $imm, $offset); }
           }
 
         #
@@ -1275,7 +1275,7 @@ sub ps_imm
 
             $opcode = stuff_op_field( $opcode, 'i', $imm );
      
-            if ($D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
+            if (D1) { printf $JNK_F ("imm12_field=%s    %s\n", $offset, $imm ); }
      
           }
 
@@ -1293,7 +1293,7 @@ sub ps_imm
             $pcr_offset = label_value( $label ) - ( (get_address() >> 2 ) << 2);
 
 
-            if ($D1) { printf $JNK_F (" auto imm label, offset(bytes): %s %d\n", $label, $pcr_offset); }
+            if (D1) { printf $JNK_F (" auto imm label, offset(bytes): %s %d\n", $label, $pcr_offset); }
 
             # check for quad aligned target address before truncating pcr_offset
             if ( ( $pcr_offset % 4 ) > 0 )
@@ -1401,8 +1401,8 @@ sub ps_bri
           {
             ($status, $offset) = extract_word($1);
             $pcr_offset = $offset;
-            if ($D1) { printf $JNK_F ("br target: @+ detected\n"); }
-            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+            if (D1) { printf $JNK_F ("br target: @+ detected\n"); }
+            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
           }
 
         # parsing hack, check for leading @-
@@ -1410,16 +1410,16 @@ sub ps_bri
           {
             ($status, $offset) = extract_word($1);
             $pcr_offset = -$offset;
-            if ($D1) { printf $JNK_F ("br target: @- detected\n"); }
-            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+            if (D1) { printf $JNK_F ("br target: @- detected\n"); }
+            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
           }
         # otherwise, calculate offset from current PC to address
         else 
           {
             ($status, $offset) = parse_expression($operands[0]);
             $pcr_offset = $offset - get_address();
-            if ($D1) { printf $JNK_F ("br target: label detected\n"); }
-            if ($D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
+            if (D1) { printf $JNK_F ("br target: label detected\n"); }
+            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
           }
 
 
@@ -1454,7 +1454,7 @@ sub ps_bri
 
             $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str );
 
-            if ($D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $pcr_offset,  $pcr_offset_str, substr($opcode,7,9) ); }
+            if (D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $pcr_offset,  $pcr_offset_str, substr($opcode,7,9) ); }
           }
       }
 
@@ -1704,7 +1704,7 @@ sub ps_skip
 
             $bit_num = sprintf("%04b", $offset);
 
-            if ($D1) { printf $JNK_F ("flag number=%d   %s\n",  $offset, $bit_num  ); }
+            if (D1) { printf $JNK_F ("flag number=%d   %s\n",  $offset, $bit_num  ); }
  
             $opcode = stuff_op_field( $opcode, 'a', $bit_num);
           }
@@ -1750,7 +1750,7 @@ sub ps_skip
 
             $bit_num = sprintf("%05b", $offset);
 
-            if ($D1) { printf $JNK_F ("skip bit number=%d   %s\n",  $offset, $bit_num  ); }
+            if (D1) { printf $JNK_F ("skip bit number=%d   %s\n",  $offset, $bit_num  ); }
  
             $opcode = stuff_op_field( $opcode, 'a', $ra      );
             $opcode = stuff_op_field( $opcode, 'b', $bit_num );
