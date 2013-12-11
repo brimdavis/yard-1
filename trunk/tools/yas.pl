@@ -236,7 +236,7 @@ use strict;
 #use integer;
 
 # turn debug prints on or off here
-use constant D1 => 0;
+use constant D1 => 1;
 
 #-------------------------------------------------------------
 # globals
@@ -296,7 +296,7 @@ my %labels = ();
 our %imms = ();
 our $imm_table_num;          
 my  $imm_seq;          
-my  $last_imm_seq;          
+our @imm_entries_used;          
 
 #
 # line parsing
@@ -351,10 +351,20 @@ sub flush_imms
   #  return here if there are no imms to dump in the current imm table 
   #  ( to prevent unnecessary aligns )
   #
-  if ( $last_imm_seq == $imm_seq )
+  # FIXME: sequence-number-changed detection scheme doesn't work 
+  #   ( some IMM's don't use table entry, but always bump the sequence number )
+  #
+  if ( $imm_entries_used[$imm_table_num] == 0 )
   {
+    $imm_table_num++;          
+    if ($pass == 1) { $imm_entries_used[$imm_table_num] = 0; }         
+
+    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+
     return;
   }
+
+  if (D1) { printf $JNK_F ("imm_seq: %d , table: %d, imm_entries_used[table]: %d\n", $imm_seq, $imm_table_num, $imm_entries_used[$imm_table_num] ); }
 
   #
   # align to quad word boundary
@@ -433,8 +443,7 @@ sub flush_imms
   $next_address = $address;
 
   $imm_table_num++;          
-
-  $last_imm_seq = $imm_seq;
+  if ($pass == 1) { $imm_entries_used[$imm_table_num] = 0; }         
 
 }
 
@@ -1107,7 +1116,6 @@ sub ps_imm_table
   my $status;
 
   flush_imms();
-
 }
 
 sub ps_global
@@ -1801,8 +1809,11 @@ while( $pass <= 2 )
     $label_prefix = '';
 
     $imm_seq       = 0;          
-    $last_imm_seq  = 0;          
     $imm_table_num = 0;          
+
+    if ($pass == 1) { $imm_entries_used[$imm_table_num] = 0; }         
+
+    if (D1) { print $JNK_F ("\n\nPass = $pass, IMM Table Number, entries used = $imm_table_num , $imm_entries_used[$imm_table_num] \n\n"); }
 
     #
     # file loop 

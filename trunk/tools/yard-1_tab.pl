@@ -1161,6 +1161,8 @@ sub ps_imm
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
             $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0 };
 
+            $imm_entries_used[$imm_table_num]++;
+
             if (D1) { print $JNK_F (" imm table (unknown) : $label, unknown, $imm_table_num\n"); }
           }
         else
@@ -1182,6 +1184,8 @@ sub ps_imm
 
                 # add to imm hash
                 $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset };
+
+                $imm_entries_used[$imm_table_num]++;
               }
           }
       }
