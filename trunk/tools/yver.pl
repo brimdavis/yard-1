@@ -95,7 +95,7 @@ $errors = 0;
 #
 # debug - print keys
 #
-if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d\n",$line_num{$address}, $address, $valid{$address}); } }
+if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d %d\n",$line_num{$address}, $address, $valid{$address}, $hits{$address} ); } }
 
 #
 # wade through the sim file, looking for address matches
@@ -171,7 +171,7 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
      #
      # at the end of a clock cycle, see if we matched a verify address
      #
-     elsif ( $line =~ /^----/ )
+     elsif ( $line =~ /--------/ )
        {
          if ( $matched )
            {
