@@ -1,0 +1,122 @@
+#
+# XO2 pico constraints
+#
+COMMERCIAL ;
+BLOCK RESETPATHS ;
+BLOCK ASYNCPATHS ;
+FREQUENCY NET "clk_in_c" 12.000000 MHz ;
+
+IOBUF ALLPORTS IO_TYPE=LVCMOS25 PULLMODE=NONE ;
+
+LOCATE COMP "clk_in"   SITE "A7" ;
+
+LOCATE COMP "rx_bit"   SITE "E1" ;
+LOCATE COMP "tx_bit"   SITE "E2" ;
+
+
+#
+# reset pushbutton
+#
+LOCATE COMP "pb_3"    SITE "N3" ; 
+
+#
+# other button and switch inputs mapped to IO connector pins
+#
+LOCATE COMP "pb_2"    SITE "A13" ;
+LOCATE COMP "pb_1"    SITE "B1"  ;
+LOCATE COMP "pb_0"    SITE "B2"  ;
+
+LOCATE COMP "sw_7"    SITE "B13" ;
+LOCATE COMP "sw_6"    SITE "C1"  ;
+LOCATE COMP "sw_5"    SITE "C2"  ;
+LOCATE COMP "sw_4"    SITE "C3"  ;
+LOCATE COMP "sw_3"    SITE "C10" ;
+LOCATE COMP "sw_2"    SITE "K1"  ;
+LOCATE COMP "sw_1"    SITE "K3"  ;
+LOCATE COMP "sw_0"    SITE "M7"  ;
+
+
+#
+# LCD control pins
+#
+LOCATE COMP "lcd_seg_7" SITE "M13" ; 
+LOCATE COMP "lcd_seg_6" SITE "L14" ; 
+LOCATE COMP "lcd_seg_5" SITE "K14" ; 
+LOCATE COMP "lcd_seg_4" SITE "K13" ; 
+LOCATE COMP "lcd_seg_3" SITE "K12" ; 
+LOCATE COMP "lcd_seg_2" SITE "J13" ; 
+LOCATE COMP "lcd_seg_1" SITE "J14" ; 
+LOCATE COMP "lcd_seg_0" SITE "J12" ; 
+                      
+LOCATE COMP "lcd_com_3" SITE "D12" ;
+LOCATE COMP "lcd_com_2" SITE "C14" ;
+LOCATE COMP "lcd_com_1" SITE "C13" ;
+LOCATE COMP "lcd_com_0" SITE "B14" ;
+
+
+#
+# constraints from lattice pico demo design
+#
+
+#SYSCONFIG SDM_PORT=DISABLE SLAVE_SPI_PORT=DISABLE I2C_PORT=DISABLE MASTER_SPI_PORT=EFB_USER GENERATE_BITSTREAM=ENABLE COMPRESS_CONFIG=ON CONFIGURATION=CFG MY_ASSP=OFF ONE_TIME_PROGRAM=OFF CONFIG_SECURE=OFF MCCLK_FREQ=2.08 JTAG_PORT=ENABLE ;
+#FREQUENCY NET "clk" 2.000000 MHz ;
+#IOBUF ALLPORTS IO_TYPE=LVCMOS25 PULLMODE=NONE ;
+#LOCATE COMP "PushBn" SITE "N3" ;
+#IOBUF PORT "PushBn" IO_TYPE=LVCMOS25 PULLMODE=NONE ;
+#LOCATE COMP "spi_csn" SITE "P3" ;
+#LOCATE COMP "spi_miso" SITE "N4" ;
+#LOCATE COMP "spi_mosi" SITE "P13" ;
+#LOCATE COMP "spi_sclk" SITE "M4" ;
+#LOCATE COMP "uart_rx" SITE "E1" ;
+#LOCATE COMP "uart_tx" SITE "E2" ;
+#LOCATE COMP "Icc_analog_out" SITE "P9" ;
+#LOCATE COMP "Icco_analog_out" SITE "N9" ;
+#LOCATE COMP "Icco_analog_cmp_p" SITE "M9" ;
+#LOCATE COMP "Icc_analog_cmp_p" SITE "P8" ;
+#IOBUF PORT "Icc_analog_cmp_p" IO_TYPE=LVDS25 PULLMODE=NONE ;
+#IOBUF PORT "Icco_analog_cmp_p" IO_TYPE=LVDS25 PULLMODE=NONE ;
+#LOCATE COMP "scl" SITE "C8" ;
+#LOCATE COMP "sda" SITE "B8" ;
+#LOCATE COMP "EnAMP" SITE "P2" ;
+#LOCATE COMP "EnTempSPI" SITE "N2" ;
+#LOCATE COMP "LCD_COM0" SITE "B14" ;
+#LOCATE COMP "LCD_COM1" SITE "C13" ;
+#LOCATE COMP "LCD_COM2" SITE "C14" ;
+#LOCATE COMP "LCD_COM3" SITE "D12" ;
+#LOCATE COMP "LCD_5" SITE "J12" ;
+#LOCATE COMP "LCD_6" SITE "J14" ;
+#LOCATE COMP "LCD_7" SITE "J13" ;
+#LOCATE COMP "LCD_8" SITE "K12" ;
+#LOCATE COMP "LCD_9" SITE "K13" ;
+#LOCATE COMP "LCD_10" SITE "K14" ;
+#LOCATE COMP "LCD_11" SITE "L14" ;
+#LOCATE COMP "LCD_12" SITE "M13" ;
+#LOCATE COMP "cap_btn1" SITE "M10" ;
+#LOCATE COMP "cap_btn2" SITE "P11" ;#P12 old board
+#LOCATE COMP "cap_btn3" SITE "M11" ;#P11 old board
+#LOCATE COMP "cap_btn4" SITE "P12" ;#M11 old boardLOCATE COMP "rst" SITE "P4" ;
+#LOCATE COMP "clk_USB" SITE "A7" ;
+#LOCATE COMP "I2CAlert" SITE "B7" ;
+#LOCATE COMP "FastCounterOut" SITE "N6" ;
+#LOCATE COMP "SampleCounterOut" SITE "A13" ;
+#LOCATE COMP "SampleTime1out" SITE "P6" ;
+#LOCATE COMP "FastCounter1out" SITE "N6" ;
+#LOCATE COMP "SampleTime2out" SITE "A13" ;
+#LOCATE COMP "FastCounter2out" SITE "B13" ;
+#LOCATE COMP "SampleTime3out" SITE "C10" ;
+#LOCATE COMP "FastCounter3out" SITE "B9" ;
+#LOCATE COMP "SampleTime4out" SITE "H12" ;
+#LOCATE COMP "FastCounter4out" SITE "G13" ;
+#LOCATE COMP "SampleCounterOut" SITE "D1" ;
+#IOBUF PORT "spi_csn" IO_TYPE=LVCMOS25 PULLMODE=UP ;# Old board
+#LOCATE COMP "USBorBattout" SITE "D1" ;
+#LOCATE COMP "touched1out" SITE "C2" ;
+#LOCATE COMP "touched2out" SITE "C3" ;
+#LOCATE COMP "touched3out" SITE "C1" ;
+#LOCATE COMP "touched4out" SITE "B2" ;
+#IOBUF PORT "cap_btn1" IO_TYPE=LVCMOS25 PULLMODE=DOWN ;
+#IOBUF PORT "cap_btn2" IO_TYPE=LVCMOS25 PULLMODE=DOWN ;
+#IOBUF PORT "cap_btn3" IO_TYPE=LVCMOS25 PULLMODE=DOWN ;
+#IOBUF PORT "cap_btn4" IO_TYPE=LVCMOS25 PULLMODE=DOWN ;
+#
+#
