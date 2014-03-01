@@ -15,7 +15,7 @@ FPGA Software:
  The required FPGA tools are free (as in free beer)
 
    Currently using Webpack 9.2 SP4 for the Xilinx Spartan3 demo 
- project, and Lattice Diamond 1.4 for the Lattice XP2 demo project.
+ project, and Lattice Diamond 2.2 for the Lattice XP2 demo project.
  
    Later S/W versions will likely work, but will probably require 
  changes to the project and constraint files due to differences in 
@@ -45,28 +45,21 @@ FPGA Software:
 
  Lattice Diamond: 
 
-    Lattice Diamond 1.4
+    Lattice Diamond 2.2
 
     Site registration required.
 
     Free license supports many Lattice device families.
-
-    http://www.latticesemi.com/products/designsoftware/diamond/index.cfm
-
+    
+    http://www.latticesemi.com/en/Products/DesignSoftwareAndIP/FPGAandLDS/LatticeDiamond.aspx
 
 ================================================================
 
 VHDL simulator:
 
-  Currently using GHDL for the testbench simulator
+  Currently using GHDL 0.31 for the testbench simulator:
 
-  Either of the following GHDL versions ( intermediate versions tend to crash on WinXP ):
-
-    GHDL 0.25
-    http://ghdl.free.fr/ghdl-installer-0.25.exe
-
-    GHDL 0.29.1+ patched to resolve stack crashes and windows path issues
-    ( add download link )
+  http://sourceforge.net/projects/ghdl-updates/files/Builds/ghdl-0.31/Windows/
 
 
 ================================================================
