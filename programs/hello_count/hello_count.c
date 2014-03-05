@@ -65,7 +65,7 @@ void put_ulong( unsigned long value )
     unsigned long decade; 
 
 
-    for ( i = 0, n = 11; n >= 0; n-- )
+    for ( i = 0, n = 9; n >= 0; n-- )
     {
       decade = decades[n];
       digit  = 0;
@@ -76,7 +76,10 @@ void put_ulong( unsigned long value )
         digit++;
       }  
 
-      if ( ( digit > 0 ) | ( n == 0 ) )
+      if (   ( ( i == 0 ) && ( digit > 0 ) )  // first non-zero digit prints
+           |   ( i >  0 )                     // already printed a digit, keep printing
+           |   ( n == 0 )                     // last digit always prints
+         )
       {
         buffer[i] = '0' + digit;
         i++;
