@@ -1272,6 +1272,8 @@ sub ps_verify
 
   my $reg;
   my $val;
+  my $val_mask;
+  my $val_str;
   my $status;
   my $count;
 
@@ -1408,8 +1410,17 @@ sub ps_verify
 
           printf $LST_F ("                     %s\n", $raw_line);
 
-          printf $VFY_F   ("[%s:%d] %08x REG %d %s %08x\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val );
-          if (D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x\n", $last_address, $count, $operands[0], $val ); }
+
+          # force to 32 bits, convert to 8 digit string
+          $val_mask = $val & 0xffffffff;
+          $val_str  = sprintf "%08X", $val_mask;
+
+          printf $VFY_F   ("[%s:%d] %08x REG %d %s %s\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val_str );
+
+# original code with 64-bit perl prints 64 bit hex string for negative decimal integers, which breaks yver code
+#          printf $VFY_F   ("[%s:%d] %08x REG %d %s %08x\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val );
+
+          if (D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x, %s\n", $last_address, $count, $operands[0], $val, $val_str ); }
 
         } 
     } 
