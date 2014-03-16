@@ -81,6 +81,41 @@ __mulu:
 
     rts
 
+;
+; signed divide
+;
+; entry: 
+;   r0 : dividend 
+;   r1 : divisor    
+;
+; exit: 
+;   r0 = quotient 
+;
+; uses:
+;   r6 : sign houskeeping
+;
+__divs:
+
+; set MSB of R6 if operand signs are different
+    mov     r6,r0  
+    xor     r6,r1
+
+; convert operands to unsigned
+    when.mi r0
+    neg     r0 
+
+    when.mi r1
+    neg     r1 
+
+; call unsigned divide
+    bsr     __divu    
+
+; fix up result sign as needed
+    when.mi r6
+    neg     r0 
+
+    rts
+
 
 ;
 ; unsigned divide
