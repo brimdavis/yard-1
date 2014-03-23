@@ -1,6 +1,11 @@
 ;
 ; beginnings of a C support library for lcc port
 ;
+; TODO: 
+;    - check sign handling
+;    - check negation overflow handling for input of -2^N 
+;    - testcases
+;
 
 ;
 ; signed multiply
@@ -81,6 +86,67 @@ __mulu:
 
     rts
 
+
+;
+; signed modulus
+;
+; entry: 
+;   r0 : dividend 
+;   r1 : divisor    
+;
+; exit: 
+;   r0 = modulus
+;
+; uses:
+;   r6 : sign houskeeping 
+;
+__mods:
+
+; copy dividend to R6 for later sign adjustments
+    mov     r6,r0  
+
+; convert operands to unsigned
+    when.mi r0
+    neg     r0 
+
+    when.mi r1
+    neg     r1 
+
+; call unsigned divide
+    bsr     __divu    
+
+
+; copy remainder from divide routine into r0
+    mov     r0,r1
+
+; fix up result sign as needed
+    when.mi r6
+    neg     r0 
+
+    rts
+
+
+;
+; unsigned modulus
+;
+; entry: 
+;   r0 : dividend 
+;   r1 : divisor    
+;
+; exit: 
+;   r0 = modulus
+;
+__modu:
+
+; call unsigned divide
+    bsr     __divu    
+
+; copy remainder from divide routine into r0
+    mov     r0,r1
+
+    rts
+
+
 ;
 ; signed divide
 ;
@@ -118,7 +184,7 @@ __divs:
 
 
 ;
-; unsigned divide
+; unsigned divide ( routine is also called by signed divide and signed/unsigned modulo )
 ;
 ; entry: 
 ;   r0 : dividend 
@@ -126,11 +192,12 @@ __divs:
 ;
 ; exit: 
 ;   r0 = quotient 
+;   r1 = remainder 
 ;
 ; uses:
 ;   r0 : shifting dividend & quotient
-;   r1 : divisor ( unchanged )
-;   r4 : remainder
+;   r1 : remainder
+;   r4 : divisor ( unchanged copy )
 ;   r5 : loop count
 ;
 __divu:
@@ -147,7 +214,8 @@ __divu:
     bra     .zero_exit
 
 .setup
-    clr     r4      ; clear remainder
+    mov     r4,r1   ; copy divisor to r4
+    clr     r1      ; clear remainder
 
 ;
 ; divide loop [ note 33 iterations ]
@@ -158,14 +226,14 @@ __divu:
     sub.snb r5,#1    
     rts
 
-    lsl     r4      ; shift remainder left
+    lsl     r1      ; shift remainder left
 
     when.bs r0,#31  ; or in next bit of dividend 
-    or      r4,#1
+    or      r1,#1
 
     lsl     r0      ; shift dividend & quotient up to make room for next bit of quotient
 
-    sub.snb r4,r1   ; remainder = remainder - divisor
+    sub.snb r1,r4   ; remainder = remainder - divisor
     bra     .too_big
 
     bra.d   .loop
@@ -173,10 +241,12 @@ __divu:
 
 .too_big
     bra.d   .loop
-    add     r4,r1   ; restore divisor, quotient LSB is left as a zero
+    add     r1,r4   ; restore divisor, quotient LSB is left as a zero
 
 
 .zero_exit
+
+    mov     r1,r0   ; return original dividend as remainder on early exit
 
     rts.d
     clr     r0
