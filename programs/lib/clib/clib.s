@@ -1,10 +1,14 @@
 ;
 ; beginnings of a C support library for lcc port
 ;
+
+;
+; multiply, divide, modulus
+;
 ; TODO: 
-;    - check sign handling
-;    - check negation overflow handling for input of -2^N 
-;    - testcases
+;   - check sign handling
+;   - check negation overflow handling for input of -2^N 
+;   - testcases
 ;
 
 ;
