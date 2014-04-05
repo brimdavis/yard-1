@@ -88,14 +88,14 @@ $errors = 0;
      $valid{$address}    = 1;
      $hits{$address}     = 0;
 
-     if ($D1) { printf ("%08x %s %s %s \n", $address, $line_num{$address}, $reg{$address}, $value{$address}) };
+     if ($D1) { printf ("%08x %s %s %s %s \n", $address, $line_num{$address}, $type{$address}, $reg{$address}, $value{$address}) };
 
    } # end while
 
 #
 # debug - print keys
 #
-if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d %d\n",$line_num{$address}, $address, $valid{$address}, $hits{$address} ); } }
+if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d %d %d\n",$line_num{$address}, $address, $valid{$address}, $expect_count{$address}, $hits{$address} ); } }
 
 #
 # wade through the sim file, looking for address matches

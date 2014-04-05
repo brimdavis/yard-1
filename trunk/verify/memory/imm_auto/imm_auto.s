@@ -131,7 +131,7 @@ check_merge:
     imm   #-2000000000
     .verify  r14,#-2000000000
 
-; test2 should have it's own entry
+; test3 should have it's own entry
     imm   #test3
     .verify  r14,#-2000000000
 
@@ -189,8 +189,55 @@ t2:
 
     nop
 
+; branch over table
+    bra check_C_ref
+
+ .imm_table
+
+
+;
+; test C forward reference issues seen
+;
+check_C_ref:
+
+ imm #stdout_putf
+ nop
+ .verify  r14,#stdout_putf
+
+ imm #stdout_putp
+ nop
+ .verify  r14,#stdout_putp
+
+ bra next_test
+
+ .imm_table
+
+;
+;
+;
+next_test:
+    nop
+
 done:
     bra  done
+
+
+;
+; start above $800 to see autoimm issues with generated LDI table
+;
+  org $c00
+
+ .section bss
+
+stdout_putp: .common 4,4
+ .local stdout_putp
+  .type stdout_putp,object
+ .size stdout_putp,4
+
+stdout_putf: .common 4,4
+ .local stdout_putf
+  .type stdout_putf,object
+ .size stdout_putf,4
 
 
     end

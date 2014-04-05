@@ -10,7 +10,7 @@
 
 #-------------------------------------------------------------------------------
 #
-# Copyright (c) 2000-2013, B. Davis
+# Copyright (c) 2000-2014, B. Davis
 #
 # released under the BSD 2-clause license, see license/bsd_2-clause.txt
 #
@@ -435,7 +435,7 @@ sub ps_arri
     check_argument_count( $#operands, 2 );
     $ra = check_data_register( $operands[0] );
 
-    if ( $type = "A_R_RI_C" ) 
+    if ( $type eq "A_R_RI_C" ) 
       {
         set_skip_flag();
       }
@@ -823,6 +823,8 @@ sub ps_mem
 
     my $imm_mode;
 
+    my $prefix = '0000000000000000';
+
     my $opcode = $ops{$operation}{opc};
     my $type   = $ops{$operation}{type};
     my $size   = $ops{$operation}{size};
@@ -844,109 +846,148 @@ sub ps_mem
     #
     # TODO: compact this if, too many redundant paths
     #
-    if ($pass == 2)
-      {
+    if ( $1 eq '' )
+    { 
+      #
+      # no offset
+      #
+      $imm_mode = "0"; 
+      $rb = check_addr_register($2);
 
-        if ( $1 ne '' )
-          {
-            if ( $1 eq "\.imm" )   
-              { 
-                $imm_mode = "1"; 
+      $opcode = stuff_op_field( $opcode, 's', $size     );
+      $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
+      $opcode = stuff_op_field( $opcode, 'b', $rb       );
+      $opcode = stuff_op_field( $opcode, 'a', $ra       );
+    }
 
-                 $rb = check_addr_register($2);
+    else 
+    {
+      if ( $1 eq "\.imm" )   
+      { 
+        # .imm offset mode
 
-                 $opcode = stuff_op_field( $opcode, 's', $size     );
-                 $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-                 $opcode = stuff_op_field( $opcode, 'b', $rb       );
-                 $opcode = stuff_op_field( $opcode, 'a', $ra       );
-              }
+        $imm_mode = "1"; 
 
-            #
-            # check for sp/fp offset mode
-            #
-            elsif ( exists $stack_reg_map{$2} )
-              {
+        $rb = check_addr_register($2);
 
-                #
-                # mode bit selects FP or SP
-                #
-                if ( ($2 eq 'fp') || ($2 eq 'r12') )
-                  {
-                    $imm_mode = '0';
-                  }
-                else
-                  {
-                    $imm_mode = '1';
-                  }
-
-                #
-                # check that offset is within valid range and quad aligned
-                #
-                ($status, $offset) = parse_expression($1);
-
-                if ( $status == 0 ) 
-                  {
-                    # FIXME: make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
-
-                    # check for valid offset 
-                    if ( ($offset > 60) || ($offset < 0) || ( ( $offset % 4 ) > 0 ) ) 
-                      {
-                        do_error("Stack offset must be quad aligned, in the range 0..60");
-                        $offset = 0;
-                      }
-
-                    $offset_str = sprintf("%04b", $offset >> 2 );
-                  }
-
-                #
-                # size field = 00 for stack offset addressing modes
-                # no byte or word accesses allowed
-                #
-                if ( ( $type eq 'MEM32' ) || ( $type eq 'LEA' ) )
-                  { 
-                    $size = '00';
-                  }
-                else
-                  { 
-                    do_error("Only 32 bit LD/ST, or LEA, allowed for stack offset addressing modes");
-                    $size = '00';
-                  }
-
-                $opcode = stuff_op_field( $opcode, 's', $size       );
-                $opcode = stuff_op_field( $opcode, 'm', $imm_mode   );
-                $opcode = stuff_op_field( $opcode, 'b', $offset_str );
-                $opcode = stuff_op_field( $opcode, 'a', $ra         );
-              }
-
-            #
-            # TODO: add automatic offset prefix
-            #
-            else
-              {
-                do_error("Only .imm(rn) offset syntax currently supported by assembler\n");
-
-                $imm_mode = '0';
-                $rb = check_addr_register($2);
-
-                $opcode = stuff_op_field( $opcode, 's', $size     );
-                $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-                $opcode = stuff_op_field( $opcode, 'b', $rb       );
-                $opcode = stuff_op_field( $opcode, 'a', $ra       );
-              }
-          }
-
-        else 
-          { 
-            $imm_mode = "0"; 
-            $rb = check_addr_register($2);
-
-            $opcode = stuff_op_field( $opcode, 's', $size     );
-            $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
-            $opcode = stuff_op_field( $opcode, 'b', $rb       );
-            $opcode = stuff_op_field( $opcode, 'a', $ra       );
-          }
-
+        $opcode = stuff_op_field( $opcode, 's', $size     );
+        $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
+        $opcode = stuff_op_field( $opcode, 'b', $rb       );
+        $opcode = stuff_op_field( $opcode, 'a', $ra       );
       }
+
+      elsif ( exists $stack_reg_map{$2} )
+      {
+        # sp/fp offset mode
+
+        #
+        # mode bit selects FP or SP
+        #
+        if ( ($2 eq 'fp') || ($2 eq 'r12') )
+        {
+          $imm_mode = '0';
+        }
+        else
+        {
+          $imm_mode = '1';
+        }
+
+        #
+        # check for valid stack offset 
+        #
+        ($status, $offset) = parse_expression($1);
+
+        if ( $status != 0 ) 
+        {
+          do_error("Stack offset must be known on pass one");
+          $offset = 0;
+        }
+
+        # FIXME: make sure .imm path allows .imm(sp|fp) syntax, with opcode for normal load
+
+        #
+        # check offset alignment
+        #
+        if ( ( $offset % 4 ) > 0 ) 
+        {
+          do_error("Offset must be quad aligned for stack offset addressing modes");
+        }
+
+        #
+        # check stack offset range 
+        #
+        if ( ($offset > 60) || ($offset < 0) ) 
+        {
+          #
+          # out of range stack offset, so generate IMM12 prefix instead
+          #
+          $offset_str = sprintf("%032b", $offset);
+          $offset_str = substr( $offset_str, length($offset_str)-12, 12);
+
+          $prefix = $ops{'imm12'}{opc};
+          $prefix = stuff_op_field( $prefix, 'i', $offset_str );
+
+          emit_prefix($prefix);
+
+          #
+          # and then switch over to regular .imm offset addressing
+          #
+          $imm_mode = '1'; 
+
+          $rb = check_addr_register($2);
+
+          $opcode = stuff_op_field( $opcode, 's', $size     );
+          $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
+          $opcode = stuff_op_field( $opcode, 'b', $rb       );
+          $opcode = stuff_op_field( $opcode, 'a', $ra       );
+
+        }
+
+        else
+        {
+          #
+          # normal stack offset mode
+          #
+          $offset_str = sprintf("%04b", $offset >> 2 );
+
+          #
+          # size field = 00 for stack offset addressing modes
+          # no byte or word accesses allowed
+          #
+          if ( ( $type eq 'MEM32' ) || ( $type eq 'LEA' ) )
+          { 
+            $size = '00';
+          }
+          else
+          { 
+            do_error("Only 32 bit LD/ST, or LEA, allowed for stack offset addressing modes");
+            $size = '00';
+          }
+
+          $opcode = stuff_op_field( $opcode, 's', $size       );
+          $opcode = stuff_op_field( $opcode, 'm', $imm_mode   );
+          $opcode = stuff_op_field( $opcode, 'b', $offset_str );
+          $opcode = stuff_op_field( $opcode, 'a', $ra         );
+
+        }
+      }
+
+      #
+      # TODO: add automatic offset prefix
+      #
+      else
+      {
+        do_error("Only .imm(rn) offset syntax currently supported by assembler\n");
+
+        $imm_mode = '0';
+        $rb = check_addr_register($2);
+
+        $opcode = stuff_op_field( $opcode, 's', $size     );
+        $opcode = stuff_op_field( $opcode, 'm', $imm_mode );
+        $opcode = stuff_op_field( $opcode, 'b', $rb       );
+        $opcode = stuff_op_field( $opcode, 'a', $ra       );
+      }
+    }
 
     emit_op($opcode);
     
@@ -1159,7 +1200,7 @@ sub ps_imm
         if ( $status != 0 )
           {
             # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
-            $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0 };
+            $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0, pass1_value => 0 };
 
             $imm_entries_used[$imm_table_num]++;
 
@@ -1183,7 +1224,7 @@ sub ps_imm
                 if (D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
 
                 # add to imm hash
-                $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset };
+                $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset, pass1_value => $offset };
 
                 $imm_entries_used[$imm_table_num]++;
               }
@@ -1297,7 +1338,7 @@ sub ps_imm
             $pcr_offset = label_value( $label ) - ( (get_address() >> 2 ) << 2);
 
 
-            if (D1) { printf $JNK_F (" auto imm label, offset(bytes): %s %d\n", $label, $pcr_offset); }
+            if (D1) { printf $JNK_F (" auto imm label, offset(bytes), dest addr: %s %d %08x\n", $label, $pcr_offset, label_value($label) ); }
 
             # check for quad aligned target address before truncating pcr_offset
             if ( ( $pcr_offset % 4 ) > 0 )
@@ -1343,8 +1384,8 @@ sub ps_imm
 #   {l}bra, {l}bsr
 #
 # FIXME: 
-#      bsr.d : stacked return address HW needs fixup to work properly with interrupts
-#      lbsr  : code needs work to handle 21 bit address offset calculation & prefix generation
+#    bsr.d : stacked return address HW needs fixup to work properly with interrupts
+#    lbsr  : code needs work to handle full 32 bit branch prefix with LDI
 #------------------------------------------------------------------------------
      
 
@@ -1379,52 +1420,44 @@ sub ps_bri
     my $pcr_offset;
     my $pcr_offset_str;
 
+    my $pcr_offset_str_lo;
+    my $pcr_offset_str_mid;
+    my $pcr_offset_str_hi;
+
     my $opcode = $ops{$operation}{opc};
+    my $prefix = '0000000000000000';
 
     check_argument_count( $#operands, 1 );
 
 
     #
-    # TODO: long branch logic not implemented yet
+    # account for any LBRI prefix on pass 1 to avoid phasing errors
     #
-    if ( $ops{$operation}{type} eq 'LBRI' )
+    if ($pass == 1)
+    {
+      if ( $ops{$operation}{type} eq 'LBRI' )
       {
-        do_error("Long branch prefix support not yet implemented in the assembler");
+        emit_prefix($prefix);
       }
-    
+    }
 
+    #
+    # offset calculations only done during pass 2
+    #
     if ($pass == 2)
       {
 
-        #
-        # FIXME: remove @+ @- parsing hack, use expression parser instead
-        #
+        # calculate offset from current PC to address
 
-        # parsing hack, check for leading @+
-        if($operands[0] =~ /^\@\+(.+)$/)   
-          {
-            ($status, $offset) = extract_word($1);
-            $pcr_offset = $offset;
-            if (D1) { printf $JNK_F ("br target: @+ detected\n"); }
-            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
-          }
+        ($status, $offset) = parse_expression($operands[0]);
+        $pcr_offset = $offset - get_address();
 
-        # parsing hack, check for leading @-
-        elsif($operands[0] =~ /^\@\-(.+)$/)  
-          {
-            ($status, $offset) = extract_word($1);
-            $pcr_offset = -$offset;
-            if (D1) { printf $JNK_F ("br target: @- detected\n"); }
-            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
-          }
-        # otherwise, calculate offset from current PC to address
-        else 
-          {
-            ($status, $offset) = parse_expression($operands[0]);
-            $pcr_offset = $offset - get_address();
-            if (D1) { printf $JNK_F ("br target: label detected\n"); }
-            if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
-          }
+        if ( $ops{$operation}{type} eq 'LBRI' )
+        {
+          $pcr_offset = $pcr_offset - 2;   # account for LBRI prefix instruction
+        }
+
+        if (D1) { printf $JNK_F ("offset, pcr_offset = %d   %d\n",  $offset,  $pcr_offset ); }
 
 
         if ($status != 0 )
@@ -1435,30 +1468,59 @@ sub ps_bri
 
         else
           {
+            #
+            # range checks
+            #
+            if ( $ops{$operation}{type} eq 'LBRI' )
+            {
+
+              # range of signed 21 bit instruction pcr_offset field, in bytes
+              if ( ( $pcr_offset > 2097150 ) || ( $pcr_offset < -2097152 ) )
+              {
+                do_error("32-bit long branch prefix support not yet implemented in the assembler");
+                $pcr_offset = 0;
+              }
+
+            }
+
+            # range of signed 9 bit instruction pcr_offset field, in bytes
+            elsif ( ( $pcr_offset > 510 ) || ( $pcr_offset < -512 ) )
+              {
+                do_error("Branch offset out of range");
+                $pcr_offset = 0;
+              }
+
+
             # check for word aligned target address before truncating pcr_offset
             if ( ( $pcr_offset % 2 ) > 0 )
               {
                 do_error("Unaligned branch target");
               }
 
-            # check if within range of signed 9 bit pcr_offset field
-            if ( ( $pcr_offset > 510 ) || ( $pcr_offset < -512 ) )
-              {
-                do_error("Branch offset out of range");
-                $pcr_offset = 0;
-              }
-
-            # convert to word offset
+            # convert to instruction (16 bit) offset
             $pcr_offset = $pcr_offset >> 1;
 
 
-            # %09b format overflows format field for negative integers, truncate string to 9 bits after sprintf
-            $pcr_offset_str = sprintf("%09b", $pcr_offset);
-            $pcr_offset_str = substr( $pcr_offset_str, length($pcr_offset_str)-9, 9);
+            # narrow format specifier overflows format field for negative integers, truncate strings bits after sprintf
+            $pcr_offset_str    = sprintf("%032b", $pcr_offset);
 
-            $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str );
+            $pcr_offset_str_lo  = substr( $pcr_offset_str, length($pcr_offset_str)-9 , 9);
+            $pcr_offset_str_mid = substr( $pcr_offset_str, length($pcr_offset_str)-21, 12);
+            $pcr_offset_str_hi  = substr( $pcr_offset_str, length($pcr_offset_str)-32, 23);
 
-            if (D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $pcr_offset,  $pcr_offset_str, substr($opcode,7,9) ); }
+
+            if ( $ops{$operation}{type} eq 'LBRI' )
+            {
+              $prefix = $ops{'imm12'}{opc};
+
+              $prefix = stuff_op_field( $prefix, 'i', $pcr_offset_str_mid );
+
+              emit_prefix($prefix);
+            }
+
+            $opcode = stuff_op_field( $opcode, 'r', $pcr_offset_str_lo );
+
+            if (D1) { printf $JNK_F ("imm9_field=%d   %s    %s\n",  $pcr_offset,  $pcr_offset_str_lo, substr($opcode,7,9) ); }
           }
       }
 

@@ -4,7 +4,7 @@
 #
 # YARD-1 Assembler
 #
-# Modifications for YARD-1 COPYRIGHT (C) 2000-2013  B. Davis
+# Modifications for YARD-1 COPYRIGHT (C) 2000-2014  B. Davis
 #
 #   under the same license terms as the original risc8_asm (see below)
 #
@@ -373,13 +373,17 @@ sub flush_imms
 
   #
   # key sort
-  #   - primary sort by value
+  #
+  #   - primary sort by pass1_value 
+  #     have to use pass1_value to avoid phasing errors due to sorted value list order changing on pass2
+  #
   #   - secondary sort by table number to avoid merging with already flushed constants
+  #
   #   - tertiary sort by merge flag to avoid gaps in duplicated values
   #
-  @sorted_labels = sort {     $imms{$a}{value} <=> $imms{$b}{value}  
-                          or  $imms{$a}{table_num} <=> $imms{$b}{table_num} 
-                          or  $imms{$a}{can_merge} <=> $imms{$b}{can_merge} 
+  @sorted_labels = sort {     $imms{$a}{pass1_value} <=> $imms{$b}{pass1_value}  
+                          or  $imms{$a}{table_num}   <=> $imms{$b}{table_num} 
+                          or  $imms{$a}{can_merge}   <=> $imms{$b}{can_merge} 
                           or  lc($a) cmp lc($b) 
                         } keys(%imms) ;
  
@@ -401,9 +405,9 @@ sub flush_imms
         # TESTME: flag to merge identical values
         #
         if (    ( $i < $#sorted_labels ) 
-             && ( $imms{$label}{can_merge} == 1 )
-             && ( $imms{$label}{value}     == $imms{$sorted_labels[$i+1]}{value} ) 
-             && ( $imms{$label}{table_num} == $imms{$sorted_labels[$i+1]}{table_num} ) 
+             && ( $imms{$label}{can_merge}   == 1 )
+             && ( $imms{$label}{pass1_value} == $imms{$sorted_labels[$i+1]}{pass1_value} ) 
+             && ( $imms{$label}{table_num}   == $imms{$sorted_labels[$i+1]}{table_num} ) 
            )
         {
           $duplicate = 1;
@@ -858,7 +862,52 @@ sub parse_expression
 }
 
 # 
-# output opcode data to both listing and object files
+# output prefix to both listing and object files
+#
+#  - assumes 16 bit opcodes
+#
+sub emit_prefix
+{
+  my ($prefix) = @_; 
+
+  my $op16;
+
+  if ( $last_skip )
+    {
+      do_error("Attempt to skip a prefixed opcode (prefix bubble not implemented yet)");
+    }
+
+  if ($pass == 2)  
+    {
+      if ( ( $address % 2 ) > 0 )
+        {
+          do_error("Unaligned prefix address");
+        }
+
+      if (length($prefix) != 16) 
+        {
+          do_error("Internal error - illegal prefix width");
+        }
+
+      $op16 = vec(pack("B16", $prefix),0,16);
+
+      printf $OBJ_F ("op16=%04X\n", $op16);
+      printf $LST_F ("  %08X  %04X  +  \n", $address, $op16);
+    }
+
+  $next_address = $address + 2;
+
+  #
+  # history updates for prefix also bump current address
+  #
+  $last_address = $address;
+  $address      = $next_address;
+
+}
+
+
+# 
+# output opcode to both listing and object files
 #
 #  - assumes 16 bit opcodes
 #
@@ -1061,8 +1110,10 @@ sub ps_common
 
   if ($pass == 2)
     {
-      printf $OBJ_F ("@%X\n", $address);
       printf $LST_F ("  %08X           %s\n", $address, $raw_line );
+
+      # new object file address starts *after* common block
+      printf $OBJ_F ("@%X\n", $next_address);   
     }
 }
 
@@ -1256,8 +1307,10 @@ sub ps_ds_b
 
   if ($pass == 2)
     {
-      printf $OBJ_F ("@%X\n", $next_address);
       printf $LST_F ("  %08X           %s\n", $address, $raw_line );
+
+      # new object file address starts *after* common block
+      printf $OBJ_F ("@%X\n", $next_address);   
     }
 
 }
