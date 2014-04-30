@@ -698,6 +698,24 @@ sub process_label
   set_label($label_field, $address);
 }
 
+
+#
+# needed for 64 bit perl : force value to 32 bits before %08x sprintf to prevent string field overflow
+#
+sub mask_val_str
+{
+  my ( $val ) = shift;
+
+  my $val_mask;
+  my $val_str;
+
+  $val_mask = $val & 0xffffffff;
+  $val_str  = sprintf "%08X", $val_mask;
+
+  return $val_str;
+
+}
+
 #-------------------------------------------------------------
 #
 # Extract value of constant/label 
@@ -1127,7 +1145,9 @@ sub ps_end
   # flush any remaining imms
   flush_imms();
 
-  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+  # removed, directive line is printed in flush_imms()
+  #  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+
   last;
 }
 
@@ -1147,14 +1167,13 @@ sub ps_equ
 
   if (D1) { printf $JNK_F ("equate  %s = %x\n", $label, $val ); } 
 
-  set_label($label_field, $val); 
+  set_label($label, $val); 
 
   if ( $pass == 2 )
     {
-      printf $LST_F ("  %08X           %s\n", label_value($label), $raw_line );
+      printf $LST_F ("  %s           %s\n", mask_val_str(label_value($label)), $raw_line );
     }
 }
-
 
 sub ps_imm_table
 {
@@ -1325,11 +1344,9 @@ sub ps_verify
 
   my $reg;
   my $val;
-  my $val_mask;
-  my $val_str;
+
   my $status;
   my $count;
-
 
 #
 # TODO: factor out count checking into common subroutine
@@ -1463,17 +1480,9 @@ sub ps_verify
 
           printf $LST_F ("                     %s\n", $raw_line);
 
+          printf $VFY_F   ("[%s:%d] %08x REG %d %s %s\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], mask_val_str($val) );
 
-          # force to 32 bits, convert to 8 digit string
-          $val_mask = $val & 0xffffffff;
-          $val_str  = sprintf "%08X", $val_mask;
-
-          printf $VFY_F   ("[%s:%d] %08x REG %d %s %s\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val_str );
-
-# original code with 64-bit perl prints 64 bit hex string for negative decimal integers, which breaks yver code
-#          printf $VFY_F   ("[%s:%d] %08x REG %d %s %08x\n", $asm_filename, $line_num, $last_address, $count,  $operands[0], $val );
-
-          if (D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x, %s\n", $last_address, $count, $operands[0], $val, $val_str ); }
+          if (D1) { printf $JNK_F (".verify: addr, count, reg, value = %08x, %d, %s, %08x, %s\n", $last_address, $count, $operands[0], $val, mask_val_str($val) ); }
 
         } 
     } 
@@ -1687,8 +1696,8 @@ sub parse_directive
 
           if ($pass == 2)
             {
-              $lstr = sprintf "%08X", $off;
-              printf $OBJ_F ("quad=%s\n", $lstr);
+              $lstr = mask_val_str($off);
+              printf $OBJ_F ("quad=%s\n", $lstr );
 
               printf $LST_F ("  %08X  %s     %s\n", $address  , substr($lstr,0,4), $i==$start+1 ? $raw_line : "");
               printf $LST_F ("  %08X  %s       \n", $address+2, substr($lstr,4,4), );
@@ -1965,14 +1974,13 @@ while( $pass <= 2 )
 
                 elsif ( exists $directive_defs{$operation_field}{ps}  )
                   {
-                    if (D1) { printf $JNK_F ("HOH directive dispatch : %s \n",$ops{$operation_field}{type} ) };
-                    if (D1) { printf $JNK_F ("HOH parse: opcode %s is type %s  op %s\n", $operation_field, $ops{$operation_field}{type}, $ops{$operation_field}{opc}, $ops{$operation_field}{ps}  ); }
+                    if (D1) { printf $JNK_F ("HOH directive dispatch : %s \n",$directive_defs{$operation_field}{type} ) };
                     &{ $directive_defs{$operation_field}{ps} }($pass, $label_field, $operation_field, @operand_fields);
                   }
 
                 elsif ( exists $old_directive_defs{$operation_field} )
                   {
-                    if (D1) { printf $JNK_F ("old directive dispatch : %s \n",$ops{$operation_field}{type} ) };
+                    if (D1) { printf $JNK_F ("old directive dispatch : %s \n",$old_directive_defs{$operation_field}{type} ) };
                     parse_directive();
                   }
 
@@ -2016,7 +2024,7 @@ while( $pass <= 2 )
 printf $LST_F ( "\n\nSymbols (by name):\n\n"); 
 
 foreach my $label ( sort { lc($a) cmp lc($b) } keys(%labels) )  
-  { printf $LST_F ( "  %08X  %s\n",label_value($label), $label); }
+  { printf $LST_F ( "  %s  %s\n",mask_val_str(label_value($label)), $label); }
 
 #
 # dump symbol table by value
@@ -2024,7 +2032,7 @@ foreach my $label ( sort { lc($a) cmp lc($b) } keys(%labels) )
 printf $LST_F ( "\n\nSymbols (by value):\n\n"); 
 
 foreach my $label ( sort { $labels{$a} <=> $labels{$b}  or  lc($a) cmp lc($b) } keys(%labels) )
-  { printf $LST_F ( "  %08X  %s\n",label_value($label), $label); }
+  { printf $LST_F ( "  %s  %s\n",mask_val_str(label_value($label)), $label); }
 
 #
 # report status
