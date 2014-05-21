@@ -421,28 +421,17 @@ begin
 
   --
   -- LCD lines for pico board
-  --   - toggle at tick rate to create AC LCD drive voltage
-  --   - no decoding yet
+  --   - tied off to GND
+  --   - muxed LCD requires special PWM drive waveforms to generate varying AC bias 
+  --     across external RC filters on the pico evaluation board
   --
   P_LCD : process
 
-     begin
+    begin
       wait until rising_edge(clk);
 
-      --
-      -- echo UART receive data
-      --
---
--- this line crashes synplify G-2012.09L-SP1 during Map & Optimize phase
---      lcd_seg <= rx_dat XOR ( 7 downto 0 => lcd_toggle );
-
-      if lcd_toggle = '0' then
-        lcd_seg <= rx_dat;
-      else
-        lcd_seg <= NOT rx_dat;
-      end if;
-
-      lcd_com <= ( others => lcd_toggle );
+      lcd_seg <= ( others => '0' );
+      lcd_com <= ( others => '0' );
 
     end process;
 
