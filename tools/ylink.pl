@@ -68,7 +68,7 @@ $obj = $ARGV[0];
 $obj =~ s/\.obj$//g;
 
 $obj_file = $obj . '.obj';
-$cmd_file = $obj . '.cmd';
+$cmd_file = $obj . '.ymm';
 $vho_file = $obj . '.vh2';
 $vhc_file = $obj . '.vh1';
 
