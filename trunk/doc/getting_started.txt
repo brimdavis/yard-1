@@ -52,7 +52,7 @@ Assembling and Linking a program :
     <hello.vh1> VHDL memory data arrays for simulation or synthesis
     <hello.vh2> VHDL memory INIT vectors for Xilinx BRAM primitives
 
-    <hello.cmd> command file for download to YARDBUG
+    <hello.ymm> YARDBUG command file to download program with memory modify commands
 
 
 Downloading a program to YARDBUG :
@@ -65,7 +65,7 @@ Downloading a program to YARDBUG :
 
   - should see YARDBUG banner and '@' prompt 
 
-  - send ASCII file <hello.cmd>
+  - send ASCII file <hello.ymm>
 
   - G 600
 
