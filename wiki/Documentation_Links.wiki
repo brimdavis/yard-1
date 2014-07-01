@@ -1,0 +1,10 @@
+As Google Code has recently deprecated the downloads feature, I have created this wiki page to directly link to the most current documentation in the svn trunk.
+
+===YARD Architecture Reference Manual===
+  https://yard-1.googlecode.com/svn/trunk/doc/yard_arch_ref.pdf
+
+===Getting Started===
+  http://yard-1.googlecode.com/svn/trunk/doc/getting_started.txt
+
+===Development Software===
+  http://yard-1.googlecode.com/svn/trunk/doc/development_software.txt
