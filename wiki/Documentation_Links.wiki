@@ -1,3 +1,5 @@
+#summary links to repository docs
+
 As Google Code has recently deprecated the downloads feature, I have created this wiki page to directly link to the most current documentation in the svn trunk.
 
 ===YARD Architecture Reference Manual===
