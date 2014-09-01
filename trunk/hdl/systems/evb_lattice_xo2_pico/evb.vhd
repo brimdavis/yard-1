@@ -47,11 +47,13 @@ entity evb is
       rx_bit    : in  std_logic;
       tx_bit    : out std_logic;
 
-      pb        : in  std_logic_vector(3 downto 0); 
-      sw        : in  std_logic_vector(7 downto 0); 
+      pb        : in  std_logic_vector(  3 downto 0 ); 
+      sw        : in  std_logic_vector(  7 downto 0 ); 
 
-      lcd_seg   : out std_logic_vector(7 downto 0);
-      lcd_com   : out std_logic_vector(3 downto 0)
+      out_portA : out std_logic_vector( 15 downto 0 );
+
+      lcd_seg   : out std_logic_vector(  7 downto 0 );
+      lcd_com   : out std_logic_vector(  3 downto 0 )
     );
 
 end evb;
@@ -128,8 +130,8 @@ architecture evb1 of evb is
   --
   -- I/O ports
   --
-  signal out_reg1    : std_logic_vector(7 downto 0);
-  signal in_reg1     : std_logic_vector(7 downto 0);
+  signal out_reg1    : std_logic_vector(15 downto 0);
+  signal in_reg1     : std_logic_vector( 7 downto 0);
 
   signal in_flags    : std_logic_vector(15 downto 0);
 
@@ -355,7 +357,7 @@ begin
  
 
   --
-  -- 8 bit output port
+  -- 16 bit output port
   --
   P_out_port : process(clk, rst_l)
     begin
@@ -366,13 +368,18 @@ begin
       elsif rising_edge(clk) then
 
         if (d_wr_l = '0') AND (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
-          out_reg1 <= d_wdat(7 downto 0);
+          out_reg1 <= d_wdat(out_reg1'range);
         end if;
 
       end if;
  
     end process;
- 
+
+  --
+  -- connect output register to port
+  --
+  out_portA <= out_reg1;
+
   --
   -- 8 bit input port
   --
