@@ -35,6 +35,23 @@ LOCATE COMP "sw_2"    SITE "K1"  ;
 LOCATE COMP "sw_1"    SITE "K3"  ;
 LOCATE COMP "sw_0"    SITE "M7"  ;
 
+LOCATE COMP "out_portA_15"   SITE "M4" ;
+LOCATE COMP "out_portA_14"   SITE "P3" ;
+LOCATE COMP "out_portA_13"   SITE "N12" ;
+LOCATE COMP "out_portA_12"   SITE "C10" ;
+LOCATE COMP "out_portA_11"   SITE "A13" ;
+LOCATE COMP "out_portA_10"   SITE "B13" ;
+LOCATE COMP "out_portA_9"    SITE "K1" ;
+LOCATE COMP "out_portA_8"    SITE "K3" ;
+LOCATE COMP "out_portA_7"    SITE "M7" ;
+LOCATE COMP "out_portA_6"    SITE "N8" ;
+LOCATE COMP "out_portA_5"    SITE "B1" ;
+LOCATE COMP "out_portA_4"    SITE "B2" ;
+LOCATE COMP "out_portA_3"    SITE "C1" ;
+LOCATE COMP "out_portA_2"    SITE "C3" ;
+LOCATE COMP "out_portA_1"    SITE "C2" ;
+LOCATE COMP "out_portA_0"    SITE "D1" ;
+
 
 #
 # LCD control pins
