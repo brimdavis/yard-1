@@ -929,9 +929,13 @@ begin
   B_skip_ctl : block
 
     --
-    -- input flag register
+    -- input flag register stages
     --
-    signal flag_reg : std_logic_vector(15 downto 0);
+    signal flag_reg_x0 : std_logic_vector(15 downto 0);
+    signal flag_reg_x1 : std_logic_vector(15 downto 0);
+
+    attribute syn_keep of flag_reg_x0 : signal is TRUE;
+    attribute syn_keep of flag_reg_x1 : signal is TRUE;
 
     begin
 
@@ -950,18 +954,20 @@ begin
             ain          => ain,         
             bin          => bin,        
 
-            flag_reg     => flag_reg,    
+            flag_reg     => flag_reg_x1,    
 
             skip_cond    => skip_cond   
           );
 
       --
-      -- register input flags before use
+      -- register input flags twice before use
+      -- guards against metastables if async inputs are wired to core flag inputs
       --
       process(clk)
         begin
           if rising_edge(clk) then
-            flag_reg <= in_flags;
+            flag_reg_x0 <= in_flags;
+            flag_reg_x1 <= flag_reg_x0;
           end if;
         end process;
 

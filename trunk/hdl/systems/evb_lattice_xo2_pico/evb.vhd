@@ -17,7 +17,7 @@
 --   - Y1A processor core
 --   - 4 KB RAM
 --   - UART
---   - I/O ports for switches and LCDs on eval board
+--   - I/O ports 
 --  
 
 library ieee;
@@ -47,8 +47,7 @@ entity evb is
       rx_bit    : in  std_logic;
       tx_bit    : out std_logic;
 
-      pb        : in  std_logic_vector(  3 downto 0 ); 
-      sw        : in  std_logic_vector(  7 downto 0 ); 
+      reset_pb  : in  std_logic;
 
       out_portA : out std_logic_vector( 15 downto 0 );
 
@@ -131,43 +130,22 @@ architecture evb1 of evb is
   -- I/O ports
   --
   signal out_reg1    : std_logic_vector(15 downto 0);
-  signal in_reg1     : std_logic_vector( 7 downto 0);
+  signal in_reg1     : std_logic_vector(15 downto 0);
 
   signal in_flags    : std_logic_vector(15 downto 0);
 
-
-  constant EVB_CONFIG : y1a_config_type :=
-    (
-      isa =>
-        (
-          non_native_load  => TRUE,
-          non_native_store => TRUE,
-  
-          barrel_shift     => FALSE,
-          bit_flip         => FALSE,
-  
-          skip_on_bit      => TRUE,
-          skip_compare     => FALSE
-        ),
-
-      hw =>
-        (
-          reg_i_addr       => TRUE
-        )
-    );
 
 begin
 
   clk <= clk_in;
 
   --
-  -- pushbutton debouncers for reset & IRQ signals
+  -- pushbutton debouncer for reset 
   --
   B_debounce : block
-    signal pb3_debounce : std_logic;
-    signal pb2_pulse    : std_logic;
+    signal reset_debounce : std_logic;
 
-    signal tick_en      : std_logic;
+    signal tick_en        : std_logic;
 
   begin
 
@@ -177,20 +155,20 @@ begin
 
     I_rst_sw: debounce 
       generic map ( SW_ACTIVE_SENSE => '0' )
-      port map ( clk => clk, tick_en => tick_en, sw_in => pb(3), sw_press => open, sw_release => open, sw_state => pb3_debounce);
+      port map ( clk => clk, tick_en => tick_en, sw_in => reset_pb, sw_press => open, sw_release => open, sw_state => reset_debounce);
 
-    I_irq_sw: debounce 
-      generic map ( SW_ACTIVE_SENSE => '0' )
-      port map ( clk => clk, tick_en => tick_en, sw_in => pb(2), sw_press => pb2_pulse, sw_release => open, sw_state => open );
-
-    sync_rst   <=     pb3_debounce;
-    rst_l      <= NOT pb3_debounce;
-
-    irq_l      <= NOT pb2_pulse;
+    sync_rst   <=     reset_debounce;
+    rst_l      <= NOT reset_debounce;
 
     lcd_toggle <= lcd_toggle XOR tick_en;
 
   end block;
+
+
+  --
+  -- FIXME: tied off IRQ after removing PB irq debouncer
+  --
+  irq_l <= '1';
 
 
   --
@@ -200,7 +178,6 @@ begin
     generic map
       ( 
         CFG         => DEFAULT_Y1A_CONFIG
---        CFG         => EVB_CONFIG
       )
 
     port map
@@ -336,14 +313,8 @@ begin
       );
 
 
-  ---------------------------------------------------------------
   --
-  -- I/O ports
-  --
-  ---------------------------------------------------------------
-
-  --
-  -- input flags
+  -- register input flags
   --
   P_in_flags : process
     begin
@@ -356,8 +327,19 @@ begin
     end process;
  
 
+  ---------------------------------------------------------------
+  --
+  -- I/O port
+  --
+  --  One 32 bit I/O register
+  --    - upper 16 bits are outputs ( with readback )
+  --    - lower 16 bits are inputs
+  --
+  ---------------------------------------------------------------
+
   --
   -- 16 bit output port
+  --   bits 31:16 of I/O register are outputs
   --
   P_out_port : process(clk, rst_l)
     begin
@@ -368,7 +350,15 @@ begin
       elsif rising_edge(clk) then
 
         if (d_wr_l = '0') AND (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
-          out_reg1 <= d_wdat(out_reg1'range);
+
+          if d_wr_en_l(3) = '0' then
+            out_reg1(15 downto 8) <= d_wdat(31 downto 24);
+          end if;
+
+          if d_wr_en_l(2) = '0' then
+            out_reg1( 7 downto 0) <= d_wdat(23 downto 16);
+          end if;
+  
         end if;
 
       end if;
@@ -380,8 +370,41 @@ begin
   --
   out_portA <= out_reg1;
 
+
   --
-  -- 8 bit input port
+  -- input register connections
+  --   input data clocked to hold data stable during processor read cycle
+  --
+  --  D15:8  spare
+  --
+  --  D7  UART TX ready 
+  --  D6  UART RX data available 
+  --  D5  spare
+  --  D4  spare
+  --  D3  spare
+  --  D2  spare 
+  --  D1  spare
+  --  D0  spare
+  --
+  P_in_reg1 : process
+    begin
+      wait until rising_edge(clk);
+
+      in_reg1(15 downto 8) <= (others => '0');
+
+      in_reg1(7) <= tx_rdy;
+      in_reg1(6) <= rx_avail;
+
+      in_reg1(5 downto 0) <= (others => '0');
+
+    end process;
+ 
+
+  --
+  -- bus mux for 32 bit I/O register 
+  --
+  --  31:16 : output register readback
+  --  15:00 : input register read
   --
   P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1, spare_rdat )
     begin
@@ -389,9 +412,11 @@ begin
       if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
 
         if d_rd_l = '0' then
-          io_rdat <= (ALU_MSB downto 8 => '0') & in_reg1(7 downto 0);
+          io_rdat <= out_reg1 & in_reg1;
+
         else
           io_rdat <= spare_rdat;
+
         end if;
 
       else
@@ -401,36 +426,12 @@ begin
  
     end process;
  
-  --
-  -- input port connections
-  --   input data clocked to hold data stable during processor read cycle
-  --
-  --  D7  UART TX ready 
-  --  D6  UART RX data available 
-  --  D5  SWITCH D5
-  --  D4  SWITCH D4
-  --  D3  SWITCH D3
-  --  D2  SWITCH D2 
-  --  D1  SWITCH D1
-  --  D0  SWITCH D0
-  --
-  P_in_reg1 : process
-    begin
-      wait until rising_edge(clk);
-
-      in_reg1(7) <= tx_rdy;
-      in_reg1(6) <= rx_avail;
-
-      in_reg1(5 downto 0) <= sw(5 downto 0);
-
-    end process;
- 
 
   --
   -- LCD lines for pico board
   --   - tied off to GND
-  --   - muxed LCD requires special PWM drive waveforms to generate varying AC bias 
-  --     across external RC filters on the pico evaluation board
+  --   - muxed LCD requires special PWM drive waveforms to generate varying 
+  --     AC bias across external RC filters on the pico evaluation board
   --
   P_LCD : process
 
