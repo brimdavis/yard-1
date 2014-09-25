@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- YARD-1 Design Files copyright (c) 2000-2012, Brian Davis
+-- YARD-1 Design Files copyright (c) 2000-2014 Brian Davis
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,9 @@
 --
 -- simulation testbench for m_uart
 --
+--  - sets up stimulus for manual inspection
 --
---  - not self checking, just sets up stimulus for manual inspection
+--  - simple check of rx data against tx data
 --
 --  - TODO: read and write procedures instead of in-line code
 --
@@ -59,6 +60,13 @@ architecture bench1 of testbench is
   constant T_HOLD        : time :=  2 ns;
 
 
+  subtype byte    is std_logic_vector(7 downto 0);
+
+  type byte_array is array ( natural range <> ) of byte;
+
+
+  signal tb_run   : std_logic := 'L';
+
   signal clk      : std_logic := 'L';
 
   signal baud_16x : std_logic;   
@@ -66,8 +74,8 @@ architecture bench1 of testbench is
   signal tx_rdy   : std_logic;   
   signal rx_rdy   : std_logic;   
 
-  signal tx_dat   : std_logic_vector(7 downto 0);
-  signal rx_dat   : std_logic_vector(7 downto 0);
+  signal tx_dat   : byte;
+  signal rx_dat   : byte;
 
   signal rx_bit   : std_logic := 'H';   
   signal tx_bit   : std_logic;   
@@ -75,7 +83,14 @@ architecture bench1 of testbench is
   signal uart_wr  : std_logic;   
   signal uart_rd  : std_logic;   
   
-  
+
+  signal qdat     : byte_array( 0 to 1023 );
+  signal qti      : integer := 0;
+  signal qri      : integer := 0;
+
+  signal rx_errs  : integer := 0;
+
+
 --
 -- main testbench
 --
@@ -84,8 +99,27 @@ begin
   --
   -- generate clock
   --
-  clk <= NOT clk after TB_CLK_PERIOD/2;
+  clk <= (NOT clk) AND tb_run after TB_CLK_PERIOD/2;
 
+
+  --
+  -- halt clock after 25 ms to end simulation
+  --
+  P_tb_ctl : process
+    begin
+
+      tb_run <= '1';
+      wait for 25 ms;
+
+      tb_run <= '0';
+
+      assert FALSE
+        report  "Total Errors: " & integer'image(rx_errs)
+        severity NOTE;
+
+      wait;
+
+    end process;
 
   --
   -- instantiate UART 
@@ -126,24 +160,6 @@ begin
       );
 
 
---  --
---  -- baud rate divider
---  --
---  E_bc1: process
---    begin
---      wait until rising_edge(clk);
---
---      if ( baud_div = X"00" ) then
-----        baud_div  <= X"a2";
---        baud_div  <= X"19";
---        baud_16x  <= '1';
---      else
---        baud_div  <= baud_div - 1;
---        baud_16x  <= '0';
---      end if;
---
---    end process;
-
 
   --
   -- delayed loopback, tx output to rx input 
@@ -175,6 +191,10 @@ begin
         tx_dat  <= X"55" after T_HOLD;
         uart_wr <= '1'   after T_HOLD;
 
+        qdat(qti) <= X"55";
+        qti <= qti + 1;
+
+
       wait until rising_edge(clk);
         uart_wr <= '0'   after T_HOLD;
 
@@ -202,6 +222,9 @@ begin
         tx_dat  <= X"D0" after T_HOLD;
         uart_wr <= '1'   after T_HOLD;
 
+        qdat(qti) <= X"D0";
+        qti <= qti + 1;
+
       wait until rising_edge(clk);
         uart_wr <= '0'   after T_HOLD;
 
@@ -223,6 +246,9 @@ begin
           tx_dat <= std_logic_vector(to_unsigned(i,8)) after T_HOLD;
           uart_wr <= '1'   after T_HOLD;
 
+          qdat(qti) <= std_logic_vector(to_unsigned(i,8));
+          qti <= qti + 1;
+
         wait until rising_edge(clk);
           uart_wr <= '0'   after T_HOLD;
 
@@ -235,13 +261,11 @@ begin
     end process tb_uart_tx;
 
   --
-  -- TODO: verify rx data
+  -- verify rx data
   --
   tb_uart_rx : process
     begin
 
-      ---------------------------------------
-      ---------------------------------------
       --
       -- initial signals
       --
@@ -250,25 +274,38 @@ begin
       wait for 100 ns;
 
       loop
-        ---------------------------------------
-        ---------------------------------------
+        --
         -- wait for rx_rdy flag
+        --
         wait until rx_rdy = '1';
 
-
-        ---------------------------------------
         --
         -- read data
         --
         wait until rising_edge(clk);
         uart_rd <=   '1' after T_HOLD;
 
-        ---------------------------------------
+        --
+        -- deassert read
         --
         wait until rising_edge(clk);
         uart_rd <=   '0' after T_HOLD;
 
-        -- TODO check that rx = tx
+        --
+        -- check that rx = tx
+        --
+        if rx_dat /= qdat(qri) then
+
+          rx_errs <= rx_errs + 1;
+
+          assert rx_dat = qdat(qri) 
+            report "TX/RX data mismatch"
+            severity ERROR;
+
+
+        end if;
+
+        qri <= qri + 1;
 
       end loop;
 
