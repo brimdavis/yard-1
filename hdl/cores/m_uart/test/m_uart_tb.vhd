@@ -83,7 +83,9 @@ architecture bench1 of testbench is
   signal uart_wr  : std_logic;   
   signal uart_rd  : std_logic;   
   
-
+  --
+  -- array to record write data for comparison
+  --
   signal qdat     : byte_array( 0 to 1023 );
   signal qti      : integer := 0;
   signal qri      : integer := 0;
@@ -97,29 +99,14 @@ architecture bench1 of testbench is
 begin
 
   --
-  -- generate clock
+  -- generate clock; gated with tb_run to end simulation
   --
-  clk <= (NOT clk) AND tb_run after TB_CLK_PERIOD/2;
-
+  clk    <= (NOT clk) AND tb_run after TB_CLK_PERIOD/2;
 
   --
-  -- halt clock after 25 ms to end simulation
+  -- run testbench for 25 ms 
   --
-  P_tb_ctl : process
-    begin
-
-      tb_run <= '1';
-      wait for 25 ms;
-
-      tb_run <= '0';
-
-      assert FALSE
-        report  "Total Errors: " & integer'image(rx_errs)
-        severity NOTE;
-
-      wait;
-
-    end process;
+  tb_run <= '1', '0' after 25 ms;
 
   --
   -- instantiate UART 
@@ -143,7 +130,6 @@ begin
         tx_bit  => tx_bit
       );
 
-
   --
   -- instantiate simple baud rate divider
   --
@@ -160,7 +146,6 @@ begin
       );
 
 
-
   --
   -- delayed loopback, tx output to rx input 
   --
@@ -171,6 +156,32 @@ begin
   --
   --
   tb_uart_tx : process
+
+    --
+    -- local uart write procedure
+    --
+    procedure send_byte ( constant wdat : in byte ) is
+
+      begin
+
+        loop
+          wait until rising_edge(clk);
+          exit when tx_rdy = '1';
+        end loop;
+
+        wait until rising_edge(clk);
+          tx_dat    <= wdat  after T_HOLD;
+          uart_wr   <= '1'   after T_HOLD;
+
+          qdat(qti) <= wdat;
+          qti       <= qti + 1;
+
+        wait until rising_edge(clk);
+          uart_wr <= '0'   after T_HOLD;
+
+      end;
+
+
     begin
 
       --
@@ -185,19 +196,9 @@ begin
       wait for 1 ms;
 
       --
-      -- send a byte
+      -- send first byte
       --
-      wait until rising_edge(clk);
-        tx_dat  <= X"55" after T_HOLD;
-        uart_wr <= '1'   after T_HOLD;
-
-        qdat(qti) <= X"55";
-        qti <= qti + 1;
-
-
-      wait until rising_edge(clk);
-        uart_wr <= '0'   after T_HOLD;
-
+      send_byte( X"55");
 
       --
       -- overwrite test - write while busy, byte should be ignored
@@ -209,56 +210,23 @@ begin
       wait until rising_edge(clk);
         uart_wr <= '0'   after T_HOLD;
 
-
       --
-      -- wait for tx_rdy assertion
+      -- send another byte 
       --
-      wait until rising_edge(tx_rdy);
-
-      --
-      -- send another byte immediately after tx_rdy asserts
-      --
-      wait until rising_edge(clk);
-        tx_dat  <= X"D0" after T_HOLD;
-        uart_wr <= '1'   after T_HOLD;
-
-        qdat(qti) <= X"D0";
-        qti <= qti + 1;
-
-      wait until rising_edge(clk);
-        uart_wr <= '0'   after T_HOLD;
-
-
+      send_byte( X"D0");
+    
       --
       -- send all characters
       --
       for i in 0 to 255 loop
-
-        --
-        -- wait for tx_rdy
-        --
-        wait until rising_edge(tx_rdy);
-
-        --
-        -- send another byte immediately after tx_rdy asserts
-        --
-        wait until rising_edge(clk);
-          tx_dat <= std_logic_vector(to_unsigned(i,8)) after T_HOLD;
-          uart_wr <= '1'   after T_HOLD;
-
-          qdat(qti) <= std_logic_vector(to_unsigned(i,8));
-          qti <= qti + 1;
-
-        wait until rising_edge(clk);
-          uart_wr <= '0'   after T_HOLD;
-
-
+        send_byte( std_logic_vector(to_unsigned(i,8)) );
       end loop;
 
 
       wait;
 
     end process tb_uart_tx;
+
 
   --
   -- verify rx data
@@ -277,7 +245,9 @@ begin
         --
         -- wait for rx_rdy flag
         --
-        wait until rx_rdy = '1';
+        if rx_rdy = '0' then
+          wait until rx_rdy = '1';
+        end if;
 
         --
         -- read data
@@ -290,6 +260,11 @@ begin
         --
         wait until rising_edge(clk);
         uart_rd <=   '0' after T_HOLD;
+
+        --
+        -- read data at next clock edge
+        --
+        wait until rising_edge(clk);
 
         --
         -- check that rx = tx
@@ -312,6 +287,33 @@ begin
       wait;
 
     end process tb_uart_rx;
+
+
+  --
+  -- print summary info at end of simulation
+  --
+  P_tb_summary : process
+    begin
+
+      wait until tb_run = '1';
+
+      wait until tb_run = '0';
+
+      assert FALSE
+        report  "Data Comparison Errors: " & integer'image(rx_errs)
+        severity NOTE;
+
+      assert qti = qri
+        report  "Tx/Rx byte count mismatch: " & integer'image(qti) & "/" & integer'image(qri)
+        severity ERROR;
+
+      assert qti > 0
+        report  "Testbench error: no data sent!"
+        severity ERROR;
+
+      wait;
+
+    end process;
 
   
 end bench1;
