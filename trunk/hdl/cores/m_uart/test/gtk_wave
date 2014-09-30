@@ -1,7 +1,7 @@
-[timestart] 975990000000
-[size] 1367 702
+[timestart] 0
+[size] 1494 823
 [pos] -1 -1
-*-33.253498 980540000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-42.055454 2810000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.testbench.
 @28
@@ -46,11 +46,14 @@ top.testbench.e_m_uart.rx_rdy_local
 #{top.testbench.e_m_uart.rx_sr[10:0]} top.testbench.e_m_uart.rx_sr[9] top.testbench.e_m_uart.rx_sr[8] top.testbench.e_m_uart.rx_sr[7] top.testbench.e_m_uart.rx_sr[6] top.testbench.e_m_uart.rx_sr[5] top.testbench.e_m_uart.rx_sr[4] top.testbench.e_m_uart.rx_sr[3] top.testbench.e_m_uart.rx_sr[2] top.testbench.e_m_uart.rx_sr[1] top.testbench.e_m_uart.rx_sr[0]
 @200
 -
-@22
+@28
+top.testbench.qri
+top.testbench.qti
+@23
 #{top.testbench.qdat[0][7:0]} top.testbench.qdat[0][7] top.testbench.qdat[0][6] top.testbench.qdat[0][5] top.testbench.qdat[0][4] top.testbench.qdat[0][3] top.testbench.qdat[0][2] top.testbench.qdat[0][1] top.testbench.qdat[0][0]
+@22
 #{top.testbench.qdat[1][7:0]} top.testbench.qdat[1][7] top.testbench.qdat[1][6] top.testbench.qdat[1][5] top.testbench.qdat[1][4] top.testbench.qdat[1][3] top.testbench.qdat[1][2] top.testbench.qdat[1][1] top.testbench.qdat[1][0]
 #{top.testbench.qdat[2][7:0]} top.testbench.qdat[2][7] top.testbench.qdat[2][6] top.testbench.qdat[2][5] top.testbench.qdat[2][4] top.testbench.qdat[2][3] top.testbench.qdat[2][2] top.testbench.qdat[2][1] top.testbench.qdat[2][0]
-@23
 #{top.testbench.qdat[3][7:0]} top.testbench.qdat[3][7] top.testbench.qdat[3][6] top.testbench.qdat[3][5] top.testbench.qdat[3][4] top.testbench.qdat[3][3] top.testbench.qdat[3][2] top.testbench.qdat[3][1] top.testbench.qdat[3][0]
 [pattern_trace] 1
 [pattern_trace] 0
