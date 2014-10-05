@@ -37,14 +37,12 @@ set YARD_PERL=perl
 ::  YARD_SIM     Company/
 ::  Name         Organization      Product
 :: ---------------------------------------------
-::
-:: Currently Supported:
-::
-::  GHDL         GHDL              GHDL
-::  SIMILI       Symphony EDA      VHDL Simili
+::  GHDL         GHDL              GHDL        ( tested with ghdl-0.31-mcode-win32 )
+::  SIMILI       Symphony EDA      VHDL Simili ( tested with VHDL Simili 1.5 )
+::  XSIM         Xilinx            Xsim        ( tested with Vivado 2013.4 )
 ::
 ::
-:: Planned:
+:: Planned or partially done:
 ::
 ::  MODELSIM     Model Technology  Modelsim
 ::  ALDEC        Aldec             Active-HDL or Riviera
