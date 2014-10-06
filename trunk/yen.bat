@@ -31,22 +31,17 @@ set PATH=%PATH%;%YARD_TOOLS%\winxp;
 set YARD_PERL=perl
 
 ::
-:: select a VHDL simulator by name
+:: select a VHDL simulator
 ::
-::
-::  YARD_SIM     Company/
-::  Name         Organization      Product
-:: ---------------------------------------------
-::  GHDL         GHDL              GHDL        ( tested with ghdl-0.31-mcode-win32 )
-::  SIMILI       Symphony EDA      VHDL Simili ( tested with VHDL Simili 1.5 )
-::  XSIM         Xilinx            Xsim        ( tested with Vivado 2013.4 )
-::
-::
-:: Planned or partially done:
-::
-::  MODELSIM     Model Technology  Modelsim
-::  ALDEC        Aldec             Active-HDL or Riviera
-::  ISIM         Xilinx            Isim
+::  YARD_SIM     
+::  Name         Simulator
+:: ------------------------------------------------------------------------
+::  ALDEC        Active-HDL  ( tested with Active-HDL 9.3 Lattice Edition )
+::  GHDL         GHDL        ( tested with ghdl-0.31-mcode-win32 )
+::  ISIM         Isim        
+::  MODELSIM     Modelsim    ( tested with Modelsim Altera Starter Edition 10.1e )
+::  SIMILI       VHDL Simili ( tested with VHDL Simili 1.5 )
+::  XSIM         Xsim        ( tested with Vivado 2013.4 )
 ::
 set YARD_SIM=GHDL
 
