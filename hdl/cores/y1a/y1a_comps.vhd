@@ -565,6 +565,8 @@ package y1a_comps is
         clk                : in  std_logic;
         sync_rst           : in  std_logic;
 
+        irq_edge           : in  std_logic;
+
         inst               : in  std_logic_vector(INST_MSB downto 0);
         d_stall            : in  std_logic; 
 

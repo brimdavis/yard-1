@@ -96,9 +96,13 @@ begin
   rst_l <= '0', '1' after 10 * TB_CLK_PERIOD + TB_HOLD;
 
   --
-  -- one interrupt pulse @ 200 clock ticks in, 10 clocks wide
+  -- interrupt pulses @ 50 & 100 clock ticks in, 10 clocks wide
   --
-  irq_l <= '1', '0' after 200 * TB_CLK_PERIOD + TB_HOLD, '1' after 210 * TB_CLK_PERIOD + TB_HOLD;
+  irq_l <= '1', 
+           '0' after  50 * TB_CLK_PERIOD + TB_HOLD, 
+           '1' after  60 * TB_CLK_PERIOD + TB_HOLD,
+           '0' after 100 * TB_CLK_PERIOD + TB_HOLD, 
+           '1' after 110 * TB_CLK_PERIOD + TB_HOLD;
 
   --
   -- drive switch inputs

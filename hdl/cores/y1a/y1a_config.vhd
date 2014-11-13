@@ -144,11 +144,13 @@ package y1a_config is
   type y1a_hw_config_type is 
     record
       reg_i_addr       : boolean;
+      irq_support      : boolean;
     end record;
 
   constant DEFAULT_HW_CONFIG : y1a_hw_config_type :=
     (
-      reg_i_addr => TRUE
+      reg_i_addr  => TRUE,
+      irq_support => FALSE   -- FIXME: temporarily set default as FALSE until interrupts are working
     );
 
 

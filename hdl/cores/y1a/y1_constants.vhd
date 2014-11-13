@@ -118,7 +118,7 @@ package y1_constants is
   --
   -- temporarily hardcode interrupt vector
   --
-  constant PC_IRQ_VEC  : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 8 => '0' ) & X"02";
+  constant PC_IRQ_VEC  : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 12 => '0' ) & X"200";
 
   --
   -- return stack 
