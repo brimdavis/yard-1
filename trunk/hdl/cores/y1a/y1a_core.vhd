@@ -985,7 +985,7 @@ begin
   --   need to add interrupt enable flag to SR 
   --   need another flag (in SR?) to gate off irq_edge when in ISR
   --
-  irq_enable <= '0';
+  irq_enable <=  '1' when CFG.hw.irq_support else '0';
 
   -- register inputs 
   process 
@@ -1026,6 +1026,8 @@ begin
           (
             clk                => clk,
             sync_rst           => sync_rst,
+
+            irq_edge           => irq_edge,
 
             inst               => inst,
             d_stall            => d_stall,      

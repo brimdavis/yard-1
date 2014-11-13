@@ -42,8 +42,8 @@ entity dbus_ctl is
 
       ea_lsbs   : in  std_logic_vector(1 downto 0);
 
-      d_en_l    : out std_logic;	
-      d_rd_l    : out std_logic;	
+      d_en_l    : out std_logic; 
+      d_rd_l    : out std_logic; 
       d_wr_l    : out std_logic;
       d_wr_en_l : out std_logic_vector(3 downto 0)
     );
@@ -94,7 +94,7 @@ begin
   -- common decode for writes
   --
   valid_wr <=  '1'   when     ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
-                        AND ( ex_null = '0' )
+                          AND ( ex_null = '0' )
           else '0';
 
 
@@ -111,11 +111,11 @@ begin
 
 
   d_en_l   <=  '0'   when (
-                              (   inst_fld = OPM_LD ) 
-                          OR  (   inst_fld = OPM_LDI )
-                          OR  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
-                        )
-                        AND ( ex_null = '0' )
+                                (   inst_fld = OPM_LD ) 
+                            OR  (   inst_fld = OPM_LDI )
+                            OR  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
+                          )
+                          AND ( ex_null = '0' )
           else '1';
 
 
@@ -123,10 +123,10 @@ begin
 
   
   d_rd_l   <=  '0'   when (
-                              ( inst_fld = OPM_LD ) 
-                          OR  ( inst_fld = OPM_LDI )
-                        )
-                        AND ( ex_null = '0' )
+                                ( inst_fld = OPM_LD ) 
+                            OR  ( inst_fld = OPM_LDI )
+                          )
+                          AND ( ex_null = '0' )
           else '1';
 
   --

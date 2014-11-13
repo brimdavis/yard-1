@@ -39,6 +39,8 @@ entity state_ctl is
       clk                : in  std_logic;
       sync_rst           : in  std_logic;
 
+      irq_edge           : in  std_logic;
+
       inst               : in  std_logic_vector(INST_MSB downto 0);
       d_stall            : in  std_logic; 
 
@@ -219,6 +221,10 @@ begin
         next_pc       <= pc_reg;
         next_null_sr  <= null_sr;
   
+      elsif ( irq_edge = '1' ) then
+        next_pc       <= PC_IRQ_VEC;
+        next_null_sr  <= B"1000_0000";
+  
       elsif ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
         --
         -- SPAM instruction
@@ -280,8 +286,10 @@ begin
               --   Otherwise an interrupted branch delay slot won't work.
               --
 
+              --
               -- ??  load next_null sr with dslot_null & stacked bits of saved null 
               -- state for an rti ( was top bit was already used when stacked ) ??
+              --
               if ( ret_type = '1' ) then 
                 next_null_sr  <= dslot_null & rsp_sr(SR_MSB-1 downto SR_MSB-7);
               else
