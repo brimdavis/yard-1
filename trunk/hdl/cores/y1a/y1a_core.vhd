@@ -229,8 +229,6 @@ architecture arch1 of y1a_core is
   signal pc_reg    : std_logic_vector(PC_MSB downto 0);
   signal pc_reg_p1 : std_logic_vector(PC_MSB downto 0);
 
-  signal next_pc   : std_logic_vector(PC_MSB downto 0);
-
   --
   -- instruction data
   --
@@ -1047,8 +1045,6 @@ begin
             st_reg_out         => st_reg,
 
             pc_reg_out         => pc_reg,
-            next_pc_out        => next_pc,
-
             pc_reg_p1_out      => pc_reg_p1
           );
 
@@ -1214,21 +1210,8 @@ begin
       i_en_l <= '0';
       i_rd_l <= '0';
   
-      --
-      -- generate registered or non-registered inst. address bus
-      --   see comments near CFG.hw.REG_I_ADDR flag declaration
-      --
-      GT_iaddr: if CFG.hw.reg_i_addr = TRUE generate
-         begin
-           i_addr   <= pc_reg;
-           i_sel    <= pc_reg(1);
-         end generate GT_iaddr;
-
-      GF_iaddr: if CFG.hw.reg_i_addr = FALSE generate
-         begin
-           i_addr <= next_pc;
-           i_sel  <= next_pc(1);
-         end generate GF_iaddr;
+      i_addr   <= pc_reg;
+      i_sel    <= pc_reg(1);
 
     end block B_ibus_ctl;
 
