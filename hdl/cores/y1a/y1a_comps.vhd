@@ -585,8 +585,6 @@ package y1a_comps is
         st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 
         pc_reg_out         : out std_logic_vector(PC_MSB downto 0);
-        next_pc_out        : out std_logic_vector(PC_MSB downto 0);
-
         pc_reg_p1_out      : out std_logic_vector(PC_MSB downto 0)
       );
   end component;

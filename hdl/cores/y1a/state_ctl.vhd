@@ -59,8 +59,6 @@ entity state_ctl is
       st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 
       pc_reg_out         : out std_logic_vector(PC_MSB downto 0);
-      next_pc_out        : out std_logic_vector(PC_MSB downto 0);
-
       pc_reg_p1_out      : out std_logic_vector(PC_MSB downto 0)
     );
 
@@ -92,6 +90,23 @@ architecture arch1 of state_ctl is
   signal ext_bra_offset       : std_logic_vector(ALU_MSB downto 0);
 
   signal spam_length_mask     : std_logic_vector(7 downto 0);
+
+  --
+  -- interrupt logic
+  --
+  signal irq_active  : std_logic;
+
+  signal irq_z1      : std_logic;
+  signal irq_z2      : std_logic;
+
+  signal dcd_rti     : std_logic;
+
+  signal dcd_rti_z1  : std_logic;
+  signal dcd_rti_z2  : std_logic;
+
+  signal irq_pc_A    : std_logic_vector(PC_MSB downto 0);
+
+  signal irq_sr_B    : std_logic_vector(SR_MSB downto 0);
 
   --
   -- instruction register
@@ -145,33 +160,6 @@ begin
   stall  <=  '1'  when ( d_stall = '1' ) AND ( (inst_fld = OPM_LD ) OR (inst_fld = OPM_LDI ) ) 
         else '0';
 
-  --
-  -- status register
-  --
-  --   top 8 bits (the null_sr bits) are coded along with the instruction flow logic
-  --
-  --   missing :
-  --
-  --     - push/pop for interrupts & RTI ( started coding )
-  --
-  --     - define currently unused bits ( interrupt masks, levels, etc. )
-  --        - especially the interrupt enables for single level interrupt code
-  --          ( disable interrupts on irq after pushing old SR to stack )
-  --
-  sr1:  process 
-    begin
-      wait until rising_edge(clk);
-  
-      if  sync_rst = '1' then
-        st_reg(SR_MSB-8 downto 0) <= ( others => '0');
-  
-      -- FIXME: this is one cycle too early for SR restore
-      elsif ( ex_null = '0' ) AND ( inst_fld = OPC_EXT ) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN ) AND ( ret_type = '1' )  then 
-        st_reg(SR_MSB-8 downto 0) <= rsp_sr(SR_MSB-8 downto 0); 
-
-      end if;
-   
-    end process sr1;
 
   --
   -- generate masks for SPAM instruction
@@ -204,7 +192,7 @@ begin
   -- instruction flow 
   --   creates PC, flow control logic
   --
-  -- re-write as block?  used to be a clocked process...  
+  -- FIXME: re-write as block?  used to be a clocked process...  
   --
   pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
@@ -221,10 +209,7 @@ begin
         next_pc       <= pc_reg;
         next_null_sr  <= null_sr;
   
-      elsif ( irq_edge = '1' ) then
-        next_pc       <= PC_IRQ_VEC;
-        next_null_sr  <= B"1000_0000";
-  
+
       elsif ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
         --
         -- SPAM instruction
@@ -260,52 +245,16 @@ begin
               next_pc       <= ain(PC_MSB downto 0);
               next_null_sr  <= dslot_null & B"000_0000";
 
+            --
+            -- RTS; RTI handled below in PC & SR register code
+            --
             elsif (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) then
               next_pc       <= rsp_pc;
+              next_null_sr  <= dslot_null & B"000_0000";
 
-              --
-              -- existing code won't work for skip, bra.d, etc. 
-              -- that would have changed next state
-              --
-              -- TODO: revised approach
-              --
-              -- enter interrupt:
-              --   - null current EX stage
-              --   - push EX stage inst. address, status register 
-              --   - next_pc = instruction vector
-              --   - set interrupt status flag
-              --
-              -- exit interrupt:
-              --   - #1 pop PC
-              --   - #1 execute or null delay slot as indicated by rti ?
-              --   - #2 pop SR during delay slot execution
-              --
-              -- issues:
-              --   Probably need to also stack current instruction fetch address,
-              --   restart fetch along with restoring EX stage ireg and pc_reg_p1.
-              --   Otherwise an interrupted branch delay slot won't work.
-              --
-
-              --
-              -- ??  load next_null sr with dslot_null & stacked bits of saved null 
-              -- state for an rti ( was top bit was already used when stacked ) ??
-              --
-              if ( ret_type = '1' ) then 
-                next_null_sr  <= dslot_null & rsp_sr(SR_MSB-1 downto SR_MSB-7);
-              else
-                next_null_sr  <= dslot_null & B"000_0000";
-              end if;
-
---            -- this pops ex_null too early: pops old SR while executing RTI branch slot,
---            -- which clobbers ex_null bit of current SR that's nulling RTI branch slot,
---            -- plus improperly restoring null bit for interrupted instruction
---            if ( ret_type = '1' ) then 
---                next_null <= rsp_sr(SR_MSB); 
---              else
---                next_null <= '1';
---              end if;
-
+            --
             -- others in EXT group
+            --
             else
               next_pc       <= pc_reg + PC_INC_I1;
               next_null_sr  <= null_sr(6 downto 0) & '0';
@@ -338,21 +287,92 @@ begin
     
     end process pc1;
 
+
   --
-  --   register next_pc & null_sr
+  -- interrupt control logic
+  --
+  dcd_rti <=   '1'   when (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) AND ( ret_type = '1' ) AND ( ex_null = '0' )
+          else '0';
+
+  P_irq_ctl : process
+    begin
+
+      wait until rising_edge(clk);
+  
+      if sync_rst = '1' then
+        irq_z1     <= '0';
+        irq_z2     <= '0';
+
+        dcd_rti_z1 <= '0';
+        dcd_rti_z2 <= '0';
+
+        irq_active <= '0';
+
+      else
+        irq_z1     <= irq_edge AND NOT irq_active;
+        irq_z2     <= irq_z1;
+
+        dcd_rti_z1 <= dcd_rti;
+        dcd_rti_z2 <= dcd_rti_z1;
+
+        irq_active <= irq_z1 OR (irq_active AND NOT dcd_rti_z1);
+
+      end if;
+
+    end process;
+
+
+  --
+  -- PC & SR register & mux logic
   --
   pcr1: process 
     begin
       wait until rising_edge(clk);
-  
+
+      --
+      -- PC and SR registers
+      --
       if sync_rst = '1' then
         pc_reg   <= PC_RST_VEC;
-        null_sr  <= B"1000_0000";
-  
+        st_reg   <= B"1000_0000" & X"00_00_00";
+
+      elsif ( irq_z1 = '1' ) then
+        pc_reg   <= PC_IRQ_VEC;
+        st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
+--        st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);
+
+      elsif ( dcd_rti = '1' ) then
+        pc_reg   <= irq_pc_A;
+        st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
+
+--      elsif ( dcd_rti_z1 = '1' ) then
+--        pc_reg   <= next_pc;
+--        st_reg   <= irq_sr_B;
+
       else
         pc_reg   <= next_pc;
-        null_sr  <= next_null_sr;
+        st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
 
+      end if;
+
+      --
+      -- interrupt state registers
+      --
+      if sync_rst = '1' then
+        irq_pc_A <= (others => '0');
+
+      elsif ( irq_z1 = '1' ) then
+        irq_pc_A <= next_pc;
+  
+      end if;
+
+
+      if sync_rst = '1' then
+        irq_sr_B <= (others => '0');
+
+      elsif ( irq_z2 = '1' ) then
+        irq_sr_B <= next_null_sr & st_reg(SR_MSB-8 downto 0);
+  
       end if;
   
     end process pcr1;
@@ -387,7 +407,6 @@ begin
   st_reg_out    <= st_reg;
 
   pc_reg_out    <= pc_reg;
-  next_pc_out   <= next_pc;
   pc_reg_p1_out <= pc_reg_p1;
     
 end arch1;

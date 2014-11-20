@@ -131,25 +131,14 @@ package y1a_config is
   --
   -- HW config
   --
-  --  reg_i_addr:
-  --
-  --    change this flag with care
-  --      left over from conversion from unpipelined CLB RAM of the XC4000 family 
-  --      to pipelined blockram of the Spartan-II
-  --
-  --    set to TRUE if instruction memory is async, or clocked on falling edge to hide latency
-  --
-  --    set to FALSE if instruction memory is registered with a one clock delay 
   --
   type y1a_hw_config_type is 
     record
-      reg_i_addr       : boolean;
       irq_support      : boolean;
     end record;
 
   constant DEFAULT_HW_CONFIG : y1a_hw_config_type :=
     (
-      reg_i_addr  => TRUE,
       irq_support => FALSE   -- FIXME: temporarily set default as FALSE until interrupts are working
     );
 
