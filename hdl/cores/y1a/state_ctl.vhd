@@ -96,17 +96,18 @@ architecture arch1 of state_ctl is
   --
   signal irq_active  : std_logic;
 
-  signal irq_z1      : std_logic;
-  signal irq_z2      : std_logic;
+  signal irq_edge_z0 : std_logic;
+  signal irq_edge_z1 : std_logic;
 
   signal dcd_rti     : std_logic;
 
+  signal dcd_rti_z0  : std_logic;
   signal dcd_rti_z1  : std_logic;
-  signal dcd_rti_z2  : std_logic;
 
   signal irq_pc_A    : std_logic_vector(PC_MSB downto 0);
+  signal irq_pc_B    : std_logic_vector(PC_MSB downto 0);
 
-  signal irq_sr_B    : std_logic_vector(SR_MSB downto 0);
+  signal irq_sr_A    : std_logic_vector(SR_MSB downto 0);
 
   --
   -- instruction register
@@ -194,7 +195,7 @@ begin
   --
   -- FIXME: re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, st_reg, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 
@@ -291,7 +292,7 @@ begin
   --
   -- interrupt control logic
   --
-  dcd_rti <=   '1'   when (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) AND ( ret_type = '1' ) AND ( ex_null = '0' )
+  dcd_rti <=   '1'   when ( inst_fld = OPC_EXT ) AND (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) AND ( ret_type = '1' ) AND ( ex_null = '0' )
           else '0';
 
   P_irq_ctl : process
@@ -300,24 +301,66 @@ begin
       wait until rising_edge(clk);
   
       if sync_rst = '1' then
-        irq_z1     <= '0';
-        irq_z2     <= '0';
+        irq_edge_z0 <= '0';
+        irq_edge_z1 <= '0';
 
-        dcd_rti_z1 <= '0';
-        dcd_rti_z2 <= '0';
+        dcd_rti_z0  <= '0';
+        dcd_rti_z1  <= '0';
 
-        irq_active <= '0';
+        irq_active  <= '0';
 
       else
-        irq_z1     <= irq_edge AND NOT irq_active;
-        irq_z2     <= irq_z1;
+        irq_edge_z0 <= irq_edge AND NOT irq_active;
+        irq_edge_z1 <= irq_edge_z0;
 
-        dcd_rti_z1 <= dcd_rti;
-        dcd_rti_z2 <= dcd_rti_z1;
+        dcd_rti_z0  <= dcd_rti;
+        dcd_rti_z1  <= dcd_rti_z0;
 
-        irq_active <= irq_z1 OR (irq_active AND NOT dcd_rti_z1);
+        irq_active  <= irq_edge_z0 OR (irq_active AND NOT dcd_rti_z0);
 
       end if;
+
+    end process;
+
+
+  --
+  -- interrupt state registers
+  --
+  P_isr: process 
+    begin
+      wait until rising_edge(clk);
+
+      if sync_rst = '1' then
+        irq_pc_A <= (others => '0');
+        irq_pc_B <= (others => '0');
+        irq_sr_A <= (others => '0');
+
+      elsif ( irq_edge_z0 = '1' ) then
+
+        -- Plan A : null pre-fetched instruction & restart from there after interrupt
+        irq_pc_A <= pc_reg;
+        irq_sr_A <= next_null_sr & st_reg(SR_MSB-8 downto 0);
+        irq_pc_B <= next_pc;
+  
+        -- Plan B : execute pre-fetched instruction
+        --  irq_pc_A <= next_pc;
+        --  irq_sr_A <= next_null_sr & st_reg(SR_MSB-8 downto 0);
+  
+      end if;
+
+
+--      --
+--      -- Plan B : execute pre-fetched instruction
+--      -- problem: pc_reg has already been hijacked by interrupt, so next_pc here is bogus
+--      --
+--      if sync_rst = '1' then
+--        irq_pc_B <= (others => '0');
+--
+--      elsif ( irq_edge_z1 = '1' ) then
+--
+--        irq_pc_B <= next_pc;
+--  
+--      end if;
 
     end process;
 
@@ -336,18 +379,22 @@ begin
         pc_reg   <= PC_RST_VEC;
         st_reg   <= B"1000_0000" & X"00_00_00";
 
-      elsif ( irq_z1 = '1' ) then
+      --
+      -- FIXME: irq stuff here will break on a stall...
+      --
+      elsif ( irq_edge_z0 = '1' ) then
         pc_reg   <= PC_IRQ_VEC;
-        st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
---        st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);
+
+        st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);     -- plan A
+        --st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);   -- plan B
 
       elsif ( dcd_rti = '1' ) then
         pc_reg   <= irq_pc_A;
         st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
 
---      elsif ( dcd_rti_z1 = '1' ) then
---        pc_reg   <= next_pc;
---        st_reg   <= irq_sr_B;
+      elsif ( dcd_rti_z0 = '1' ) then
+        pc_reg   <= irq_pc_B;
+        st_reg   <= irq_sr_A;
 
       else
         pc_reg   <= next_pc;
@@ -355,25 +402,6 @@ begin
 
       end if;
 
-      --
-      -- interrupt state registers
-      --
-      if sync_rst = '1' then
-        irq_pc_A <= (others => '0');
-
-      elsif ( irq_z1 = '1' ) then
-        irq_pc_A <= next_pc;
-  
-      end if;
-
-
-      if sync_rst = '1' then
-        irq_sr_B <= (others => '0');
-
-      elsif ( irq_z2 = '1' ) then
-        irq_sr_B <= next_null_sr & st_reg(SR_MSB-8 downto 0);
-  
-      end if;
   
     end process pcr1;
 

@@ -113,12 +113,23 @@ if ($D1) {  foreach $address ( sort keys(%line_num) )  { printf ( "  %s  %08x %d
      #
      # look for address match
      #
-     if ( $line =~ /pc_reg_p1=([0-9a-fA-F]+)/ )
+     if ( $line =~ /pc_reg_p1=([0-9a-fA-F]+)\s+ireg=([0-9a-fA-F]+)\s+ex_null=([0-1]+)/ )
        {
 
          $address = oct("0x" . $1);
+         $ireg    = oct("0x" . $2);
+         $ex_null = oct("0x" . $3);
 
-         if ($valid{$address})
+#
+# FIXME: in-progress experiment to identify nulled opcodes
+#
+# also need to detect specific stall causes (irq/stall) 
+# for this to work correctly with existing test suite code
+#
+#         if ( ($ex_null==0) && $valid{$address} )
+#
+
+         if ( $valid{$address} )
            {
              $matched = 1;
 
