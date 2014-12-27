@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -55,6 +55,7 @@ entity state_ctl is
 
 
       dcd_stall          : out std_logic;
+      irq_null           : out std_logic;
 
       st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 
@@ -431,6 +432,7 @@ begin
   -- connect output ports to internal registers
   --
   dcd_stall     <= stall;
+  irq_null      <= irq_edge_z1;
 
   st_reg_out    <= st_reg;
 

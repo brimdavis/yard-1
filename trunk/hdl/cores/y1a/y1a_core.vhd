@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -257,6 +257,8 @@ architecture arch1 of y1a_core is
   signal irq_p0,irq_p1,irq_p2 : std_logic;
   signal irq_edge   : std_logic;
   signal irq_enable : std_logic;
+
+  signal irq_null   : std_logic;
   
   --
   -- skip logic
@@ -1041,6 +1043,7 @@ begin
 
 
             dcd_stall          => dcd_stall,
+            irq_null           => irq_null,
 
             st_reg_out         => st_reg,
 
@@ -1406,6 +1409,8 @@ begin
       y1a_probe_sigs.pc_reg_p1  <= ( ALU_MSB downto PC_MSB+1 => '0') & pc_reg_p1 ;
       y1a_probe_sigs.ireg       <= ireg;     
       y1a_probe_sigs.ex_null    <= ex_null;  
+      y1a_probe_sigs.irq_null   <= irq_null;  
+      y1a_probe_sigs.dcd_stall  <= dcd_stall;  
 
       y1a_probe_sigs.rsp_pc     <= ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc;
 

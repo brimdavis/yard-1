@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2006-2012  Brian Davis
+-- (C) COPYRIGHT 2006-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -66,6 +66,8 @@ package y1a_probe_pkg is
      pc_reg_p1   : std_logic_vector(ALU_MSB downto 0);
      ireg        : std_logic_vector(INST_MSB downto 0);
      ex_null     : std_logic;
+     irq_null    : std_logic;
+     dcd_stall   : std_logic;
 
      rsp_pc      : std_logic_vector(ALU_MSB downto 0);
 
