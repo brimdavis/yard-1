@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2013  Brian Davis
+-- (C) COPYRIGHT 2001-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -581,6 +581,7 @@ package y1a_comps is
 
 
         dcd_stall          : out std_logic;
+        irq_null           : out std_logic;
 
         st_reg_out         : out std_logic_vector(SR_MSB downto 0);
 

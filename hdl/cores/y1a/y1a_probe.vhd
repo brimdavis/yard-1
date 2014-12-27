@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -146,16 +146,25 @@ architecture sim1 of y1a_probe is
           writeline(OUTPUT,L);
   
           write(L, now );
+
           write( L, string'(": EX   pc_reg_p1="));
           hwrite(L,  y1a_probe_sigs.pc_reg_p1 );
+
           write( L, string'(" ireg="));
           hwrite(L,  y1a_probe_sigs.ireg );
+
           write( L, string'("  ex_null="));
           write(L,  y1a_probe_sigs.ex_null );
+
+          write( L, string'("  irq_null="));
+          write(L,  y1a_probe_sigs.irq_null );
+
+          write( L, string'("  dcd_stall="));
+          write(L,  y1a_probe_sigs.dcd_stall );
+
           writeline( OUTPUT, L);
-  
+
         end if;
-  
   
       end process ex_mon;
 
