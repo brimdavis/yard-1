@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -27,7 +27,7 @@ package y1_constants is
   --
   -- the following constants may be changed as noted
   --
-  --  TODO: these might move into config package at some point
+  --  TODO: these should move into config package at some point
   --
 
   --
@@ -47,12 +47,6 @@ package y1_constants is
   -- 
   --constant PC_WIDTH : integer := ALU_WIDTH;
   constant PC_WIDTH   : integer := 16;
-
-  -- return stack depth
-  constant RSTACK_DEPTH : integer := 16;
-
-  -- return stack pointer width, needs to be log2(RSTACK_DEPTH)
-  constant RSP_WIDTH : integer := 4;
 
   --
   --  end of safely editable constants
@@ -92,6 +86,7 @@ package y1_constants is
   constant REG_SP      : std_logic_vector(RF_ADDR_MSB downto 0) := X"D";
   constant REG_IMM     : std_logic_vector(RF_ADDR_MSB downto 0) := X"E";
   constant REG_PC      : std_logic_vector(RF_ADDR_MSB downto 0) := X"F";
+  constant REG_RS      : std_logic_vector(RF_ADDR_MSB downto 0) := X"F";
 
   --
   -- data address width, must equal datapath width for now
@@ -121,14 +116,7 @@ package y1_constants is
   constant PC_IRQ_VEC  : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 12 => '0' ) & X"200";
 
   --
-  -- return stack 
-  --
-  -- RSP_DEPTH, RSP_WIDTH defined at top of file
-  --
-  constant RSP_MSB     : integer := RSP_WIDTH-1;
-
-  --
-  ---- status register width
+  -- status register width
   --
   constant SR_WIDTH    : integer := ALU_WIDTH;
   constant SR_MSB      : integer := SR_WIDTH-1;

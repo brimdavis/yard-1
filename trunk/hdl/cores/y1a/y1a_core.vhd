@@ -248,13 +248,10 @@ architecture arch1 of y1a_core is
   -- stack signals
   --
   signal rsp_pc   : std_logic_vector(PC_MSB downto 0);
-  signal rsp_sr   : std_logic_vector(SR_MSB downto 0);
-  
 
   --
-  -- interrupt stuff ( interrupts currently disabled, not working )
+  -- interrupt stuff
   --
-  signal irq_p0,irq_p1,irq_p2 : std_logic;
   signal irq_edge   : std_logic;
   signal irq_enable : std_logic;
 
@@ -872,13 +869,11 @@ begin
 
     begin
 
---      wb_bus  <=   mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
       wb_bus  <=   mem_wb_bus   when  dcd_mem_ld
              else  wb_muxa;
 
       wb_muxa <=   arith_dat    when  ( inst_type = OPA      ) AND ( arith_op /= T_MISC  )
              else  ea_dat       when  ( inst_fld  = OPM_ST   ) AND ( lea_bit = '1'       ) 
---             else  mem_wb_bus   when  ( inst_fld  = OPM_LD   ) OR  ( inst_fld  = OPM_LDI )
              else  wb_muxb;
 
       wb_muxb <=   logic_dat    when  ( inst_type = OPL      ) 
@@ -981,32 +976,55 @@ begin
   ------------------------------------------------------------------------------
 
   --
-  -- irq edge detect logic
-  --   need to add interrupt enable flag to SR 
-  --   need another flag (in SR?) to gate off irq_edge when in ISR
+  -- interrupt hardware
   --
-  irq_enable <=  '1' when CFG.hw.irq_support else '0';
-
-  -- register inputs 
-  process 
+  B_irq_ctl : block
     begin
-      wait until rising_edge(clk);
 
-      if sync_rst = '1' then
-        irq_p0   <= '1';
-        irq_p1   <= '1';
-        irq_p2   <= '1';
-        irq_edge <= '0';
+      GF_irq: if NOT CFG.hw.irq_support generate
+        begin
+ 
+          irq_edge <= '0';
 
-      else
-        irq_p0   <= irq_l;
-        irq_p1   <= irq_p0;
-        irq_p2   <= irq_p1;
-        irq_edge <= ( NOT irq_p1 AND irq_p2 ) AND irq_enable;
+        end generate GF_irq;
 
-      end if;
 
-    end process;
+      GT_irq: if CFG.hw.irq_support generate
+
+        signal irq_p0,irq_p1,irq_p2 : std_logic;
+
+        begin
+          --
+          -- irq edge detect logic
+          --   need to add interrupt enable ( flag in SR? )
+          --   need another flag (in SR?) to gate off irq_edge when in ISR
+          --
+          irq_enable <=  '1';
+
+          -- register inputs 
+          process 
+            begin
+              wait until rising_edge(clk);
+
+              if sync_rst = '1' then
+                irq_p0   <= '1';
+                irq_p1   <= '1';
+                irq_p2   <= '1';
+                irq_edge <= '0';
+
+              else
+                irq_p0   <= irq_l;
+                irq_p1   <= irq_p0;
+                irq_p2   <= irq_p1;
+                irq_edge <= ( NOT irq_p1 AND irq_p2 ) AND irq_enable;
+
+              end if;
+
+            end process;
+
+        end generate GT_irq;
+
+    end block B_irq_ctl;
 
 
   --
@@ -1015,7 +1033,6 @@ begin
   --  TODO: split into datapath/decode blocks ???
   --
   B_state_ctl : block
-
     begin
 
       I_state_ctl : state_ctl
@@ -1039,8 +1056,6 @@ begin
             imm_reg            => imm_reg,
 
             rsp_pc             => rsp_pc,
-            rsp_sr             => rsp_sr,
-
 
             dcd_stall          => dcd_stall,
             irq_null           => irq_null,
@@ -1159,6 +1174,9 @@ begin
     begin
 
       I_stack: rstack
+        generic map
+          ( CFG      => CFG )
+
         port map
           (
             clk      => clk, 
@@ -1171,30 +1189,27 @@ begin
             -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
             --
             pc_in    => pcr_addr(PC_MSB downto 0), 
-            sr_in    => st_reg,
 
-            pc_stk   => rsp_pc, 
-            sr_stk   => rsp_sr
+            pc_stk   => rsp_pc
           );
 
 
       I_rstack_dcd: rstack_dcd
         generic map
-          ( CFG          => CFG )
+          ( CFG      => CFG )
       
         port map
           (
-            clk          => clk, 
-            sync_rst     => sync_rst,
+            clk      => clk, 
+            sync_rst => sync_rst,
       
-            inst         => inst,
-            stall        => dcd_stall,      
+            inst     => inst,
+            stall    => dcd_stall,      
 
-            ex_null      => ex_null,   
-            irq_edge     => irq_edge,
+            ex_null  => ex_null,   
 
-            dcd_push     => dcd_push, 
-            dcd_pop      => dcd_pop
+            dcd_push => dcd_push, 
+            dcd_pop  => dcd_pop
           );
 
     end block B_rstack;
@@ -1255,6 +1270,8 @@ begin
   --
   B_dbus: block
 
+    signal dcd_sstk     : boolean;  -- save top of Return Stack
+
     signal dcd_st       : boolean;
     signal dcd_st32     : boolean;
     signal dcd_st16     : boolean;
@@ -1309,12 +1326,15 @@ begin
     
         port map
           (
+            dcd_sstk  => dcd_sstk,    
+
             dcd_st    => dcd_st,    
             dcd_st32  => dcd_st32,  
             dcd_st16  => dcd_st16,  
             dcd_st8   => dcd_st8,   
 
             ain       => ain,        
+            rsp_pc    => rsp_pc,        
     
             d_wdat    => d_wdat
           );
@@ -1331,6 +1351,8 @@ begin
             inst      => inst,
             stall     => dcd_stall,      
     
+            dcd_sstk  => dcd_sstk,    
+
             dcd_st    => dcd_st,    
             dcd_st32  => dcd_st32,  
             dcd_st16  => dcd_st16,  

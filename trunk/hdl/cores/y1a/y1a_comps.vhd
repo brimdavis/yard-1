@@ -400,6 +400,11 @@ package y1a_comps is
 
 
   component rstack is
+    generic
+      (
+        CFG        : y1a_config_type
+      );
+
     port
       (
         clk      : in  std_logic;
@@ -409,34 +414,32 @@ package y1a_comps is
         pop      : in  std_logic;
   
         pc_in    : in  std_logic_vector(PC_MSB downto 0);
-        sr_in    : in  std_logic_vector(SR_MSB downto 0);
   
-        pc_stk   : out std_logic_vector(PC_MSB downto 0);
-        sr_stk   : out std_logic_vector(SR_MSB downto 0)
+        pc_stk   : out std_logic_vector(PC_MSB downto 0)
       );
   end component;
 
 
   component rstack_dcd is
-     generic
-       (
-         CFG        : y1a_config_type
-       );
-     port
-       (   
-         clk          : in  std_logic;
-         sync_rst     : in  std_logic;
+    generic
+      (
+        CFG        : y1a_config_type
+      );
 
-         inst         : in  std_logic_vector(INST_MSB downto 0);
-         stall        : in  std_logic;
+    port
+      (   
+        clk          : in  std_logic;
+        sync_rst     : in  std_logic;
 
-         ex_null      : in  std_logic;
-         irq_edge     : in  std_logic;
+        inst         : in  std_logic_vector(INST_MSB downto 0);
+        stall        : in  std_logic;
 
-         dcd_push     : out std_logic;
-         dcd_pop      : out std_logic
+        ex_null      : in  std_logic;
 
-       );
+        dcd_push     : out std_logic;
+        dcd_pop      : out std_logic
+
+      );
   end component;
 
 
@@ -474,12 +477,15 @@ package y1a_comps is
 
     port
       (
+        dcd_sstk  : in  boolean;
+
         dcd_st    : in  boolean;
         dcd_st32  : in  boolean;
         dcd_st16  : in  boolean;
         dcd_st8   : in  boolean;
 
         ain       : in  std_logic_vector(ALU_MSB downto 0);
+        rsp_pc    : in  std_logic_vector(PC_MSB downto 0);
 
         d_wdat    : out std_logic_vector(ALU_MSB downto 0)
       );
@@ -499,6 +505,8 @@ package y1a_comps is
   
         inst         : in  std_logic_vector(INST_MSB downto 0);
         stall        : in  std_logic;
+
+        dcd_sstk     : out boolean;
 
         dcd_st       : out boolean;
         dcd_st32     : out boolean;
@@ -577,8 +585,6 @@ package y1a_comps is
         imm_reg            : in  std_logic_vector(ALU_MSB downto 0);
 
         rsp_pc             : in  std_logic_vector(PC_MSB downto 0);
-        rsp_sr             : in  std_logic_vector(SR_MSB downto 0);
-
 
         dcd_stall          : out std_logic;
         irq_null           : out std_logic;

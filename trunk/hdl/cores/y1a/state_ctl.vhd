@@ -51,8 +51,6 @@ entity state_ctl is
       imm_reg            : in  std_logic_vector(ALU_MSB downto 0);
 
       rsp_pc             : in  std_logic_vector(PC_MSB downto 0);
-      rsp_sr             : in  std_logic_vector(SR_MSB downto 0);
-
 
       dcd_stall          : out std_logic;
       irq_null           : out std_logic;
@@ -196,7 +194,7 @@ begin
   --
   -- FIXME: re-write as block?  used to be a clocked process...  
   --
-  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, st_reg, pc_reg, pc_reg_p1, rsp_pc, rsp_sr, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
+  pc1: process ( inst_fld, ext_grp, skip_cond, ex_null, ret_type, st_reg, pc_reg, pc_reg_p1, rsp_pc, ext_bra_offset, dslot_null, ain, stall, arith_skip_nocarry, arith_cout, imm_reg, spam_mode, spam_mask, spam_length_mask )
 
     begin
 

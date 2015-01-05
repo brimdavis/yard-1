@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2013  Brian Davis
+-- (C) COPYRIGHT 2001-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -134,14 +134,15 @@ package y1a_config is
   --
   type y1a_hw_config_type is 
     record
-      irq_support      : boolean;
+      rstack_depth  : integer;    -- return stack depth
+      irq_support   : boolean;    -- include interrupt hardware in core
     end record;
 
   constant DEFAULT_HW_CONFIG : y1a_hw_config_type :=
     (
-      irq_support => FALSE   -- FIXME: temporarily set default as FALSE until interrupts are working
+      rstack_depth => 16,
+      irq_support  => FALSE   -- FIXME: temporarily set default as FALSE until interrupts are working
     );
-
 
 
   --
