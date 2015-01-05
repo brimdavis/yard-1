@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -52,12 +52,15 @@ entity st_mux is
 
   port
     (   
+      dcd_sstk  : in  boolean;
+
       dcd_st    : in  boolean;
       dcd_st32  : in  boolean;
       dcd_st16  : in  boolean;
       dcd_st8   : in  boolean;
 
       ain       : in  std_logic_vector(ALU_MSB downto 0);
+      rsp_pc    : in  std_logic_vector(PC_MSB downto 0);
 
       d_wdat    : out std_logic_vector(ALU_MSB downto 0)
     );
@@ -79,7 +82,6 @@ begin
     report "Unsupported store configuration flag and/or ALU_WIDTH settings."
     severity error;
 
-
   --
   -- non-native stores disabled: memory write bus driven directly from ain
   --
@@ -89,6 +91,9 @@ begin
       d_wdat
         <=   ain               
         when dcd_st
+
+        else ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
+        when dcd_sstk
 
         else ( others => '0')
         ;                                                              
@@ -110,6 +115,9 @@ begin
 
         else ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0)
         when dcd_st8
+
+        else ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
+        when dcd_sstk
 
         else ( others => '0')
         ;

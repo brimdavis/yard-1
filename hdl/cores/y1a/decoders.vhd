@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -237,6 +237,8 @@ entity st_mux_dcd is
       inst         : in  std_logic_vector(INST_MSB downto 0);
       stall        : in  std_logic;
 
+      dcd_sstk     : out boolean;
+
       dcd_st       : out boolean;
       dcd_st32     : out boolean;
       dcd_st16     : out boolean;
@@ -262,6 +264,7 @@ architecture arch1 of st_mux_dcd is
   alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   alias mem_size     : std_logic_vector(1 downto 0)          is ireg(10 downto 9);
   alias lea_bit      : std_logic                             is ireg(8);
+  alias sel_opa      : std_logic_vector(3 downto 0)          is ireg(3 downto 0);
 
 
 begin
@@ -286,6 +289,8 @@ begin
   --
   -- instruction decodes
   --
+  dcd_sstk <=  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND (sel_opa = REG_RS);
+
   dcd_st   <=  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') );                                                                                                       
   dcd_st32 <=  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( ( mem_size = MEM_32 ) OR ( mem_size = MEM_32_SP ) );
   dcd_st16 <=  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) AND ( mem_size = MEM_16 );
@@ -322,7 +327,6 @@ entity rstack_dcd is
       stall        : in  std_logic;
 
       ex_null      : in  std_logic;
-      irq_edge     : in  std_logic;
 
       dcd_push     : out std_logic;
       dcd_pop      : out std_logic 
@@ -349,6 +353,8 @@ architecture arch1 of rstack_dcd is
   alias ext_bit      : std_logic                             is ireg(11);
   alias ext_grp      : std_logic_vector(3 downto 0)          is ireg(7 downto 4);
   alias call_type    : std_logic                             is ireg(10);
+  alias lea_bit      : std_logic                             is ireg(8);
+  alias sel_opa      : std_logic_vector(3 downto 0)          is ireg(3 downto 0);
 
 
 begin
@@ -371,25 +377,23 @@ begin
   end process;
 
 
-
   dcd_push <= '1'
     when (
-           (
-                 ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
-             OR  ( inst_fld = OPC_BR )
-           )
-           AND ( call_type = '1' ) 
-           AND ( ex_null = '0' )
+               ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_JUMP) )
+           OR  ( inst_fld = OPC_BR )
          )
-
-         OR  ( irq_edge = '1' )
+         AND ( call_type = '1' ) 
+         AND ( ex_null = '0' )
 
     else '0';
 
   
   dcd_pop <=  '1'
-    when (inst_fld  = OPC_EXT) AND (ext_bit = '1' ) AND (ext_grp = EXT_RETURN )  AND ( ex_null = '0')
-
+    when (
+              ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_RETURN) )
+           OR ( (inst_fld = OPM_ST)  AND (lea_bit = '0') AND (sel_opa = REG_RS)     )
+         )
+         AND (ex_null = '0') 
     else '0';
 
 end arch1;

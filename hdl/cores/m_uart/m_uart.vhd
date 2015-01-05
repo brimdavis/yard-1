@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- YARD-1 Design Files copyright (c) 2000-2012, Brian Davis
+-- YARD-1 Design Files copyright (c) 2000-2013,2015 Brian Davis
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -34,20 +34,27 @@
 --
 --  Minimalist UART
 --
---    - fixed data format:
---       8 bits
---       1 stop
---       no parity
+--    Note: 
+--       m_uart was written as a freely distributable stand-in for Xilinx's kcuart;
+--       if targeting a Xilinx device, kcuart (now part of the Picoblaze sources) 
+--       provides a more fully featured UART, including TX and RX FIFO's.
 --
---    - two status flags:
---       tx_rdy : 1 = ok to write data into tx
---       rx_rdy : 1 = data available for read
+--    Features:
 --
---    - no other flow control or status/error flags
+--      - fixed data format:
+--         8 bits
+--         1 stop
+--         no parity
 --
---    - data interface is synchronous to clock
+--      - two status flags:
+--         tx_rdy : 1 = ok to write data into tx
+--         rx_rdy : 1 = data available for read
 --
---    - no fifos
+--      - no other flow control or status/error flags
+--
+--      - data interface is synchronous to clock
+--
+--      - no TX/RX fifos, but does have a double buffered RX register
 --
 
 library ieee;
@@ -350,9 +357,6 @@ begin
         rx_rdy_local <= '1';
 
       end if;
-
-
-
 
     end process;
 

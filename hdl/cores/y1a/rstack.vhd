@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2014  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -14,11 +14,7 @@
 --
 -- Y1A stack module
 --
---   push/pop PC & SR
---
-
---
--- TODO: move RSTACK_DEPTH and friends out of y1_constants and into hardware configuration record
+--   push/pop PC
 --
 
 library ieee;
@@ -28,58 +24,66 @@ library ieee;
   use ieee.std_logic_unsigned."+";
   use ieee.std_logic_unsigned."-";
 
+  use ieee.math_real.all;
+
 library work;
   use work.y1a_config.all;
   use work.y1_constants.all;
 
 
 entity rstack is
+  generic
+    (
+      CFG        : y1a_config_type
+    );
+
   port
     (   
-      clk      : in std_logic;
-      sync_rst : in std_logic;
+      clk      : in  std_logic;
+      sync_rst : in  std_logic;
 
-      push     : in std_logic;
-      pop      : in std_logic;
+      push     : in  std_logic;
+      pop      : in  std_logic;
 
-      pc_in    : in std_logic_vector  (PC_MSB downto 0);
-      sr_in    : in std_logic_vector  (SR_MSB downto 0);
-
-      pc_stk   : out std_logic_vector (PC_MSB downto 0);
-      sr_stk   : out std_logic_vector (SR_MSB downto 0)
+      pc_in    : in  std_logic_vector(PC_MSB downto 0);
+      
+      pc_stk   : out std_logic_vector(PC_MSB downto 0)
     );
 
 end rstack;
 
 architecture arch1 of rstack is
 
---  attribute syn_hier : string;
---  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
+  attribute syn_hier : string;
+  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
 
-  type rs_pc_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (PC_MSB downto 0);
-  type rs_sr_type is array (RSTACK_DEPTH-1 downto 0) of std_logic_vector (SR_MSB downto 0);
+  --
+  -- return stack pointer width
+  --
+
+  -- FIXME: remove old code after checking that log2 synthesizes in ISE 9.x
+  --constant RSP_WIDTH : integer := 4;
+
+  constant RSP_WIDTH : natural := natural( ceil( log2( real(CFG.hw.rstack_depth) ) ) );
+  constant RSP_MSB   : natural := RSP_WIDTH-1;
+
+  type rs_pc_type is array (CFG.hw.rstack_depth-1 downto 0) of std_logic_vector (PC_MSB downto 0);
 
   signal rs_pc      : rs_pc_type := (others => (others => '0') );
-  signal rs_sr      : rs_sr_type := (others => (others => '0') );
 
   -- BMD XST use sep. signals for RAM read data so XST finds RAM's
   signal rs_pc_dat  : std_logic_vector  (PC_MSB downto 0);
-  signal rs_sr_dat  : std_logic_vector  (SR_MSB downto 0);
 
   signal rsp_adr    : std_logic_vector(RSP_MSB downto 0);
   signal rsp_last   : std_logic_vector(RSP_MSB downto 0);
 
   signal pc_reg     : std_logic_vector (PC_MSB downto 0);
-  signal sr_reg     : std_logic_vector (SR_MSB downto 0);
 
 
   attribute syn_ramstyle : string;
 
 --  attribute syn_ramstyle of rs_pc : signal is "no_rw_check";
 --  attribute syn_ramstyle of rs_pc : signal is "distributed";
---
---  attribute syn_ramstyle of rs_sr : signal is "no_rw_check";
---  attribute syn_ramstyle of rs_sr : signal is "distributed";
 
 begin
 
@@ -128,14 +132,12 @@ begin
     if rising_edge(clk) then
       if push = '1' then
         rs_pc( to_integer(unsigned(rsp_adr)) ) <= pc_reg;
-        rs_sr( to_integer(unsigned(rsp_adr)) ) <= sr_reg;
       end if;
     end if;
   end process;
 
   -- BMD XST use sep. signals for RAM read data so XST finds RAM's
   rs_pc_dat <= rs_pc( to_integer(unsigned(rsp_adr)) );
-  rs_sr_dat <= rs_sr( to_integer(unsigned(rsp_adr)) );
 
   --
   --  load registers from inputs on a push
@@ -148,28 +150,22 @@ begin
 
       if  sync_rst = '1' then
         pc_reg <= ( others => '0');
-        sr_reg <= ( others => '0');
 
       elsif push = '1' then
         pc_reg <= pc_in;
-        sr_reg <= sr_in;
 
       elsif pop = '1' then
-       -- BMD XST use sep. signals for RAM read data so XST finds RAM's
+       -- NOTE: XST use sep. signals for RAM read data so XST finds RAM's
        -- pc_reg <= rs_pc(to_integer(unsigned(rsp_adr));
-       -- sr_reg <= rs_sr(to_integer(unsigned(rsp_adr));
         pc_reg <= rs_pc_dat;
-        sr_reg <= rs_sr_dat;
 
       else
         pc_reg <= pc_reg;
-        sr_reg <= sr_reg;
 
       end if;
 
     end process rsp_regs;
 
   pc_stk <= pc_reg;
-  sr_stk <= sr_reg;
 
 end arch1;
