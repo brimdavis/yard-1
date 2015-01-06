@@ -89,11 +89,11 @@ begin
     begin                                                                                     
                                                                                               
       d_wdat
-        <=   ain               
-        when dcd_st
-
-        else ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
+        <=   ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
         when dcd_sstk
+
+        else ain               
+        when dcd_st
 
         else ( others => '0')
         ;                                                              
@@ -107,7 +107,10 @@ begin
     begin                                                                                    
                                                                                               
       d_wdat  
-        <=   ain                                                                                   
+        <=   ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
+        when dcd_sstk
+
+        else ain                                                                                   
         when dcd_st32
 
         else ain(15 downto 0) & ain(15 downto 0)                                                    
@@ -115,9 +118,6 @@ begin
 
         else ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0) & ain(7 downto 0)
         when dcd_st8
-
-        else ( ALU_MSB downto PC_MSB+1 => '0') & rsp_pc(PC_MSB downto 0)
-        when dcd_sstk
 
         else ( others => '0')
         ;
