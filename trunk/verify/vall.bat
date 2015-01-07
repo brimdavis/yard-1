@@ -12,6 +12,8 @@ call v control\jsr1
 :: 
 ::call v control\lbra1
 
+call v control\rstack
+
 call v control\skip1
 call v control\skip2
 call v control\skip3
@@ -45,3 +47,6 @@ call v memory\ldi
 call v memory\lea1
 call v memory\mem1
 call v memory\mem2
+
+
+

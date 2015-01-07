@@ -20,14 +20,19 @@
 
 ; initialize registers
         mov     r0, #$0
-        mov     sp, #$200
+
+        mov     r10,#$80
+        mov     fp,#$100
 
 ; stack up several subroutine calls
         bsr   sub1
 ret1:   nop
 
+
 ;
 ;
+        org    $12E
+
 sub1:
         add    r0,#1
         nop
@@ -37,8 +42,11 @@ sub1:
 
 ret2:   nop             ; delayed branch would return here
 
+
 ;
 ;
+        org    $1F6
+
 sub2:
         add    r0,#2
         nop
@@ -47,35 +55,60 @@ sub2:
 
 ret3:   nop
 
+
 ;
 ;
+        org    $24C
+
 sub3:
         add    r0,#4
         nop
 
+        bsr     sub4
+
+ret4:   nop
+
+;
+;
+        org    $3B4
+
+sub4:
+        add    r0,#4
+        nop
 
 
+;
 ; pop the return stack to memory and check for expected values
+;
 
-        st     r15, (sp)    ; r15 aka rs
-        st     rs, 4(sp)
-        st     rs, 8(sp)
+; register indirect mode
+        st     r15, (r10)    ; r15 aka rs
+
+        ld     r0,(r10)
+        nop
+        .verify r0,#ret4
 
 
-        ld     r0,(sp)
+; stack offset mode
+        st     rs,  4(fp)
+        st     rs,  8(fp)
+        st     rs, 12(fp)
+
+
+
+        ld     r0,4(fp)
         nop
         .verify r0,#ret3
 
 
-        ld     r0,4(sp)
+        ld     r0,8(fp)
         nop
         .verify r0,#ret2
 
 
-        ld     r0,8(sp)
+        ld     r0,12(fp)
         nop
         .verify r0,#ret1
-
 
 done:
         bra     done
