@@ -23,54 +23,46 @@ library ieee;
 
 package y1_constants is
 
-  -------------------------------------------------------------------------
   --
-  -- the following constants may be changed as noted
-  --
-  --  TODO: these should move into config package at some point
-  --
-
-  --
-  -- datapath width, 16 bit is no longer supported  ( see also ADDR_WORD_LSB )
+  -- datapath width
   --
   constant ALU_WIDTH : integer := 32;
-  --constant ALU_WIDTH : integer := 16;
+  constant ALU_MSB   : integer := ALU_WIDTH-1;
+
+  constant ALU_ZERO  : std_logic_vector(ALU_MSB downto 0) := ( others => '0');
+
 
   --
   -- program counter width
-  --   PC is now a byte pointer, always on an even address
-  --
+  --   PC is a byte pointer, always on an even address
+  -- 
   -- note:
   --   setting PC_WIDTH < ALU_WIDTH allows eliminating unused MSB's from PC adder and return stack 
   --   this will trim the core size when using only small internal instruction memories
   --   ( unused PC upper bits are zero-extended when used as an address register )
-  -- 
+  --
+  -- TODO : move this to CFG.hw ( will have to derive PCB_MSB & friends in top level from CFG.hw )
+  --
   --constant PC_WIDTH : integer := ALU_WIDTH;
   constant PC_WIDTH   : integer := 16;
 
+  constant PC_MSB      : integer := PC_WIDTH-1;
+                        
+  constant PC_INC_I1   : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 2 => '0', 1 => '1', 0 => '0');
+  constant PC_RST_VEC  : std_logic_vector(PC_MSB downto 0) := ( others => '0' );
+
   --
-  --  end of safely editable constants
+  -- temporarily hardcode interrupt vector
   --
-  -------------------------------------------------------------------------
+  constant PC_IRQ_VEC  : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 12 => '0' ) & X"200";
 
 
   --
-  -- changing any of the following constants will require associated code changes
+  -- status register width
   --
+  constant SR_WIDTH    : integer := ALU_WIDTH;
+  constant SR_MSB      : integer := SR_WIDTH-1;
 
-  --
-  -- define external bus interface widths 
-  --
-  constant D_DAT_MSB   : integer := ALU_WIDTH-1;
-  constant I_DAT_MSB   : integer := ALU_WIDTH-1;
-
-
-  --
-  -- ALU_WIDTH defined at top of file
-  --
-  constant ALU_MSB   : integer := ALU_WIDTH-1;
-
-  constant ALU_ZERO: std_logic_vector(ALU_MSB downto 0) := ( others => '0');
 
   --
   -- number of registers
@@ -88,38 +80,19 @@ package y1_constants is
   constant REG_PC      : std_logic_vector(RF_ADDR_MSB downto 0) := X"F";
   constant REG_RS      : std_logic_vector(RF_ADDR_MSB downto 0) := X"F";
 
+
+  --
+  -- define external bus interface widths 
+  --
+  constant D_DAT_MSB   : integer := ALU_WIDTH-1;
+  constant I_DAT_MSB   : integer := ALU_WIDTH-1;
+
   --
   -- data address width, must equal datapath width for now
   --
   constant ADDR_WIDTH  : integer := ALU_WIDTH;
   constant ADDR_MSB    : integer := ADDR_WIDTH-1;
 
-  --
-  -- LSB used for native word size addressing of memory
-  --   changes when processor width changes ( 16 bit -> 1   32 bit -> 2)
-  --
-  -- FIXME: the following divide kludge works only for 16/32, should change to log lookup 
-  --
-  constant ADDR_WORD_LSB   : integer := (ALU_WIDTH/16);
-
-  --
-  -- PC_WIDTH defined above
-  --
-  constant PC_MSB      : integer := PC_WIDTH-1;
-                        
-  constant PC_INC_I1   : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 2 => '0', 1 => '1', 0 => '0');
-  constant PC_RST_VEC  : std_logic_vector(PC_MSB downto 0) := ( others => '0' );
-
-  --
-  -- temporarily hardcode interrupt vector
-  --
-  constant PC_IRQ_VEC  : std_logic_vector(PC_MSB downto 0) := ( PC_MSB downto 12 => '0' ) & X"200";
-
-  --
-  -- status register width
-  --
-  constant SR_WIDTH    : integer := ALU_WIDTH;
-  constant SR_MSB      : integer := SR_WIDTH-1;
 
   --
   -- instruction field width
