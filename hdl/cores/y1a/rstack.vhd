@@ -61,10 +61,9 @@ architecture arch1 of rstack is
   -- return stack pointer width
   --
 
-  -- FIXME: remove old code after checking that log2 synthesizes in ISE 9.x
-  --constant RSP_WIDTH : integer := 4;
-
-  constant RSP_WIDTH : natural := natural( ceil( log2( real(CFG.hw.rstack_depth) ) ) );
+  -- FIXME: remove old code after checking that log2 synthesizes in Diamond 3.4
+  constant RSP_WIDTH : integer := 4;
+--  constant RSP_WIDTH : natural := natural( ceil( log2( real(CFG.hw.rstack_depth) ) ) );
   constant RSP_MSB   : natural := RSP_WIDTH-1;
 
   type rs_pc_type is array (CFG.hw.rstack_depth-1 downto 0) of std_logic_vector (PC_MSB downto 0);
