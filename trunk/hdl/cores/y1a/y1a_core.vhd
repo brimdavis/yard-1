@@ -731,6 +731,7 @@ begin
   --
   B_pcr : block
 
+    signal dcd_rs_ld     : std_logic;
     signal dcd_call      : std_logic;
     signal dslot_null    : std_logic;
 
@@ -739,11 +740,14 @@ begin
       I_pcr_calc: pcr_calc
         port map
           (
+            dcd_rs_ld      => dcd_rs_ld,
             dcd_call       => dcd_call,
-            dslot_null     => dslot_null, 
 
+            ld_dat         => mem_wb_bus,
+
+            dslot_null     => dslot_null, 
             pc_reg_p1      => pc_reg_p1, 
-                      
+
             pcr_addr       => pcr_addr
           );
 
@@ -760,6 +764,7 @@ begin
             stall          => dcd_stall,
 
             fld_dslot_null => dslot_null, 
+            dcd_rs_ld      => dcd_rs_ld,
             dcd_call       => dcd_call       
           );
 

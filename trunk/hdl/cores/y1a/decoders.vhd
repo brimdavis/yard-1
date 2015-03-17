@@ -379,10 +379,15 @@ begin
 
   dcd_push <= '1'
     when (
-               ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_JUMP) )
-           OR  ( inst_fld = OPC_BR )
+           (
+             (
+                   ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_JUMP) )
+               OR  ( inst_fld = OPC_BR )
+             )
+             AND ( call_type = '1' ) 
+           )
+           OR  ( (inst_fld = OPM_LD) AND (sel_opa = REG_RS) )
          )
-         AND ( call_type = '1' ) 
          AND ( ex_null = '0' )
 
     else '0';
@@ -908,6 +913,7 @@ entity pcr_calc_dcd is
       stall          : in  std_logic;
 
       fld_dslot_null : out std_logic;
+      dcd_rs_ld      : out std_logic;
       dcd_call       : out std_logic
     );
 
@@ -938,6 +944,8 @@ architecture arch1 of pcr_calc_dcd is
   alias ext_bit    : std_logic is ireg(11);
   alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
 
+  alias sel_opa    : std_logic_vector(3 downto 0) is ireg(3 downto 0);
+
 begin
 
   --
@@ -961,16 +969,19 @@ begin
   --
   -- instruction decodes
   --
-  dcd_call <= '1' 
-           when   (
+  fld_dslot_null <= dslot_null;
+
+  dcd_call  <= '1' 
+            when  (
                         ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
                     OR  ( inst_fld = OPC_BR )
                   )
                   AND ( call_type = '1' )
 
-           else '0';
+            else '0';
 
-  fld_dslot_null <= dslot_null;
+  dcd_rs_ld <= '1'  when (inst_fld = OPM_LD) AND (sel_opa = REG_RS) 
+            else '0';
 
 
 end arch1;

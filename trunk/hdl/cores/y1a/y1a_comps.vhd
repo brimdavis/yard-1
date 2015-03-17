@@ -347,16 +347,18 @@ package y1a_comps is
   component pcr_calc is
      port
        (   
-         dcd_call    : in  std_logic;
+         dcd_rs_ld      : in  std_logic;
+         dcd_call       : in  std_logic;
 
-         dslot_null  : in  std_logic;
-         pc_reg_p1   : in  std_logic_vector(PC_MSB downto 0);
-       
-         pcr_addr    : out std_logic_vector(ALU_MSB downto 0)
+         ld_dat         : in std_logic_vector(ALU_MSB downto 0);
+
+         dslot_null     : in  std_logic;
+         pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
+    
+         pcr_addr       : out std_logic_vector(ALU_MSB downto 0)
        );
-
   end component;
-  
+
   component pcr_calc_dcd is
      generic
        (
@@ -371,6 +373,7 @@ package y1a_comps is
          stall          : in  std_logic;
 
          fld_dslot_null : out std_logic;
+         dcd_rs_ld      : out std_logic;
          dcd_call       : out std_logic
        );
   end component;
