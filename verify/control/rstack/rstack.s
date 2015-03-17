@@ -28,7 +28,10 @@
         bsr   sub1
 ret1:   nop
 
+        nop
+        .verify PASS
 
+        lbra   done
 ;
 ;
         org    $12E
@@ -41,6 +44,11 @@ sub1:
         nop
 
 ret2:   nop             ; delayed branch would return here
+
+        nop
+        .verify PASS
+
+        rts
 
 
 ;
@@ -55,6 +63,10 @@ sub2:
 
 ret3:   nop
 
+        nop
+        .verify PASS
+
+        rts
 
 ;
 ;
@@ -67,6 +79,11 @@ sub3:
         bsr     sub4
 
 ret4:   nop
+
+        nop
+        .verify PASS
+
+        rts
 
 ;
 ;
@@ -84,16 +101,17 @@ sub4:
 ; register indirect mode
         st     r15, (r10)    ; r15 aka rs
 
-        ld     r0,(r10)
-        nop
-        .verify r0,#ret4
-
 
 ; stack offset mode
         st     rs,  4(fp)
         st     rs,  8(fp)
         st     rs, 12(fp)
 
+; check values
+
+        ld     r0,(r10)
+        nop
+        .verify r0,#ret4
 
 
         ld     r0,4(fp)
@@ -109,6 +127,17 @@ sub4:
         ld     r0,12(fp)
         nop
         .verify r0,#ret1
+
+;
+; push return addresses back onto HW stack using memory ld
+;
+        ld     rs, 12(fp)  ; ret1
+        ld     rs,  8(fp)  ; ret2
+        ld     rs,  4(fp)  ; ret3
+        ld     rs,  (r10)  ; ret4
+
+        rts
+
 
 done:
         bra     done
