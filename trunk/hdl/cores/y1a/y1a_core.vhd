@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2014  Brian Davis
+-- (C) COPYRIGHT 2000-2015  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -72,8 +72,6 @@
 --
 --
 --   - Things that are broken and/or unfinished:
---
---      - mov/ld/st to R15 should push/pop HW return stack
 --
 --      - fix interrupts
 --         - finish code rework for status register restore on RTI
@@ -221,7 +219,6 @@ architecture arch1 of y1a_core is
   -- effective address calculation
   --
   signal ea_dat     : std_logic_vector(ALU_MSB downto 0);
-  signal pcr_addr   : std_logic_vector(ALU_MSB downto 0);
 
   --
   -- program counter
@@ -319,8 +316,8 @@ begin
             rd1       => ar, 
             rd2       => br,
 
-            fp_reg    => fp_reg,
-            sp_reg    => sp_reg,
+--            fp_reg    => fp_reg,
+--            sp_reg    => sp_reg,
             imm_reg   => imm_reg
           );
 
@@ -726,52 +723,6 @@ begin
   
   ------------------------------------------------------------------------------
   --
-  --   PC Relative address calculation
-  --    - now used only for return address calculations
-  --
-  B_pcr : block
-
-    signal dcd_rs_ld     : std_logic;
-    signal dcd_call      : std_logic;
-    signal dslot_null    : std_logic;
-
-    begin
-
-      I_pcr_calc: pcr_calc
-        port map
-          (
-            dcd_rs_ld      => dcd_rs_ld,
-            dcd_call       => dcd_call,
-
-            ld_dat         => mem_wb_bus,
-
-            dslot_null     => dslot_null, 
-            pc_reg_p1      => pc_reg_p1, 
-
-            pcr_addr       => pcr_addr
-          );
-
-      I_pcr_calc_dcd: pcr_calc_dcd
-        generic map
-          ( CFG            => CFG )
-
-        port map
-          (   
-            clk            => clk, 
-            sync_rst       => sync_rst,
-  
-            inst           => inst,
-            stall          => dcd_stall,
-
-            fld_dslot_null => dslot_null, 
-            dcd_rs_ld      => dcd_rs_ld,
-            dcd_call       => dcd_call       
-          );
-
-    end block B_pcr;
-
-  ------------------------------------------------------------------------------
-  --
   --   Effective Address calculation
   --
   B_ea : block
@@ -803,8 +754,8 @@ begin
 
             bin            => bin,      
 
-            fp_reg         => fp_reg,   
-            sp_reg         => sp_reg,   
+--            fp_reg         => fp_reg,   
+--            sp_reg         => sp_reg,   
             imm_reg        => imm_reg,   
     
             pc_reg_p1      => pc_reg_p1, 
@@ -895,10 +846,9 @@ begin
 
              else ext_dat when (inst_fld = OPA_MISC ) AND (shift_grp = '1') AND (shift_signed = '1') 
 
-             -- anything left in MISC should be a normal shift/rotate
-             else  shift_dat    when  ( inst_fld  = OPA_MISC ) 
- 
-             else  ( others => '0' );
+             -- made shift_dat default to save logic
+             else  shift_dat;   -- when  ( inst_fld  = OPA_MISC ) 
+
 
       --
       -- local instruction register
@@ -1172,9 +1122,14 @@ begin
   --
   B_rstack: block
 
-    signal dcd_push : std_logic;
-    signal dcd_pop  : std_logic;
+    signal dcd_push   : std_logic;
+    signal dcd_pop    : std_logic;
 
+    signal dcd_rs_ld  : std_logic;
+    signal dcd_call   : std_logic;
+    signal dslot_null : std_logic;
+
+    signal ret_addr   : std_logic_vector(PC_MSB downto 0);
 
     begin
 
@@ -1184,18 +1139,35 @@ begin
 
         port map
           (
-            clk      => clk, 
-            sync_rst => sync_rst,
+            clk       => clk, 
+            sync_rst  => sync_rst,
 
-            push     => dcd_push, 
-            pop      => dcd_pop,
+            push      => dcd_push, 
+            pop       => dcd_pop,
 
             --
             -- TODO: add test cases for new return address calculation for delayed calls (bsr.d, jsr.d)
             --
-            pc_in    => pcr_addr(PC_MSB downto 0), 
+            dcd_rs_ld => dcd_rs_ld,
+            ld_dat    => mem_wb_bus(PC_MSB downto 0),
 
-            pc_stk   => rsp_pc
+            ret_addr  => ret_addr,
+
+            pc_stk    => rsp_pc
+          );
+
+      --
+      -- pcr_calc is now used only for return address calculations
+      --
+      I_pcr_calc: pcr_calc
+        port map
+          (
+            dcd_call       => dcd_call,
+
+            dslot_null     => dslot_null, 
+            pc_reg_p1      => pc_reg_p1, 
+
+            ret_addr       => ret_addr
           );
 
 
@@ -1205,16 +1177,19 @@ begin
       
         port map
           (
-            clk      => clk, 
-            sync_rst => sync_rst,
+            clk            => clk, 
+            sync_rst       => sync_rst,
       
-            inst     => inst,
-            stall    => dcd_stall,      
+            inst           => inst,
+            stall          => dcd_stall,      
 
-            ex_null  => ex_null,   
+            ex_null        => ex_null,   
 
-            dcd_push => dcd_push, 
-            dcd_pop  => dcd_pop
+            fld_dslot_null => dslot_null, 
+            dcd_rs_ld      => dcd_rs_ld,
+            dcd_call       => dcd_call,
+            dcd_push       => dcd_push, 
+            dcd_pop        => dcd_pop
           );
 
     end block B_rstack;

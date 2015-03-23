@@ -320,16 +320,19 @@ entity rstack_dcd is
 
   port
     (   
-      clk          : in  std_logic;
-      sync_rst     : in  std_logic;
+      clk            : in  std_logic;
+      sync_rst       : in  std_logic;
 
-      inst         : in  std_logic_vector(INST_MSB downto 0);
-      stall        : in  std_logic;
+      inst           : in  std_logic_vector(INST_MSB downto 0);
+      stall          : in  std_logic;
 
-      ex_null      : in  std_logic;
+      ex_null        : in  std_logic;
 
-      dcd_push     : out std_logic;
-      dcd_pop      : out std_logic 
+      fld_dslot_null : out std_logic;
+      dcd_rs_ld      : out std_logic;
+      dcd_call       : out std_logic;
+      dcd_push       : out std_logic;
+      dcd_pop        : out std_logic 
 
     );
 
@@ -346,14 +349,18 @@ architecture arch1 of rstack_dcd is
   --
   signal ireg        : std_logic_vector(INST_MSB downto 0);
 
+  signal dcd_call_i  : std_logic;
+  signal dcd_rs_ld_i : std_logic;
+
   --
   -- instruction fields
   --
   alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   alias ext_bit      : std_logic                             is ireg(11);
-  alias ext_grp      : std_logic_vector(3 downto 0)          is ireg(7 downto 4);
   alias call_type    : std_logic                             is ireg(10);
+  alias dslot_null   : std_logic                             is ireg(9);
   alias lea_bit      : std_logic                             is ireg(8);
+  alias ext_grp      : std_logic_vector(3 downto 0)          is ireg(7 downto 4);
   alias sel_opa      : std_logic_vector(3 downto 0)          is ireg(3 downto 0);
 
 
@@ -376,23 +383,29 @@ begin
 
   end process;
 
+  fld_dslot_null <= dslot_null;
 
-  dcd_push <= '1'
-    when (
-           (
-             (
-                   ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_JUMP) )
-               OR  ( inst_fld = OPC_BR )
-             )
-             AND ( call_type = '1' ) 
-           )
-           OR  ( (inst_fld = OPM_LD) AND (sel_opa = REG_RS) )
-         )
-         AND ( ex_null = '0' )
+  dcd_call_i <= '1' 
+             when  (
+                         ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
+                     OR  ( inst_fld = OPC_BR )
+                   )
+                   AND ( call_type = '1' )
 
-    else '0';
+             else '0';
 
-  
+  dcd_call <= dcd_call_i;
+
+
+  dcd_rs_ld_i <=   '1'  when (inst_fld = OPM_LD) AND (sel_opa = REG_RS) 
+             else '0';
+
+  dcd_rs_ld <= dcd_rs_ld_i;
+
+
+  dcd_push <=   '1' when ( (dcd_call_i = '1') OR (dcd_rs_ld_i = '1') ) AND ( ex_null = '0' )
+           else '0';
+
   dcd_pop <=  '1'
     when (
               ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_RETURN) )
@@ -402,7 +415,6 @@ begin
     else '0';
 
 end arch1;
-
 
 
 ------------------------------
@@ -881,108 +893,6 @@ begin
   --
   --
   fld_logic_op <= logic_op;
-
-end arch1;
-
-
-------------------------------
--- pcr_calc_dcd
-------------------------------
-
-library ieee;
-  use ieee.std_logic_1164.all;
-  use ieee.numeric_std.all;
-
-library work;
-  use work.y1_constants.all;
-  use work.y1a_config.all;
-
-
-entity pcr_calc_dcd is
-  generic
-    (
-      CFG        : y1a_config_type
-    );
-
-  port
-    (   
-      clk            : in  std_logic;
-      sync_rst       : in  std_logic;
-
-      inst           : in  std_logic_vector(INST_MSB downto 0);
-      stall          : in  std_logic;
-
-      fld_dslot_null : out std_logic;
-      dcd_rs_ld      : out std_logic;
-      dcd_call       : out std_logic
-    );
-
-end pcr_calc_dcd;
-
-
-architecture arch1 of pcr_calc_dcd is
-
-  attribute syn_hier : string;
-  attribute syn_hier of arch1: architecture is CFG_EDA_SYN_HIER;
-
-  --
-  -- instruction register
-  --
-  signal ireg           : std_logic_vector(INST_MSB downto 0);
-
-  --
-  -- instruction field aliases 
-  --
-  --
-  --
-  --
-  alias inst_fld   : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
-
-  alias call_type  : std_logic is ireg(10);
-  alias dslot_null : std_logic is ireg(9);
-
-  alias ext_bit    : std_logic is ireg(11);
-  alias ext_grp    : std_logic_vector(3 downto 0) is ireg(7 downto 4);
-
-  alias sel_opa    : std_logic_vector(3 downto 0) is ireg(3 downto 0);
-
-begin
-
-  --
-  -- local instruction register
-  --
-  P_ireg: process
-  begin
-    wait until rising_edge(clk);
-
-    if sync_rst = '1' then
-      ireg  <= ( others => '0');
-
-    elsif stall = '0' then
-      ireg  <= inst;
-
-    end if;
-
-  end process;
-
-
-  --
-  -- instruction decodes
-  --
-  fld_dslot_null <= dslot_null;
-
-  dcd_call  <= '1' 
-            when  (
-                        ( (inst_fld = OPC_EXT) AND (ext_bit = '1' ) AND ( ext_grp = EXT_JUMP ) )
-                    OR  ( inst_fld = OPC_BR )
-                  )
-                  AND ( call_type = '1' )
-
-            else '0';
-
-  dcd_rs_ld <= '1'  when (inst_fld = OPM_LD) AND (sel_opa = REG_RS) 
-            else '0';
-
 
 end arch1;
 

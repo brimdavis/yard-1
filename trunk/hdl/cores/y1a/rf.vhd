@@ -51,8 +51,8 @@ entity regfile is
       rd1      : out std_logic_vector (RF_DAT_MSB  downto 0);
       rd2      : out std_logic_vector (RF_DAT_MSB  downto 0);
 
-      fp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
-      sp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
+--      fp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
+--      sp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
       imm_reg  : out std_logic_vector (RF_DAT_MSB  downto 0)
     );
 
@@ -93,22 +93,22 @@ begin
     begin
       wait until rising_edge(clk);
 
-      if sync_rst = '1' then
-        fp_reg  <= ( others => '0');
+--      if sync_rst = '1' then
+--        fp_reg  <= ( others => '0');
+--
+--      elsif ( we = '1' ) AND ( wa = REG_FP ) then
+--        fp_reg <= wd;
+--
+--      end if;
 
-      elsif ( we = '1' ) AND ( wa = REG_FP ) then
-        fp_reg <= wd;
 
-      end if;
-
-
-      if sync_rst = '1' then
-        sp_reg  <= ( others => '0');
-
-      elsif ( we = '1' ) AND ( wa = REG_SP ) then
-        sp_reg <= wd;
-
-      end if;
+--      if sync_rst = '1' then
+--        sp_reg  <= ( others => '0');
+--
+--      elsif ( we = '1' ) AND ( wa = REG_SP ) then
+--        sp_reg <= wd;
+--
+--      end if;
 
 
       if sync_rst = '1' then
