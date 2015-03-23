@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2014  Brian Davis
+-- (C) COPYRIGHT 2001-2015  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -41,8 +41,8 @@ package y1a_comps is
         rd1      : out std_logic_vector(RF_DAT_MSB downto 0);
         rd2      : out std_logic_vector(RF_DAT_MSB downto 0);
 
-        fp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
-        sp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
+--        fp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
+--        sp_reg   : out std_logic_vector (RF_DAT_MSB  downto 0);
         imm_reg  : out std_logic_vector (RF_DAT_MSB  downto 0)
       );
   end component;
@@ -308,8 +308,8 @@ package y1a_comps is
 
         bin          : in  std_logic_vector(ALU_MSB downto 0);
 
-        fp_reg       : in  std_logic_vector(ALU_MSB downto 0);
-        sp_reg       : in  std_logic_vector(ALU_MSB downto 0);
+--        fp_reg       : in  std_logic_vector(ALU_MSB downto 0);
+--        sp_reg       : in  std_logic_vector(ALU_MSB downto 0);
         imm_reg      : in  std_logic_vector(ALU_MSB downto 0);
 
         pc_reg_p1    : in  std_logic_vector(PC_MSB downto 0);
@@ -344,41 +344,6 @@ package y1a_comps is
   end component;
 
 
-  component pcr_calc is
-     port
-       (   
-         dcd_rs_ld      : in  std_logic;
-         dcd_call       : in  std_logic;
-
-         ld_dat         : in std_logic_vector(ALU_MSB downto 0);
-
-         dslot_null     : in  std_logic;
-         pc_reg_p1      : in  std_logic_vector(PC_MSB downto 0);
-    
-         pcr_addr       : out std_logic_vector(ALU_MSB downto 0)
-       );
-  end component;
-
-  component pcr_calc_dcd is
-     generic
-       (
-         CFG            : y1a_config_type
-       );
-     port
-       (   
-         clk            : in  std_logic;
-         sync_rst       : in  std_logic;
-
-         inst           : in  std_logic_vector(INST_MSB downto 0);
-         stall          : in  std_logic;
-
-         fld_dslot_null : out std_logic;
-         dcd_rs_ld      : out std_logic;
-         dcd_call       : out std_logic
-       );
-  end component;
-
-
   component skip_dcd is
     generic
       (
@@ -402,23 +367,39 @@ package y1a_comps is
   end component;
 
 
+  component pcr_calc is
+     port
+       (   
+         dcd_call   : in  std_logic;
+         dslot_null : in  std_logic;
+
+         pc_reg_p1  : in  std_logic_vector(PC_MSB downto 0);
+    
+         ret_addr   : out std_logic_vector(PC_MSB downto 0)
+       );
+  end component;
+
+
   component rstack is
     generic
       (
-        CFG        : y1a_config_type
+        CFG       : y1a_config_type
       );
 
     port
       (
-        clk      : in  std_logic;
-        sync_rst : in  std_logic;
+        clk       : in  std_logic;
+        sync_rst  : in  std_logic;
   
-        push     : in  std_logic;
-        pop      : in  std_logic;
+        push      : in  std_logic;
+        pop       : in  std_logic;
+ 
+        dcd_rs_ld : in  std_logic;
+        ld_dat    : in  std_logic_vector(PC_MSB downto 0);
+
+        ret_addr  : in  std_logic_vector(PC_MSB downto 0);
   
-        pc_in    : in  std_logic_vector(PC_MSB downto 0);
-  
-        pc_stk   : out std_logic_vector(PC_MSB downto 0)
+        pc_stk    : out std_logic_vector(PC_MSB downto 0)
       );
   end component;
 
@@ -431,16 +412,19 @@ package y1a_comps is
 
     port
       (   
-        clk          : in  std_logic;
-        sync_rst     : in  std_logic;
+        clk            : in  std_logic;
+        sync_rst       : in  std_logic;
 
-        inst         : in  std_logic_vector(INST_MSB downto 0);
-        stall        : in  std_logic;
+        inst           : in  std_logic_vector(INST_MSB downto 0);
+        stall          : in  std_logic;
 
-        ex_null      : in  std_logic;
+        ex_null        : in  std_logic;
 
-        dcd_push     : out std_logic;
-        dcd_pop      : out std_logic
+        fld_dslot_null : out std_logic;
+        dcd_rs_ld      : out std_logic;
+        dcd_call       : out std_logic;
+        dcd_push       : out std_logic;
+        dcd_pop        : out std_logic
 
       );
   end component;

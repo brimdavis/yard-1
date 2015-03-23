@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2014  Brian Davis
+-- (C) COPYRIGHT 2000-2015  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -39,15 +39,18 @@ entity rstack is
 
   port
     (   
-      clk      : in  std_logic;
-      sync_rst : in  std_logic;
+      clk       : in  std_logic;
+      sync_rst  : in  std_logic;
 
-      push     : in  std_logic;
-      pop      : in  std_logic;
+      push      : in  std_logic;
+      pop       : in  std_logic;
 
-      pc_in    : in  std_logic_vector(PC_MSB downto 0);
+      dcd_rs_ld : in  std_logic;
+      ld_dat    : in std_logic_vector(PC_MSB downto 0);
+
+      ret_addr  : in  std_logic_vector(PC_MSB downto 0);
       
-      pc_stk   : out std_logic_vector(PC_MSB downto 0)
+      pc_stk    : out std_logic_vector(PC_MSB downto 0)
     );
 
 end rstack;
@@ -151,7 +154,12 @@ begin
         pc_reg <= ( others => '0');
 
       elsif push = '1' then
-        pc_reg <= pc_in;
+
+        if dcd_rs_ld = '1' then
+          pc_reg <= ld_dat;
+        else
+          pc_reg <= ret_addr;
+        end if;
 
       elsif pop = '1' then
        -- NOTE: XST use sep. signals for RAM read data so XST finds RAM's

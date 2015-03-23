@@ -46,8 +46,8 @@ entity ea_calc is
 
       bin          : in  std_logic_vector(ALU_MSB downto 0);
 
-      fp_reg       : in  std_logic_vector(ALU_MSB downto 0);
-      sp_reg       : in  std_logic_vector(ALU_MSB downto 0);
+--      fp_reg       : in  std_logic_vector(ALU_MSB downto 0);
+--      sp_reg       : in  std_logic_vector(ALU_MSB downto 0);
       imm_reg      : in  std_logic_vector(ALU_MSB downto 0);
 
       pc_reg_p1    : in  std_logic_vector(PC_MSB downto 0);
