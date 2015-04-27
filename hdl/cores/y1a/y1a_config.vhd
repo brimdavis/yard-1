@@ -141,7 +141,7 @@ package y1a_config is
   constant DEFAULT_HW_CONFIG : y1a_hw_config_type :=
     (
       rstack_depth => 16,
-      irq_support  => FALSE   -- FIXME: temporarily set default as FALSE until interrupts are working
+      irq_support  => TRUE
     );
 
 

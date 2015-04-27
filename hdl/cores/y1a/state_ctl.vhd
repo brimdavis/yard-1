@@ -39,7 +39,7 @@ entity state_ctl is
       clk                : in  std_logic;
       sync_rst           : in  std_logic;
 
-      irq_edge           : in  std_logic;
+      irq_sync_l         : in  std_logic;
 
       inst               : in  std_logic_vector(INST_MSB downto 0);
       d_stall            : in  std_logic; 
@@ -93,10 +93,12 @@ architecture arch1 of state_ctl is
   --
   -- interrupt logic
   --
+  signal irq_enable  : std_logic;
+
   signal irq_active  : std_logic;
 
-  signal irq_edge_z0 : std_logic;
-  signal irq_edge_z1 : std_logic;
+  signal irq_req_z0  : std_logic;
+  signal irq_req_z1  : std_logic;
 
   signal dcd_rti     : std_logic;
 
@@ -202,15 +204,7 @@ begin
       -- flow control logic
       --
 
-      if ( stall = '1' ) then
-        --
-        -- data stall
-        --
-        next_pc       <= pc_reg;
-        next_null_sr  <= null_sr;
-  
-
-      elsif ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
+      if ( inst_fld = OPC_EXT ) AND (ext_bit = '0' ) then
         --
         -- SPAM instruction
         --
@@ -291,8 +285,16 @@ begin
   --
   -- interrupt control logic
   --
+
+  --  
+  -- FIXME: need program control of irq_enable
+  --  
+  irq_enable <=  '0';
+
+
   dcd_rti <=   '1'   when ( inst_fld = OPC_EXT ) AND (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) AND ( ret_type = '1' ) AND ( ex_null = '0' )
           else '0';
+
 
   P_irq_ctl : process
     begin
@@ -300,22 +302,25 @@ begin
       wait until rising_edge(clk);
   
       if sync_rst = '1' then
-        irq_edge_z0 <= '0';
-        irq_edge_z1 <= '0';
+        irq_req_z0  <= '0';
+        irq_req_z1  <= '0';
 
         dcd_rti_z0  <= '0';
         dcd_rti_z1  <= '0';
 
         irq_active  <= '0';
 
-      else
-        irq_edge_z0 <= irq_edge AND NOT irq_active;
-        irq_edge_z1 <= irq_edge_z0;
+      --
+      -- FIXME: check whether interrupts work with stalls
+      --
+      elsif ( stall = '0' ) then
+        irq_active  <= (irq_enable AND NOT irq_sync_l AND NOT irq_active) OR (irq_active AND NOT dcd_rti_z0);
+
+        irq_req_z0  <= irq_enable AND NOT irq_sync_l AND NOT irq_active;
+        irq_req_z1  <= irq_req_z0;
 
         dcd_rti_z0  <= dcd_rti;
         dcd_rti_z1  <= dcd_rti_z0;
-
-        irq_active  <= irq_edge_z0 OR (irq_active AND NOT dcd_rti_z0);
 
       end if;
 
@@ -334,7 +339,7 @@ begin
         irq_pc_B <= (others => '0');
         irq_sr_A <= (others => '0');
 
-      elsif ( irq_edge_z0 = '1' ) then
+      elsif ( irq_req_z0 = '1' ) then
 
         -- Plan A : null pre-fetched instruction & restart from there after interrupt
         irq_pc_A <= pc_reg;
@@ -355,7 +360,7 @@ begin
 --      if sync_rst = '1' then
 --        irq_pc_B <= (others => '0');
 --
---      elsif ( irq_edge_z1 = '1' ) then
+--      elsif ( irq_req_z1 = '1' ) then
 --
 --        irq_pc_B <= next_pc;
 --  
@@ -371,17 +376,18 @@ begin
     begin
       wait until rising_edge(clk);
 
-      --
-      -- PC and SR registers
-      --
       if sync_rst = '1' then
         pc_reg   <= PC_RST_VEC;
         st_reg   <= B"1000_0000" & X"00_00_00";
 
+      elsif ( stall = '1' ) then
+        pc_reg   <= pc_reg; 
+        st_reg   <= st_reg; 
+
       --
-      -- FIXME: irq stuff here will break on a stall...
+      --  irq sequencing
       --
-      elsif ( irq_edge_z0 = '1' ) then
+      elsif ( irq_req_z0 = '1' ) then
         pc_reg   <= PC_IRQ_VEC;
 
         st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);     -- plan A
@@ -395,13 +401,15 @@ begin
         pc_reg   <= irq_pc_B;
         st_reg   <= irq_sr_A;
 
+      --
+      -- normal instruction sequence
+      --
       else
         pc_reg   <= next_pc;
         st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);
 
       end if;
 
-  
     end process pcr1;
 
 
@@ -430,7 +438,7 @@ begin
   -- connect output ports to internal registers
   --
   dcd_stall     <= stall;
-  irq_null      <= irq_edge_z1;
+  irq_null      <= irq_req_z1;
 
   st_reg_out    <= st_reg;
 

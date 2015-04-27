@@ -406,7 +406,7 @@ begin
   --  31:16 : output register readback
   --  15:00 : input register read
   --
-  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1, spare_rdat )
+  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1, out_reg1, spare_rdat )
     begin
  
       if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
