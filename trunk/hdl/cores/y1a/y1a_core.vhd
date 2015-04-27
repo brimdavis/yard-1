@@ -249,9 +249,7 @@ architecture arch1 of y1a_core is
   --
   -- interrupt stuff
   --
-  signal irq_edge   : std_logic;
-  signal irq_enable : std_logic;
-
+  signal irq_sync_l : std_logic;
   signal irq_null   : std_logic;
   
   --
@@ -808,6 +806,7 @@ begin
     -- local instruction register
     --
     signal ireg           : std_logic_vector(INST_MSB downto 0);
+    attribute syn_keep of ireg    : signal is true;
 
     --
     -- local instruction decode
@@ -931,30 +930,24 @@ begin
   ------------------------------------------------------------------------------
 
   --
-  -- interrupt hardware
+  -- sync interrupt input
   --
-  B_irq_ctl : block
+  B_irq_sync : block
     begin
 
       GF_irq: if NOT CFG.hw.irq_support generate
         begin
  
-          irq_edge <= '0';
+          irq_sync_l <= '1';
 
         end generate GF_irq;
 
 
       GT_irq: if CFG.hw.irq_support generate
 
-        signal irq_p0,irq_p1,irq_p2 : std_logic;
+        signal irq_x0,irq_x1,irq_x2 : std_logic;
 
         begin
-          --
-          -- irq edge detect logic
-          --   need to add interrupt enable ( flag in SR? )
-          --   need another flag (in SR?) to gate off irq_edge when in ISR
-          --
-          irq_enable <=  '1';
 
           -- register inputs 
           process 
@@ -962,16 +955,16 @@ begin
               wait until rising_edge(clk);
 
               if sync_rst = '1' then
-                irq_p0   <= '1';
-                irq_p1   <= '1';
-                irq_p2   <= '1';
-                irq_edge <= '0';
+                irq_x0     <= '1';
+                irq_x1     <= '1';
+                irq_x2     <= '1';
+                irq_sync_l <= '1';
 
               else
-                irq_p0   <= irq_l;
-                irq_p1   <= irq_p0;
-                irq_p2   <= irq_p1;
-                irq_edge <= ( NOT irq_p1 AND irq_p2 ) AND irq_enable;
+                irq_x0     <= irq_l;
+                irq_x1     <= irq_x0;
+                irq_x2     <= irq_x1;
+                irq_sync_l <= irq_x2;
 
               end if;
 
@@ -979,7 +972,7 @@ begin
 
         end generate GT_irq;
 
-    end block B_irq_ctl;
+    end block B_irq_sync;
 
 
   --
@@ -999,7 +992,7 @@ begin
             clk                => clk,
             sync_rst           => sync_rst,
 
-            irq_edge           => irq_edge,
+            irq_sync_l         => irq_sync_l,
 
             inst               => inst,
             d_stall            => d_stall,      
@@ -1036,10 +1029,7 @@ begin
       if sync_rst = '1' then
         ireg      <= ( others => '0');
 
-      elsif ( dcd_stall = '1' ) then
-        ireg      <= ireg;
-
-      else
+      elsif ( dcd_stall = '0' ) then
         ireg      <= inst;
 
       end if;
