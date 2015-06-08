@@ -1,7 +1,7 @@
-[timestart] 386000000
-[size] 1498 1050
-[pos] -138 -150
-*-27.535572 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[timestart] 0
+[size] 1507 1030
+[pos] -1 -1
+*-27.535572 474700000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] top.
 [treeopen] top.testbench.
 [treeopen] top.testbench.i_evb.
@@ -73,7 +73,6 @@ top.testbench.i_evb.evb_core.b_state_ctl.i_state_ctl.irq_active
 -
 @28
 top.testbench.i_evb.evb_core.b_state_ctl.i_state_ctl.irq_req_z0
-@29
 top.testbench.i_evb.evb_core.b_state_ctl.i_state_ctl.irq_req_z1
 @200
 -
@@ -116,6 +115,17 @@ top.testbench.i_evb.evb_core.b_state_ctl.i_state_ctl.dcd_rti_z1
 #{top.testbench.i_evb.evb_core.st_reg[31:0]} top.testbench.i_evb.evb_core.st_reg[31] top.testbench.i_evb.evb_core.st_reg[30] top.testbench.i_evb.evb_core.st_reg[29] top.testbench.i_evb.evb_core.st_reg[28] top.testbench.i_evb.evb_core.st_reg[27] top.testbench.i_evb.evb_core.st_reg[26] top.testbench.i_evb.evb_core.st_reg[25] top.testbench.i_evb.evb_core.st_reg[24] top.testbench.i_evb.evb_core.st_reg[23] top.testbench.i_evb.evb_core.st_reg[22] top.testbench.i_evb.evb_core.st_reg[21] top.testbench.i_evb.evb_core.st_reg[20] top.testbench.i_evb.evb_core.st_reg[19] top.testbench.i_evb.evb_core.st_reg[18] top.testbench.i_evb.evb_core.st_reg[17] top.testbench.i_evb.evb_core.st_reg[16] top.testbench.i_evb.evb_core.st_reg[15] top.testbench.i_evb.evb_core.st_reg[14] top.testbench.i_evb.evb_core.st_reg[13] top.testbench.i_evb.evb_core.st_reg[12] top.testbench.i_evb.evb_core.st_reg[11] top.testbench.i_evb.evb_core.st_reg[10] top.testbench.i_evb.evb_core.st_reg[9] top.testbench.i_evb.evb_core.st_reg[8] top.testbench.i_evb.evb_core.st_reg[7] top.testbench.i_evb.evb_core.st_reg[6] top.testbench.i_evb.evb_core.st_reg[5] top.testbench.i_evb.evb_core.st_reg[4] top.testbench.i_evb.evb_core.st_reg[3] top.testbench.i_evb.evb_core.st_reg[2] top.testbench.i_evb.evb_core.st_reg[1] top.testbench.i_evb.evb_core.st_reg[0]
 @200
 -
+-
+@800200
+-rstack
+@29
+top.testbench.i_evb.evb_core.b_rstack.dcd_call
+top.testbench.i_evb.evb_core.b_rstack.dcd_rs_ld
+top.testbench.i_evb.evb_core.b_rstack.dcd_pop
+top.testbench.i_evb.evb_core.b_rstack.dcd_push
+@1000200
+-rstack
+@200
 -
 @28
 top.testbench.i_evb.dcd_uart

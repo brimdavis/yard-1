@@ -358,6 +358,7 @@ architecture arch1 of rstack_dcd is
   alias inst_fld     : std_logic_vector(ID_MSB   downto 0)   is ireg(15 downto 12);
   alias ext_bit      : std_logic                             is ireg(11);
   alias call_type    : std_logic                             is ireg(10);
+  alias ret_type     : std_logic                             is ireg(10);
   alias dslot_null   : std_logic                             is ireg(9);
   alias lea_bit      : std_logic                             is ireg(8);
   alias ext_grp      : std_logic_vector(3 downto 0)          is ireg(7 downto 4);
@@ -408,8 +409,8 @@ begin
 
   dcd_pop <=  '1'
     when (
-              ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_RETURN) )
-           OR ( (inst_fld = OPM_ST)  AND (lea_bit = '0') AND (sel_opa = REG_RS)     )
+              ( (inst_fld = OPC_EXT) AND (ext_bit = '1') AND (ext_grp = EXT_RETURN) AND ( ret_type = '0' ) )
+           OR ( (inst_fld = OPM_ST)  AND (lea_bit = '0') AND (sel_opa = REG_RS) )
          )
          AND (ex_null = '0') 
     else '0';
