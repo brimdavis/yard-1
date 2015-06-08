@@ -38,6 +38,29 @@
     nop
     .verify r0,#$0000_0004
 
+;
+; call subroutines to check proper stack operation during interrupts
+;
+    bsr  sub1
+    bsr  sub2
+    nop
+
+;
+; check that ISR incremented r1 as expected
+;
+    nop
+    .verify r1,#$0000_0002
+
+
+done:
+        bra     done
+
+;
+;
+;
+sub1:
+
+
     add     r0,#1
     nop
     .verify r0,#$0000_0005
@@ -212,7 +235,12 @@
     nop
     .verify r0,#$0000_002f
 
+    rts
 
+;
+;
+;
+sub2:
     add     r0,#1
     nop
     .verify r0,#$0000_0030
@@ -277,17 +305,11 @@
     nop
     .verify r0,#$0000_003f
 
+    rts
+
 ;
+; ISR entry point
 ;
-;
-    nop
-    .verify r1,#$0000_0002
-
-
-done:
-        bra     done
-
-
    org   $200
 
 irq:
