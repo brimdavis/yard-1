@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2014 Brian Davis
+; (C) COPYRIGHT 2014,2015 Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -15,6 +15,12 @@
 
     org     $0
 
+    nop
+
+;
+; enable interrupts
+;
+    ei
 
 ;
 ; sucessive adds

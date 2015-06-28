@@ -105,6 +105,26 @@
 
     .verify     r0,#$0000_1248
 
+;
+; XORN, skip always, alternating mask, spam length 5
+;
+    mov         r0,#0
+
+    skip.a
+    spam.xorn   #%1010_1010,#5
+
+    or          r0,#$1000_0000
+    or          r0,#$0200_0000
+    or          r0,#$0040_0000
+    or          r0,#$0008_0000
+
+    or          r0,#$0000_1000
+    or          r0,#$0000_0200
+    or          r0,#$0000_0040
+    or          r0,#$0000_0008
+
+    .verify     r0,#$0208_0248
+
 
 ;
 ; XORN, skip never 

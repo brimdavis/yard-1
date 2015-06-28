@@ -604,7 +604,9 @@ sub ps_o0r
 #----------------------
 %ops_a0r = 
   (
-    'nop'   =>  { type =>  'ALIAS_0R' , opc => '0000000000000000' , ps => \&ps_a0r, name => "No OPeration" },   # mov r0,r0
+    'nop'   =>  { type =>  'ALIAS_0R' , opc => '0000000000000000' , ps => \&ps_a0r, name => "No OPeration"       },  # mov r0,r0
+    'ei'    =>  { type =>  'ALIAS_0R' , opc => '1100111100000100' , ps => \&ps_a0r, name => "Enable Interrupts"  },  # CP0 OP7,1,#4
+    'di'    =>  { type =>  'ALIAS_0R' , opc => '1100011100000100' , ps => \&ps_a0r, name => "Disable Interrupts" },  # CP0 OP7,0,#4
   );
 
 # add to HOH opcode table
@@ -918,6 +920,8 @@ sub ps_mem
         #
         if ( ($offset > 60) || ($offset < 0) ) 
         {
+          # FIXME: should also handle long imm prefixes here, instead of assuming imm12
+
           #
           # out of range stack offset, so generate IMM12 prefix instead
           #

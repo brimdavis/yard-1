@@ -276,6 +276,19 @@ package y1_constants is
 
 
   --
+  -- CoProcessor subfields
+  --
+  constant CP_OP0    : std_logic_vector(2 downto 0) := B"000";
+  constant CP_OP1    : std_logic_vector(2 downto 0) := B"001";
+  constant CP_OP2    : std_logic_vector(2 downto 0) := B"010";
+  constant CP_OP3    : std_logic_vector(2 downto 0) := B"011";
+  constant CP_OP4    : std_logic_vector(2 downto 0) := B"100";
+  constant CP_OP5    : std_logic_vector(2 downto 0) := B"101";
+  constant CP_OP6    : std_logic_vector(2 downto 0) := B"110";
+  constant CP_OP7    : std_logic_vector(2 downto 0) := B"111";
+
+
+  --
   -- T_EXT subfields
   --
   --
