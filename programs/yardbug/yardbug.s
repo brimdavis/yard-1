@@ -2,10 +2,31 @@
 ;
 ; YARDBUG serial debugger 0.2
 ;
-; (C) COPYRIGHT 2001-2012  B. Davis
+; (C) COPYRIGHT 2001-2013,2015  Brian Davis
+; All rights reserved.
 ;
-; Code released under the terms of the BSD 2-clause license
-; see license/bsd_2-clause.txt
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+;    * Redistributions of source code must retain the above copyright
+;      notice, this list of conditions and the following disclaimer.
+;
+;    * Redistributions in binary form must reproduce the above copyright 
+;      notice, this list of conditions and the following disclaimer in the 
+;      documentation and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -186,7 +207,7 @@ cmd_dump:
     dec     r1          ; decrement byte count ( loop counter counts N-1..0 )
 
     mov     r13, r1             ; r13 = byte count
-    and     r13, #$0000_1fff    ; limit loop iterations to 8K-1
+    and     r13, #$0000_1fff    ; limit loop iterations to 8K
 
 .next_line:
     mov     r0, r12     ; print address
@@ -203,7 +224,7 @@ cmd_dump:
     inc     r12         ; increment memory pointer
 
     sub.snb r13,#1      ; decrement byte count, check for borrow
-    bra     send_crlf   ; bail out if negative ( bra so send_crlf returns to main )
+    bra     send_crlf   ; bail out if negative (tail call)
 
     dec     r11         ; decrement line byte counter
 
@@ -227,7 +248,7 @@ cmd_help:
 ;
     imm12   #STR_BANNER
     bsr     pstr        ; print initial banner
-    bra     pstr        ; print CRLF & commands, tail return
+    bra     pstr        ; print CRLF & commands (tail call)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -311,7 +332,7 @@ ghex:
 
 ; shift last value up 4 bits
     bsr     rol_r1_four
-    and     r1, #$ffff_fff0   ; clear out the 4 LSB's from rotate
+    and     r1, #$ffff_fff0   ; clear out the 4 LSB's 
 
 ; or in new nybble
     or      r1, r0
@@ -442,11 +463,12 @@ get_char_echo:
 
     mov     r10,#$0d    
 
-    when.eq r10,r0      ; if CR echo both CR & LF
-    bra     send_crlf   ; note that send_crlf will return r0=0 to the caller in place of CR
+; if CR echo both CR & LF
+    when.eq r10,r0      
+    bra     send_crlf   ; note that send_crlf will return r0=0 to the caller in place of CR (tail call)
 
-                        ; else echo the original character
-    bra     send_char   ; bra instead of bsr & rts saves an instruction (ROM space)
+; else echo the original character
+    bra     send_char   ; (tail call)
 
 
 ;       

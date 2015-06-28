@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2014  Brian Davis
+-- (C) COPYRIGHT 2000-2015  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -129,6 +129,12 @@ architecture arch1 of state_ctl is
   alias bra_offset            : std_logic_vector(8 downto 0) is ireg(8 downto 0);
 
   alias ext_grp               : std_logic_vector(3 downto 0) is ireg(7 downto 4);
+
+  --
+  -- coprocessor fields
+  --
+  alias cp_op                 : std_logic_vector(2 downto 0) is ireg(10 downto 8);
+  alias cp_num                : std_logic_vector(3 downto 0) is ireg( 7 downto 4);
 
   --
   -- SPAM instruction fields
@@ -287,9 +293,27 @@ begin
   --
 
   --  
-  -- FIXME: need program control of irq_enable
+  -- CP0 OP7 sets/clears irq_enable flag
   --  
-  irq_enable <=  '0';
+  P_irq_en : process
+    begin
+      wait until rising_edge(clk);
+
+      if sync_rst = '1' then
+        irq_enable <=  '0';
+
+      elsif ( inst_fld = OPC_CP ) AND ( cp_op = CP_OP7 ) AND ( cp_num = X"0" )  then
+        --
+        -- ireg( 2) => ctl bit mask for interrupt enable
+        -- ireg(11) => set/clear
+        --
+        if ireg(2) = '1' then
+          irq_enable <= ireg(11);
+        end if;
+
+      end if;
+
+    end process;
 
 
   dcd_rti <=   '1'   when ( inst_fld = OPC_EXT ) AND (ext_grp = EXT_RETURN) AND (ext_bit = '1' ) AND ( ret_type = '1' ) AND ( ex_null = '0' )
@@ -372,7 +396,7 @@ begin
   --
   -- PC & SR register & mux logic
   --
-  pcr1: process 
+  P_pc_sr: process 
     begin
       wait until rising_edge(clk);
 
@@ -410,7 +434,7 @@ begin
 
       end if;
 
-    end process pcr1;
+    end process;
 
 
   --
