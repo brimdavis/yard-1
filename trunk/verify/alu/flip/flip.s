@@ -14,6 +14,11 @@
 ;
 
     org $0
+;
+; enable interrupts
+;
+    ei
+
 
 ;
 ; cnt1
@@ -108,6 +113,16 @@ Lx4444_4444   dc.q   $4444_4444
 Lx8888_8888   dc.q   $8888_8888
 Lx1428_3cf0   dc.q   $1428_3cf0
 Lx1234_5678   dc.q   $1234_5678
+
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
 
 
    end

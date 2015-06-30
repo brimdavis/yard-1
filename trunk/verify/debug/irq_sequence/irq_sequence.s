@@ -52,10 +52,16 @@
     nop
 
 ;
+; disable interrupts
+;
+    di
+    nop
+
+;
 ; check that ISR incremented r1 as expected
 ;
     nop
-    .verify r1,#$0000_0002
+    .verify r1,#$9
 
 
 done:
