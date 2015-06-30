@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012,2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -16,6 +16,12 @@
 ;
 
     org $0
+
+;
+; enable interrupts
+;
+    ei
+
 
 ;
 ; load 'em up    
@@ -102,6 +108,17 @@
 
 done:
    bra  done
+
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
 
   end
 

@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012,2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -26,6 +26,13 @@
     org $0
 
     nop     ; pad to avoid verify psuedo-op @ address zero
+
+;
+; enable interrupts
+;
+    ei
+
+
 ;
 ; 5 bit sign extended & complement
 ;  (note, the ".not" encodings duplicate the set of un-complemented ones for 5 bit signed constants...)
@@ -638,6 +645,17 @@
 
 done:
    bra  done
+
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
 
   end
 

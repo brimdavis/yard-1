@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012,2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -18,21 +18,28 @@
 
     org $0
 
+
+;
+; enable interrupts
+;
+    ei
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; lea tests using R15 as address operand should return current PC
 ;
-    lea     r0,(pc)
-    lea     r1,(pc)
+L1:  lea     r0,(pc)
+L2:  lea     r1,(pc)
 
 ;
 ; nops to avoid using verify psuedo-op @ address zero
 ;
     nop     
-    .verify r0,#$0000_0000
+    .verify r0,#L1
 
     nop
-    .verify r1,#$0000_0002
+    .verify r1,#L2
 
     bra     L0FE
 
@@ -92,6 +99,18 @@ L13E
 
 done:
     bra     done
+
+
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
 
   end
 

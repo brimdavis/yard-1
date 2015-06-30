@@ -46,7 +46,7 @@ architecture bench1 of testbench is
   signal clk     : std_logic := 'H';  -- initialize for clk gen
   signal rst_l   : std_logic;
   
-  signal irq_l   : std_logic;
+  signal irq_l   : std_logic := 'H';  -- initialize for continous irq_gen
   
   signal dip_sw  : std_logic_vector(3 downto 0);
   
@@ -95,14 +95,21 @@ begin
   --
   rst_l <= '0', '1' after 10 * TB_CLK_PERIOD + TB_HOLD;
 
+
+---  --
+---  -- interrupt pulses @ 50 & 100 clock ticks in, 4 clocks wide
+---  --
+---  irq_l <= '1', 
+---           '0' after  50 * TB_CLK_PERIOD + TB_HOLD, 
+---           '1' after  54 * TB_CLK_PERIOD + TB_HOLD,
+---           '0' after 100 * TB_CLK_PERIOD + TB_HOLD, 
+---           '1' after 104 * TB_CLK_PERIOD + TB_HOLD;
+
   --
-  -- interrupt pulses @ 50 & 100 clock ticks in, 4 clocks wide
+  -- continuous interrupts- run verification tests with interrupts active
+  --  3 clocks wide to trigger just one level sensitive interrupt per pulse with minimal ISR stub
   --
-  irq_l <= '1', 
-           '0' after  50 * TB_CLK_PERIOD + TB_HOLD, 
-           '1' after  54 * TB_CLK_PERIOD + TB_HOLD,
-           '0' after 100 * TB_CLK_PERIOD + TB_HOLD, 
-           '1' after 104 * TB_CLK_PERIOD + TB_HOLD;
+  irq_l <= NOT irq_l after 17 * TB_CLK_PERIOD + TB_HOLD, '1' after 20 * TB_CLK_PERIOD + TB_HOLD ;
 
   --
   -- drive switch inputs
