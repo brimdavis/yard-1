@@ -19,6 +19,11 @@
         org $0
 
 ;
+; enable interrupts
+;
+         ei
+
+;
 ; skip on flag 
 ;
 ;  input flags hardwired to $55AA in testbench
@@ -239,7 +244,18 @@
 done:
         bra  done
 
-  end
+
+;
+; ISR entry point
+;
+        org   $200
+
+irq:
+        nop
+        rti
+
+
+        end
 
 
 

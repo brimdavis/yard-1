@@ -105,11 +105,18 @@ begin
 ---           '0' after 100 * TB_CLK_PERIOD + TB_HOLD, 
 ---           '1' after 104 * TB_CLK_PERIOD + TB_HOLD;
 
+---  --
+---  --  interrupts every 20 cycles- run verification tests with interrupts active
+---  --  3 clocks wide to trigger just one level sensitive interrupt per pulse with minimal ISR stub
+---  --
+---  irq_l <= NOT irq_l after 17 * TB_CLK_PERIOD + TB_HOLD, '1' after 20 * TB_CLK_PERIOD + TB_HOLD ;
+---
+
   --
-  -- continuous interrupts- run verification tests with interrupts active
-  --  3 clocks wide to trigger just one level sensitive interrupt per pulse with minimal ISR stub
+  --  continous interrupts after reset- run verification tests with interrupts active
   --
-  irq_l <= NOT irq_l after 17 * TB_CLK_PERIOD + TB_HOLD, '1' after 20 * TB_CLK_PERIOD + TB_HOLD ;
+  irq_l <= '1', '0' after 10 * TB_CLK_PERIOD + TB_HOLD;
+
 
   --
   -- drive switch inputs

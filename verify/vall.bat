@@ -2,15 +2,13 @@
 :: run all tests
 ::
 call v control\reset_vector
+
 call v control\bra1
 call v control\bsr1
+call v control\lbra1
+
 call v control\jmp1
 call v control\jsr1
-
-:: 
-:: lbra address calculation prefix instruction not implemented yet
-:: 
-::call v control\lbra1
 
 call v control\rstack
 
@@ -26,7 +24,7 @@ call v control\when
 call v alu\addsub1
 
 ::
-:: ff1 & cnt1 are currently broken during ext addition
+:: FF1 & CNT1 are currently broken after EXT addition
 ::
 ::call v alu\bitsy1
 ::call v alu\bitsy2

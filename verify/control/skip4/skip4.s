@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -18,6 +18,11 @@
 ;     
 
     org $0
+
+;
+; enable interrupts
+;
+    ei
 
 ;
 ; skip.le  less than or equal
@@ -399,6 +404,24 @@
     nop
     .verify r0,#0
 
+;
+; bra over ISR
+;
+    bra     more_tests
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
+;
+;
+;
+more_tests:
     mov     r1, #$ffff_ffff
     mov     r2, #$0000_0000
 

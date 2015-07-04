@@ -414,8 +414,18 @@ begin
       elsif ( irq_req_z0 = '1' ) then
         pc_reg   <= PC_IRQ_VEC;
 
-        st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);     -- plan A
+        st_reg   <= B"1000_0000" & st_reg(SR_MSB-8 downto 0);     -- plan A, null the prefetched instruction
         --st_reg   <= next_null_sr & st_reg(SR_MSB-8 downto 0);   -- plan B
+
+      --
+      -- This next test handles the case of interrupting a SPAM instruction.
+      -- The ex_null from the irq would otherwise set next_null in the ISR 
+      -- as per the mask for the SPAM, because SPAM has priority over ex_null 
+      -- in the flow control logic
+      --
+      elsif ( irq_req_z1 = '1' ) then
+        pc_reg   <= next_pc;
+        st_reg   <= B"0000_0000" & st_reg(SR_MSB-8 downto 0); 
 
       elsif ( dcd_rti = '1' ) then
         pc_reg   <= irq_pc_A;

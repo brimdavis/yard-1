@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2013  Brian Davis
+; (C) COPYRIGHT 2001-2013, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -14,11 +14,15 @@
 ;
 ; check out BRA
 ;
-;  add tests for negative offsets
-;  add tests for long branch
-;
 
    org $0
+
+
+;
+; enable interrupts
+;
+    ei
+
 
 ; r0 = test flags
     mov     r0, #0
@@ -86,7 +90,21 @@ error:
     bra     done
 
 
-    org     $0000_0200
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
+
+;
+;
+;
+   org   $218
 
 targ5:
     nop
@@ -96,9 +114,5 @@ targ5:
     bra     targ6
 
 
-
-  end
-
-
-
+   end
 

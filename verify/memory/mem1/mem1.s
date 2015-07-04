@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -16,6 +16,12 @@
 ;
 
     org $0
+
+;
+; enable interrupts
+;
+    ei
+
 
 ; use zero for base address
     mov     r2, #0
@@ -320,7 +326,18 @@ K_SB2:   dc.b    $00
 K_SB3:   dc.b    $00
 
 
-    end
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
+
+
+   end
 
 
 
