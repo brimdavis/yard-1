@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2012  Brian Davis
+; (C) COPYRIGHT 2001-2012, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -19,6 +19,12 @@
 ;
 
        org $0
+
+;
+; enable interrupts
+;
+    ei
+
 
 ; r0 = test flags
         mov     r0, #0
@@ -193,9 +199,17 @@ sub16:
         rts
 
 
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
 
 
-  end
+   end
 
 
 

@@ -107,6 +107,9 @@ __mulu:
 __mods:
 
 ; copy dividend to R6 for later sign adjustments
+;
+; FIXME: check C89 sign rules for remainder
+;
     mov     r6,r0  
 
 ; convert operands to unsigned
@@ -222,9 +225,9 @@ __divu:
     clr     r1      ; clear remainder
 
 ;
-; divide loop [ note 33 iterations ]
+; divide loop 
 ;
-    mov     r5,#32  ; initialize loop counter ( counts 32 .. 0 )
+    mov     r5,#32  ; initialize loop counter ( 32 iterations, top of loop decrement )
 
 .loop
     sub.snb r5,#1    

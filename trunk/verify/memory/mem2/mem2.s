@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2011  Brian Davis
+; (C) COPYRIGHT 2001-2012, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -16,6 +16,11 @@
 ;
 
     org $0
+
+;
+; enable interrupts
+;
+    ei
 
 ;
 ; initialize stack & frame pointer
@@ -194,16 +199,16 @@
 ;
 
     lea     r0, 0(r13)
-    .verify r0,#$200
+    .verify r0,#$400
 
     lea     r0, 60(sp)
-    .verify r0,#$23C
+    .verify r0,#$43C
 
     lea     r0, 0(fp)
-    .verify r0,#$220
+    .verify r0,#$420
 
     lea     r0, 32(r12)
-    .verify r0,#$240
+    .verify r0,#$440
 
 
 done:
@@ -211,10 +216,20 @@ done:
 
 
 ;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
+
+;
 ; constant table 
 ;
 ;
-        org $200
+        org $400
 
 K_STACK:
 

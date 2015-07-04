@@ -3,7 +3,7 @@
 ;
 
 ;
-; (C) COPYRIGHT 2001-2012,2015  Brian Davis
+; (C) COPYRIGHT 2001-2012, 2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -72,12 +72,8 @@ L13E
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
-; mov tests using pc register as data operand should read/write top of HW return stack
-
-; RETURN STACK READ/WRITE NOT IMPLEMENTED YET!!!!
-
-    nop
-    .verify fail      ; fail as placeholder until tests are added
+; note, return stack tests are in control/rstack/rstack.s
+;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;

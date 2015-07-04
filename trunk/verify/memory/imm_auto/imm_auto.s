@@ -1,9 +1,9 @@
 ;
-; <imm.s>
+; <imm_auto.s>
 ;
 
 ;
-; (C) COPYRIGHT 2001-2013  Brian Davis
+; (C) COPYRIGHT 2001-2015  Brian Davis
 ;
 ; Code released under the terms of the BSD 2-clause license
 ; see license/bsd_2-clause.txt
@@ -17,7 +17,10 @@
 
     org $0
 
-    nop   ; temporarily needed to keep verify count valid ( fix verify to ignore nulled instructions )
+;
+; enable interrupts
+;
+    ei
 
 ;
 ; check near 0, +max, -min, 
@@ -222,6 +225,18 @@ done:
     bra  done
 
 
+
+;
+; ISR entry point
+;
+   org   $200
+
+irq:
+   nop
+   rti
+
+
+
 ;
 ; start above $800 to see autoimm issues with generated LDI table
 ;
@@ -238,6 +253,7 @@ stdout_putf: .common 4,4
  .local stdout_putf
   .type stdout_putf,object
  .size stdout_putf,4
+
 
 
     end

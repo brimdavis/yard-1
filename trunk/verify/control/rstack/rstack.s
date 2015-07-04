@@ -18,6 +18,12 @@
 
        org $0
 
+;
+; enable interrupts
+;
+        ei
+
+
 ; initialize registers
         mov     r0, #$0
 
@@ -53,7 +59,7 @@ ret2:   nop             ; delayed branch would return here
 
 ;
 ;
-        org    $1F6
+        org    $1F2
 
 sub2:
         add    r0,#2
@@ -67,6 +73,18 @@ ret3:   nop
         .verify PASS
 
         rts
+
+
+
+;
+; ISR entry point
+;
+        org   $200
+
+irq:
+        nop
+        rti
+
 
 ;
 ;
