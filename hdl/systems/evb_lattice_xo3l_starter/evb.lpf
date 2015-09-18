@@ -1,0 +1,54 @@
+#
+# XO3L pico constraints
+#
+COMMERCIAL ;
+BLOCK RESETPATHS ;
+BLOCK ASYNCPATHS ;
+FREQUENCY NET "clk_in_c" 12.000000 MHz ;
+
+
+IOBUF ALLPORTS IO_TYPE=LVCMOS33 PULLMODE=NONE ;
+
+#
+# 12 MHz clock input
+#
+LOCATE COMP "clk_in"    SITE "C8" ;
+
+
+#
+# reset pushbutton
+#
+LOCATE COMP "reset_pb"  SITE "B3" ; 
+
+
+#
+# UART signals
+#
+LOCATE COMP "rx_bit"    SITE "A11" ;
+LOCATE COMP "tx_bit"    SITE "C11" ;
+
+
+#
+# expansion connector output port bits
+#
+LOCATE COMP "out_portA_15"   SITE "N14" ;
+LOCATE COMP "out_portA_14"   SITE "N16" ;
+LOCATE COMP "out_portA_13"   SITE "M15" ;
+LOCATE COMP "out_portA_12"   SITE "M14" ;
+LOCATE COMP "out_portA_11"   SITE "M16" ;
+LOCATE COMP "out_portA_10"   SITE "L15" ;
+LOCATE COMP "out_portA_9"    SITE "K12" ;
+LOCATE COMP "out_portA_8"    SITE "K13" ;
+
+
+#
+# LED output bits
+#
+LOCATE COMP "out_portA_7"    SITE "P16" ;
+LOCATE COMP "out_portA_6"    SITE "N15" ;
+LOCATE COMP "out_portA_5"    SITE "L13" ;
+LOCATE COMP "out_portA_4"    SITE "K11" ;
+LOCATE COMP "out_portA_3"    SITE "L12" ;
+LOCATE COMP "out_portA_2"    SITE "J11" ;
+LOCATE COMP "out_portA_1"    SITE "J13" ;
+LOCATE COMP "out_portA_0"    SITE "H11" ;
