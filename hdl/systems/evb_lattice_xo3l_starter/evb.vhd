@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2015  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -14,10 +14,15 @@
 --
 -- YARD-1 demo design for Lattice XO3L Starter Kit
 --
+--  NOTE: see README_XO3L_UART.txt for board modifications need to use the FTDI UART
+--
 --   - Y1A processor core
 --   - 4 KB RAM
 --   - UART
 --   - I/O ports 
+--  
+-- TODO: add Lattice PLL to multiply up 12 MHz input clock 
+--  
 --  
 
 library ieee;

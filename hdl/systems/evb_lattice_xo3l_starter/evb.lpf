@@ -1,13 +1,28 @@
 #
-# XO3L pico constraints
+# XO3L Starter Kit constraints
+#
+
+#
+# Timing analysis settings
 #
 COMMERCIAL ;
 BLOCK RESETPATHS ;
 BLOCK ASYNCPATHS ;
-FREQUENCY NET "clk_in_c" 12.000000 MHz ;
 
+#
+# define clocks
+#
+FREQUENCY PORT "clk_in" 12.000000 MHz ;
 
+#
+# set I/O standard
+#
 IOBUF ALLPORTS IO_TYPE=LVCMOS33 PULLMODE=NONE ;
+
+
+#
+# location constraints
+#
 
 #
 # 12 MHz clock input
@@ -23,6 +38,8 @@ LOCATE COMP "reset_pb"  SITE "B3" ;
 
 #
 # UART signals
+#
+# NOTE: see README_XO3L_UART.txt for board modifications need to use the FTDI UART
 #
 LOCATE COMP "rx_bit"    SITE "A11" ;
 LOCATE COMP "tx_bit"    SITE "C11" ;
