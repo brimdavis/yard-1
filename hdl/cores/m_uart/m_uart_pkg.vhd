@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- YARD-1 Design Files copyright (c) 2000-2012, Brian Davis
+-- YARD-1 Design Files copyright (c) 2000-2015, Brian Davis
 -- All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -137,27 +137,21 @@ end package m_uart_pkg;
 package body m_uart_pkg is
  
   function calc_baud_init (CLK_FREQ, BAUD_RATE : real) return std_logic_vector is
+
     variable freq_16x       : real;
-    variable baud_prescaler : std_logic_vector( 2 downto 0);
-    variable baud_fraction  : std_logic_vector(28 downto 0);
+
+    variable baud_calc     : std_logic_vector(31 downto 0);
 
     begin
 
       freq_16x := 16.0 * BAUD_RATE;
 
       --
-      -- FIXME : calculate correct prescaler based upon division ratio limit check
+      -- fractional baud = 2^32 * FREQ_16X / CLK_FREQ
       --
-      -- assume all ones for now ( using fractional divider )
-      --
-      baud_prescaler := B"111";
+      baud_calc  := std_logic_vector( to_unsigned( natural (round( (2.0**32.0) * ( freq_16x / CLK_FREQ ) ) ), 32));
 
-      --
-      -- fractional baud = 2^28 * FREQ_16X / CLK_FREQ
-      --
-      baud_fraction  := std_logic_vector( to_unsigned( natural (round( (2.0**28.0) * ( freq_16x / CLK_FREQ ) ) ), 28));
-
-      return baud_prescaler & baud_fraction;
+      return baud_calc;
 
     end function;
 
