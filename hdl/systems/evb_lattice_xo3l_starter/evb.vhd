@@ -17,7 +17,7 @@
 --  NOTE: see README_XO3L_UART.txt for board modifications need to use the FTDI UART
 --
 --   - Y1A processor core
---   - 4 KB RAM
+--   - 8 KB RAM
 --   - UART
 --   - I/O ports 
 --  
@@ -223,11 +223,11 @@ begin
         d_wr_l    => d_wr_l,
         d_wr_en_l => d_wr_en_l,
 
-        d_addr    => d_addr(11 downto 2),
+        d_addr    => d_addr(12 downto 2),
         d_rdat    => blkram_rdat,
         d_wdat    => d_wdat,
 
-        i_addr    => i_addr(11 downto 2),
+        i_addr    => i_addr(12 downto 2),
         i_dat     => i_dat
       );
 
