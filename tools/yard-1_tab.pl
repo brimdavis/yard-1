@@ -1170,6 +1170,7 @@ sub ps_imm
     my ( @operands  ) = @_;
 
     my $status;
+    my $raw_str;
     my $offset;
     my $imm;
 
@@ -1187,6 +1188,7 @@ sub ps_imm
     # check if opb is an immediate constant
     if ( $operands[0] =~ /^#(.+)$/ )
       { 
+        $raw_str = $1;
         ($status, $offset) = parse_expression($1);
       }
     else
@@ -1203,12 +1205,21 @@ sub ps_imm
 
         if ( $status != 0 )
           {
-            # TODO: unknown pass 1 constant, assume LDI and reserve unmergable LDI table entry
-            $imms{ $label } = { can_merge => 0, table_num => $imm_table_num, value => 0, pass1_value => 0 };
+
+           # unknown pass 1 constant, assume LDI 
+           $imms[$imm_table_num]{ $label } = { pass1_known => 0, value => 0, pass1_value => 0 };
+
+           ###  #
+           ###  # TESTME: experiment to allow pass 1 merging based upon raw field string 
+           ###  #
+           ###  # *** this doesn't work, sort uses <=> operator which needs numerical field, not string value ***
+           ###  #
+           ###  $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => 0, pass1_value => $raw_str };
+           ###  
 
             $imm_entries_used[$imm_table_num]++;
 
-            if (D1) { print $JNK_F (" imm table (unknown) : $label, unknown, $imm_table_num\n"); }
+            if (D1) { print $JNK_F (" imm table (unknown) : $label, $raw_str, $imm_table_num\n"); }
           }
         else
           {
@@ -1228,7 +1239,7 @@ sub ps_imm
                 if (D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
 
                 # add to imm hash
-                $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => $offset, pass1_value => $offset };
+                $imms[$imm_table_num]{ $label } = { pass1_known => 1, value => $offset, pass1_value => $offset };
 
                 $imm_entries_used[$imm_table_num]++;
               }
@@ -1245,8 +1256,8 @@ sub ps_imm
     else
       {
         # if entry exists, {re}populate value on pass 2 
-        if ($imms{ $label }) 
-         { $imms{ $label }{ value } = $offset; }
+        if ($imms[$imm_table_num]{ $label }) 
+         { $imms[$imm_table_num]{ $label }{ value } = $offset; }
       }
 
     #
