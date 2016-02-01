@@ -10,7 +10,7 @@
 
 #-------------------------------------------------------------------------------
 #
-# Copyright (c) 2000-2014, B. Davis
+# Copyright (c) 2000-2016, B. Davis
 #
 # released under the BSD 2-clause license, see license/bsd_2-clause.txt
 #
@@ -1206,16 +1206,14 @@ sub ps_imm
         if ( $status != 0 )
           {
 
-           # unknown pass 1 constant, assume LDI 
-           $imms[$imm_table_num]{ $label } = { pass1_known => 0, value => 0, pass1_value => 0 };
+           ### # unknown pass 1 constant, assume LDI 
+           ### $imms[$imm_table_num]{ $label } = { pass1_known => 0, value => 0, pass1_value => 0 };
 
-           ###  #
-           ###  # TESTME: experiment to allow pass 1 merging based upon raw field string 
-           ###  #
-           ###  # *** this doesn't work, sort uses <=> operator which needs numerical field, not string value ***
-           ###  #
-           ###  $imms{ $label } = { can_merge => 1, table_num => $imm_table_num, value => 0, pass1_value => $raw_str };
-           ###  
+           #
+           # TESTME: allow pass 1 merging based upon raw field string 
+           #
+           $imms[$imm_table_num]{ $label } = { pass1_known => 0, value => 0, pass1_value => 0, exp_str => $raw_str };
+             
 
             $imm_entries_used[$imm_table_num]++;
 
@@ -1239,7 +1237,7 @@ sub ps_imm
                 if (D1) { print $JNK_F (" imm table (known) : $label, $offset, $imm_table_num\n"); }
 
                 # add to imm hash
-                $imms[$imm_table_num]{ $label } = { pass1_known => 1, value => $offset, pass1_value => $offset };
+                $imms[$imm_table_num]{ $label } = { pass1_known => 1, value => $offset, pass1_value => $offset, exp_str => $raw_str };
 
                 $imm_entries_used[$imm_table_num]++;
               }

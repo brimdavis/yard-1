@@ -112,7 +112,7 @@ test1  equ -2_000_000_000
 
 check_merge:
 ;
-; first entries should merge, as they are known on pass 1
+; matching constants should merge, as they are known on pass 1
 ;
     imm   #-2000000000
     .verify  r14,#-2000000000
@@ -126,15 +126,21 @@ check_merge:
     imm   #-2000000000
     .verify  r14,#-2000000000
 
-; test2 should have it's own entry
+; both test2 forward references below should share an entry (expression string match for unknown pass1 values)
     imm   #test2
     .verify  r14,#-2000000000
 
-; this should merge with previous
+    imm   #test2
+    .verify  r14,#-2000000000
+
+; this should merge with previous #-2000000000's
     imm   #-2000000000
     .verify  r14,#-2000000000
 
-; test3 should have it's own entry
+; both test3 forward references below should share an entry (expression string match for unknown pass1 values)
+    imm   #test3
+    .verify  r14,#-2000000000
+
     imm   #test3
     .verify  r14,#-2000000000
 

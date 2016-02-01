@@ -4,7 +4,7 @@
 #
 # YARD-1 Assembler
 #
-# Modifications for YARD-1 COPYRIGHT (C) 2000-2014  B. Davis
+# Modifications for YARD-1 COPYRIGHT (C) 2000-2016  B. Davis
 #
 #   under the same license terms as the original risc8_asm (see below)
 #
@@ -351,9 +351,6 @@ sub flush_imms
   #  return here if there are no imms to dump in the current imm table 
   #  ( to prevent unnecessary aligns )
   #
-  # FIXME: sequence-number-changed detection scheme doesn't work 
-  #   ( some IMM's don't use table entry, but always bump the sequence number )
-  #
   if ( $imm_entries_used[$imm_table_num] == 0 )
   {
     $imm_table_num++;          
@@ -384,6 +381,8 @@ sub flush_imms
   #
   #   - secondary sort by pass1_known flag to avoid gaps in duplicated values
   #
+  #   - tertiary sort by label name (case-insensitive)
+  #
   @sorted_labels = sort {     $imms[$imm_table_num]{$a}{pass1_value} <=> $imms[$imm_table_num]{$b}{pass1_value}  
                           or  $imms[$imm_table_num]{$a}{pass1_known} <=> $imms[$imm_table_num]{$b}{pass1_known} 
                           or  lc($a) cmp lc($b) 
@@ -399,12 +398,24 @@ sub flush_imms
       $label = $sorted_labels[$i];
 
       #
-      # TESTME: flag to merge identical values
+      # TESTME: set flag to merge identical values
+      #   - merge by value if pass1 value is known
+      #   - merge by expression string match if pass1 value is unknown 
       #
       if (    ( $i < $#sorted_labels ) 
-           && ( $imms[$imm_table_num]{$label}{pass1_known} == 1 )
-           && ( $imms[$imm_table_num]{$label}{pass1_value} == $imms[$imm_table_num]{$sorted_labels[$i+1]}{pass1_value} ) 
+           && (
+                   ( 
+                        ( $imms[$imm_table_num]{$label}{pass1_known} == 1 )
+                     && ( $imms[$imm_table_num]{$label}{pass1_value} == $imms[$imm_table_num]{$sorted_labels[$i+1]}{pass1_value} ) 
+                   )
+
+                || (
+                        ( $imms[$imm_table_num]{$label}{pass1_known} == 0 )
+                     && ( $imms[$imm_table_num]{$label}{exp_str} eq $imms[$imm_table_num]{$sorted_labels[$i+1]}{exp_str} ) 
+                   )
+              )
          )
+
       {
         $duplicate = 1;
       }
