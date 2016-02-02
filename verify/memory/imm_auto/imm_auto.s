@@ -126,19 +126,30 @@ check_merge:
     imm   #-2000000000
     .verify  r14,#-2000000000
 
-; both test2 forward references below should share an entry (expression string match for unknown pass1 values)
+;
+; test2 forward references below should share an entry (expression string match for unknown pass1 values)
+; test3 forward references below should share an entry (expression string match for unknown pass1 values)
+;
     imm   #test2
     .verify  r14,#-2000000000
 
     imm   #test2
     .verify  r14,#-2000000000
 
-; this should merge with previous #-2000000000's
-    imm   #-2000000000
-    .verify  r14,#-2000000000
-
-; both test3 forward references below should share an entry (expression string match for unknown pass1 values)
     imm   #test3
+    .verify  r14,#-2000000000
+
+    imm   #test3
+    .verify  r14,#-2000000000
+
+; now alternate to test pass1 imm table sorting code
+    imm   #test2
+    .verify  r14,#-2000000000
+
+    imm   #test3
+    .verify  r14,#-2000000000
+
+    imm   #test2
     .verify  r14,#-2000000000
 
     imm   #test3

@@ -381,10 +381,13 @@ sub flush_imms
   #
   #   - secondary sort by pass1_known flag to avoid gaps in duplicated values
   #
-  #   - tertiary sort by label name (case-insensitive)
+  #   - tertiary string sort by exp_str (so unknown pass1 labels merge correctly)
+  #
+  #   - final string sort by label name (case-insensitive)
   #
   @sorted_labels = sort {     $imms[$imm_table_num]{$a}{pass1_value} <=> $imms[$imm_table_num]{$b}{pass1_value}  
                           or  $imms[$imm_table_num]{$a}{pass1_known} <=> $imms[$imm_table_num]{$b}{pass1_known} 
+                          or  $imms[$imm_table_num]{$a}{exp_str}     cmp $imms[$imm_table_num]{$b}{exp_str} 
                           or  lc($a) cmp lc($b) 
                         } keys($imms[$imm_table_num]) ;
  
