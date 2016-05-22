@@ -314,12 +314,12 @@ my @operand_fields;
 #
 # need to define hashes to be initialized later within opcode table file 
 #
-our %addr_reg_map  = ();
-our %data_reg_map  = ();
-our %stack_reg_map = ();
-our %ctl_reg_map   = ();
-our %ops           = ();
-
+our %addr_reg_map      = ();
+our %data_reg_map      = ();
+our %stack_reg_map     = ();
+our %ctl_reg_map       = ();
+our %ops               = ();
+our %processor_options = ();
 
 
 #-------------------------------------------------------------

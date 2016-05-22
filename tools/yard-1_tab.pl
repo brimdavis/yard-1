@@ -20,6 +20,29 @@
 
 #use strict;
 
+
+#---------------------------------------
+# hash for processor options present
+#---------------------------------------
+#
+# FIXME: 
+#   - should these be booleans or strings?
+#   - add command line options and assembler directives to set these
+#
+%processor_options = 
+(
+  'non_native_load'  => 'TRUE',
+  'non_native_store' => 'TRUE',
+
+  'barrel_shift'     => 'FALSE',
+  'bit_flip'         => 'FALSE',
+
+  'skip_on_bit'      => 'TRUE',
+  'skip_compare'     => 'TRUE'
+);
+
+
+
 #---------------------------------------
 # Hash for register name encodings
 #----------------------------------------
@@ -501,63 +524,84 @@ sub ps_arri
 
 # ORS parser
 sub ps_sr
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+  my $status;
+  my $offset;
+  my $imm;
+
+  my $opcode = $ops{$operation}{opc};
+  my $ra,$rb;
+
+#  check_argument_count( $#operands, 1 );
+  $ra = check_data_register( $operands[0] );
+
+  if ($pass == 2)
   {
-    my ( $pass      ) = shift;
-    my ( $label     ) = shift;
-    my ( $operation ) = shift;
-    my ( @operands  ) = @_;
 
-    my $status;
-    my $offset;
-    my $imm;
+    if ( $operands[1] )
+    {
+      #
+      # look for  an immediate constant
+      #
+      if ( $operands[1] =~ /^#(.+)$/ )
+      { 
+        ($status, $offset) = parse_expression($1);
 
-    my $opcode = $ops{$operation}{opc};
-    my $ra,$rb;
+        #
+        # check for valid shift constant 
+        #
+        if ( ( $offset < 0 ) || ( $offset  > 31 ) )
+        {
+          do_error("Shift/rotate constant out of range (0..31)");
+          $offset = 0;
+        }
 
-#    check_argument_count( $#operands, 1 );
-    $ra = check_data_register( $operands[0] );
+        #
+        # check simple shifter limitations:
+        #   shifts of one allowed for all
+        #   shifts of two allowed only for ROL/LSL
+        #
+        elsif (   $processor_options{'barrel_shift'} eq 'FALSE'
+               && (
+                         ( $offset == 0 )
+                    || ( ( $offset  > 1 ) && ( ($operation eq 'lsr') || ($operation eq 'asr') || ($operation eq 'ror') ) )
+                    || ( ( $offset  > 2 ) && ( ($operation eq 'lsl') || ($operation eq 'rol') ) )
+                  )
+              )
+        {
+          do_error("Unsupported shift/rotate length for Y1A core without barrel_shifter");
+          $offset = 0;
+        }
 
-    if ($pass == 2)
-      {
-
-        if ( $operands[1] )
-          {
-            # look for  an immediate constant
-            if ( $operands[1] =~ /^#(.+)$/ )
-              { 
-                ($status, $offset) = parse_expression($1);
-
-                # shifts of one allowed for all
-                # shifts of two allowed only for ROL/LSL
-                if ( 
-                          ( $offset == 0 )
-                     || ( ( $offset  > 1 ) && ( ($operation eq 'lsr') || ($operation eq 'asr') || ($operation eq 'ror') ) )
-                     || ( ( $offset  > 2 ) && ( ($operation eq 'lsl') || ($operation eq 'rol') ) )
-                   )
-                  {
-                    do_error("Unsupported shift/rotate length for the current Y1A core");
-                  }
-
-                # FIXME: need mask or field overflow test
-                $imm = sprintf("%05b", $offset);
-              }
-
-            else
-              {
-                do_error("Expecting immediate constant");
-                $imm = "00001";
-              }
-          }
-        else
-          {
-            $imm = "00001";
-          }
-
-        if (D1) { printf $JNK_F ("shift constant=%d   %s\n",  $offset, $imm  ); }
-
-        $opcode = stuff_op_field( $opcode, 'a', $ra  );
-        $opcode = stuff_op_field( $opcode, 'b', $imm );
+        # FIXME: need mask or field overflow test
+        $imm = sprintf("%05b", $offset);
       }
+
+      else
+      {
+        do_error("Expecting immediate constant");
+        $imm = "00001";
+      }
+    }
+
+    #
+    # no shift constant specified => default to length of 1
+    #
+    else
+    {
+      $imm = "00001";
+    }
+
+    if (D1) { printf $JNK_F ("shift constant=%d   %s\n",  $offset, $imm  ); }
+
+    $opcode = stuff_op_field( $opcode, 'a', $ra  );
+    $opcode = stuff_op_field( $opcode, 'b', $imm );
+}
 
     emit_op($opcode);
   }
