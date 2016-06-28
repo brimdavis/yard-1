@@ -22,14 +22,15 @@
 
 
 #---------------------------------------
-# hash for processor options present
+# hash for optional instructions present
 #---------------------------------------
 #
 # FIXME: 
 #   - should these be booleans or strings?
-#   - add command line options and assembler directives to set these
+#   - implement assembler checks for load/store/flip/skip code generation
+#   - add command line options to set these?
 #
-%processor_options = 
+%isa_options = 
 (
   'non_native_load'  => 'TRUE',
   'non_native_store' => 'TRUE',
@@ -566,7 +567,7 @@ sub ps_sr
         #   shifts of one allowed for all
         #   shifts of two allowed only for ROL/LSL
         #
-        elsif (   $processor_options{'barrel_shift'} eq 'FALSE'
+        elsif (   uc($isa_options{'barrel_shift'}) eq 'FALSE'
                && (
                          ( $offset == 0 )
                     || ( ( $offset  > 1 ) && ( ($operation eq 'lsr') || ($operation eq 'asr') || ($operation eq 'ror') ) )

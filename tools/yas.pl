@@ -314,12 +314,12 @@ my @operand_fields;
 #
 # need to define hashes to be initialized later within opcode table file 
 #
-our %addr_reg_map      = ();
-our %data_reg_map      = ();
-our %stack_reg_map     = ();
-our %ctl_reg_map       = ();
-our %ops               = ();
-our %processor_options = ();
+our %addr_reg_map   = ();
+our %data_reg_map   = ();
+our %stack_reg_map  = ();
+our %ctl_reg_map    = ();
+our %ops            = ();
+our %isa_options    = ();
 
 
 #-------------------------------------------------------------
@@ -1019,7 +1019,9 @@ my %directive_defs =
   '.warn'      =>  { type => 'DIRECTIVE' , ps => \&ps_warn,      name => ".WARN",      blab => "user warning message"  },
 
 
-   'ds.b'      =>  { type => 'DIRECTIVE' , ps => \&ps_ds_b,      name => "DS.B",       blab => "Define Storage, Byte : location counter advanced by size argument"  },
+  'ds.b'       =>  { type => 'DIRECTIVE' , ps => \&ps_ds_b,      name => "DS.B",       blab => "Define Storage, Byte : location counter advanced by size argument"  },
+
+  '.iopt'      =>  { type => 'DIRECTIVE' , ps => \&ps_iopt,      name => ".IOPT",      blab => "Isa OPTional instruction control"  },
 
 );
 
@@ -1539,6 +1541,40 @@ sub ps_warn
   do_warn("User warning");
 
   if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+
+}
+
+
+#
+# ISA Optional instructions
+#
+# TODO: add .iopt directive to documentation
+#
+sub ps_iopt
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+
+  my $option = lc($operands[0]);
+  my $value  = lc($operands[1]);
+
+
+  if ( exists $isa_options{$option} )
+    {
+      $isa_options{$option} = $value;
+    }
+  else
+    {
+      do_error("Unknown ISA option");
+    } 
+
+  if ($pass == 2)
+    {
+      printf $LST_F ("                     %s\n", $raw_line);
+    } 
 
 }
 
