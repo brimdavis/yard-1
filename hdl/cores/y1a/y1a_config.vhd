@@ -47,8 +47,6 @@ package y1a_config is
   --     FALSE : only memory operands of native register width supported
   --
   --
-  --   TODO: BARREL SHIFTER NOT IMPLEMENTED YET!
-  --
   --   barrel_shift: 
   --     TRUE  : shift and rotate support all bit shift lengths  
   --     FALSE : shift and rotate only support bit shift lengths of 1
@@ -118,8 +116,7 @@ package y1a_config is
       non_native_load  => TRUE,
       non_native_store => TRUE,
     
-    --barrel_shift     => TRUE,  -- not implemented yet
-      barrel_shift     => FALSE,
+      barrel_shift     => TRUE,  
   
       bit_flip         => TRUE,
      

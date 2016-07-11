@@ -1021,7 +1021,7 @@ my %directive_defs =
 
   'ds.b'       =>  { type => 'DIRECTIVE' , ps => \&ps_ds_b,      name => "DS.B",       blab => "Define Storage, Byte : location counter advanced by size argument"  },
 
-  '.iopt'      =>  { type => 'DIRECTIVE' , ps => \&ps_iopt,      name => ".IOPT",      blab => "Isa OPTional instruction control"  },
+  '.mopt'      =>  { type => 'DIRECTIVE' , ps => \&ps_mopt,      name => ".MOPT",      blab => "Machine OPTions - instruction set variants"  },
 
 );
 
@@ -1546,11 +1546,11 @@ sub ps_warn
 
 
 #
-# ISA Optional instructions
+# Machine Options
 #
-# TODO: add .iopt directive to documentation
+# TODO: add .mopt directive to documentation
 #
-sub ps_iopt
+sub ps_mopt
 {
   my ( $pass      ) = shift;
   my ( $label     ) = shift;

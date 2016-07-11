@@ -39,7 +39,7 @@ LOCATE COMP "reset_pb"  SITE "B3" ;
 #
 # UART signals
 #
-# NOTE: see README_XO3L_UART.txt for board modifications need to use the FTDI UART
+# NOTE: see README_XO3L_UART.txt for board modifications needed to use the FTDI UART
 #
 LOCATE COMP "rx_bit"    SITE "A11" ;
 LOCATE COMP "tx_bit"    SITE "C11" ;

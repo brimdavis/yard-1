@@ -56,6 +56,9 @@
         <Source name="../../../cores/y1a/rstack.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
+        <Source name="../../../cores/y1a/barrel.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
         <Source name="../../../cores/y1a/shift_one.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>

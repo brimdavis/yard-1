@@ -24,7 +24,7 @@ call v control\when
 call v alu\addsub1
 
 ::
-:: FF1 & CNT1 are currently broken after EXT addition
+:: TODO: FF1 & CNT1 have currently gone missing after adding EXT opcode
 ::
 ::call v alu\bitsy1
 ::call v alu\bitsy2
@@ -38,6 +38,7 @@ call v alu\movc1
 call v alu\neg1
 call v alu\reg1
 call v alu\shift1
+call v alu\shift2
 
 call v memory\imm12
 call v memory\imm_auto

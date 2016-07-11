@@ -535,50 +535,25 @@ begin
   --
   -- shifts & rotates
   --
-  --  TODO: implement barrel shifter
-  --
-
-  GT_barrel: if CFG.isa.barrel_shift generate
-    begin
-
-      assert FALSE
-        report "Barrel Shifter is not implemented yet!"
-        severity error;
-
-    end generate GT_barrel;
-
-
-  GF_barrel: if NOT CFG.isa.barrel_shift generate
+  B_sr: block
 
     signal shift_grp    : std_logic;
     signal shift_signed : std_logic;
     signal shift_dir    : std_logic;
     signal shift_const  : std_logic_vector(4 downto 0);
 
+
     begin
-
-      I_shift_one: shift_one
-       port map
-         (
-           shift_grp         => shift_grp,    
-           shift_signed      => shift_signed, 
-           shift_dir         => shift_dir,    
-           shift_const       => shift_const,  
-
-           ain               => ain,          
-
-           shift_dat         => shift_dat    
-         );
 
       I_shift_dcd: shift_dcd
         generic map
           ( CFG              => CFG )
-  
+      
         port map
           (
             clk              => clk, 
             sync_rst         => sync_rst,
-  
+      
             inst             => inst,
             stall            => dcd_stall,      
 
@@ -588,7 +563,46 @@ begin
             fld_shift_const  => shift_const 
           );
 
-    end generate GF_barrel;
+
+      GT_barrel: if CFG.isa.barrel_shift generate
+        begin
+    
+          I_barrel: barrel
+            port map
+              (
+                shift_grp         => shift_grp,    
+                shift_signed      => shift_signed, 
+                shift_dir         => shift_dir,    
+                shift_const       => shift_const,  
+
+                ain               => ain,          
+
+                shift_dat         => shift_dat    
+              );
+    
+        end generate GT_barrel;
+    
+    
+      GF_barrel: if NOT CFG.isa.barrel_shift generate
+        begin
+    
+          I_shift_one: shift_one
+            port map
+              (
+                shift_grp         => shift_grp,    
+                shift_signed      => shift_signed, 
+                shift_dir         => shift_dir,    
+                shift_const       => shift_const,  
+
+                ain               => ain,          
+
+                shift_dat         => shift_dat    
+              );
+
+        end generate GF_barrel;
+
+    end block B_sr;
+
 
   ------------------------------------------------------------------------------
   --

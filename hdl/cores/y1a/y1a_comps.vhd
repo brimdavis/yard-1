@@ -171,6 +171,19 @@ package y1a_comps is
       );
   end component;
 
+  component barrel is
+    port
+      (   
+        shift_grp        : in  std_logic;
+        shift_signed     : in  std_logic;
+        shift_dir        : in  std_logic;
+        shift_const      : in  std_logic_vector(4 downto 0);
+
+        ain              : in  std_logic_vector(ALU_MSB downto 0);
+
+        shift_dat        : out std_logic_vector(ALU_MSB downto 0)
+      );
+  end component;
 
   component shift_one is
     port
