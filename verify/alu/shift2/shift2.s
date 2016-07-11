@@ -57,6 +57,10 @@
     .verify r1,#$21F0_5A84
 
     mov     r1,imm
+    rol     r1,#16
+    .verify r1,#$F05A_8421
+
+    mov     r1,imm
     rol     r1,#31
     .verify r1,#$4210_F82D
 
@@ -85,6 +89,10 @@
     mov     r1,imm
     lsl     r1,#8
     .verify r1,#$21F0_5A00
+
+    mov     r1,imm
+    lsl     r1,#16
+    .verify r1,#$F05A_0000
 
     mov     r1,imm
     lsl     r1,#31
@@ -117,6 +125,10 @@
     .verify r1,#$5A84_21F0
 
     mov     r1,imm
+    ror     r1,#16
+    .verify r1,#$F05A_8421
+
+    mov     r1,imm
     ror     r1,#31
     .verify r1,#$0843_E0B5
 
@@ -145,6 +157,10 @@
     mov     r1,imm
     lsr     r1,#8
     .verify r1,#$0084_21F0
+
+    mov     r1,imm
+    lsr     r1,#16
+    .verify r1,#$0000_8421
 
     mov     r1,imm
     lsr     r1,#31
@@ -177,6 +193,10 @@
     .verify r1,#$FF84_21F0
 
     mov     r1,imm
+    asr     r1,#16
+    .verify r1,#$FFFF_8421
+
+    mov     r1,imm
     asr     r1,#31
     .verify r1,#$FFFF_FFFF
 
@@ -205,6 +225,10 @@
     mov     r1,imm
     asr     r1,#8
     .verify r1,#$0074_21F0
+
+    mov     r1,imm
+    asr     r1,#16
+    .verify r1,#$0000_7421
 
     mov     r1,imm
     asr     r1,#31
