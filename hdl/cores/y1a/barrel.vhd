@@ -118,7 +118,7 @@ begin
       G_BITS: for b in ain'range generate
         begin
 
-          process(shifts, stride, shift_grp, shift_signed, shift_dir, shift_const)
+          process(shifts, stride, shift_grp, shift_signed, shift_dir, shift_const, fill_bit)
             begin
   
               if shift_const(i-1) = '0' then
@@ -165,6 +165,12 @@ begin
                 -- ROR
                 --
                 shifts(i)(b) <= shifts(i-1)(wrap_index(b+stride,ain'length));
+
+              else 
+                --
+                -- default passthrough (prevents latch generation)
+                --
+                shifts(i)(b) <= shifts(i-1)(b);
     
               end if;
 
