@@ -76,6 +76,8 @@ architecture arch1 of simple_baud_gen is
 
 begin
 
+  assert false report "BAUD COUNTER INIT: " & integer'image(to_integer(CNT_INIT)) severity NOTE;
+
   P_bc: process
     begin
       wait until rising_edge(clk);
