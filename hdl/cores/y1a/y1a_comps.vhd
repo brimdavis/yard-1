@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2015  Brian Davis
+-- (C) COPYRIGHT 2001-2015,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -461,10 +461,10 @@ package y1a_comps is
 
         ea_lsbs   : in  std_logic_vector(1 downto 0);
 
-        d_en_l    : out std_logic;	
-        d_rd_l    : out std_logic;	
-        d_wr_l    : out std_logic;
-        d_wr_en_l : out std_logic_vector(3 downto 0)
+        d_en      : out std_logic;	
+        d_rd      : out std_logic;	
+        d_wr      : out std_logic;
+        d_bwe     : out std_logic_vector(3 downto 0)
       );
   end component;
 

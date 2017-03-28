@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2015  Brian Davis
+-- (C) COPYRIGHT 2000-2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -124,8 +124,8 @@ entity y1a_core is
       --
       -- instruction bus
       --
-      i_en_l     : out std_logic;
-      i_rd_l     : out std_logic;
+      i_en       : out std_logic;
+      i_rd       : out std_logic;
 
       i_addr     : out std_logic_vector(PC_MSB downto 0);
       i_dat      : in  std_logic_vector(I_DAT_MSB downto 0);
@@ -133,10 +133,10 @@ entity y1a_core is
       --
       -- data bus
       --
-      d_en_l     : out std_logic;
-      d_rd_l     : out std_logic;
-      d_wr_l     : out std_logic;
-      d_wr_en_l  : out std_logic_vector(3 downto 0);
+      d_en       : out std_logic;
+      d_rd       : out std_logic;
+      d_wr       : out std_logic;
+      d_bwe      : out std_logic_vector(3 downto 0);
 
       d_stall    : in  std_logic;
 
@@ -1209,8 +1209,8 @@ begin
       --
       -- instruction bus control ( read, enable permanently asserted active )
       --
-      i_en_l <= '0';
-      i_rd_l <= '0';
+      i_en   <= '1';
+      i_rd   <= '1';
   
       i_addr   <= pc_reg;
       i_sel    <= pc_reg(1);
@@ -1295,10 +1295,10 @@ begin
     
             ea_lsbs   => ea_dat(1 downto 0),    
                                    
-            d_en_l    => d_en_l,    
-            d_rd_l    => d_rd_l,    
-            d_wr_l    => d_wr_l,    
-            d_wr_en_l => d_wr_en_l 
+            d_en      => d_en,    
+            d_rd      => d_rd,    
+            d_wr      => d_wr,    
+            d_bwe     => d_bwe     
           );
     
       --

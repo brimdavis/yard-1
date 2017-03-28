@@ -6,7 +6,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2001-2011  Brian Davis
+-- (C) COPYRIGHT 2001-2011,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -46,10 +46,10 @@ entity blk_mem is
     (   
       clk       : in std_logic;
 
-      d_cs_l    : in  std_logic;    
-      d_rd_l    : in  std_logic;    
-      d_wr_l    : in  std_logic;
-      d_wr_en_l : in  std_logic_vector(3 downto 0); 
+      d_cs      : in  std_logic;    
+      d_rd      : in  std_logic;    
+      d_wr      : in  std_logic;
+      d_bwe     : in  std_logic_vector(3 downto 0); 
 
       d_addr    : in  std_logic_vector (12 downto 2);
       d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
@@ -68,7 +68,6 @@ architecture arch1 of blk_mem is
   signal loc_rdat, loc_wdat       : std_logic_vector (ALU_MSB downto 0);
   signal loc_i_dat                : std_logic_vector (31 downto 0);
 
-  signal d_we3,d_we2,d_we1,d_we0  : std_logic;
   signal d_en                     : std_logic;
 
 
@@ -85,12 +84,7 @@ begin
   --
   -- data and byte write enables
   --
-  d_en  <= NOT d_cs_l;
-
-  d_we3 <= NOT d_wr_en_l(3);
-  d_we2 <= NOT d_wr_en_l(2);
-  d_we1 <= NOT d_wr_en_l(1);
-  d_we0 <= NOT d_wr_en_l(0);
+  d_en  <= d_cs;
 
 
   RAM3 : RAMB16_S9_S9 
@@ -127,7 +121,7 @@ begin
       DIA   => ( X"00" ),
       DOA   => loc_i_dat(31 downto 24),
 
-      CLKA  => NOT clk,
+      CLKA  => "NOT"(clk),
       ENA   => '1', 
       WEA   => '0',
       SSRA  => '0', 
@@ -137,9 +131,9 @@ begin
       DIB   => loc_wdat(31 downto 24),
       DOB   => loc_rdat(31 downto 24),
 
-      CLKB  => NOT clk,
+      CLKB  => "NOT"(clk),
       ENB   => d_en, 
-      WEB   => d_we3,
+      WEB   => d_bwe(3),
       SSRB  => '0'
      );
 
@@ -178,7 +172,7 @@ begin
       DIA   => ( X"00" ),
       DOA   => loc_i_dat(23 downto 16),
 
-      CLKA  => NOT clk,
+      CLKA  => "NOT"(clk),
       ENA   => '1', 
       WEA   => '0',
       SSRA  => '0', 
@@ -188,9 +182,9 @@ begin
       DIB   => loc_wdat(23 downto 16),
       DOB   => loc_rdat(23 downto 16),
 
-      CLKB  => NOT clk,
+      CLKB  => "NOT"(clk),
       ENB   => d_en, 
-      WEB   => d_we2,
+      WEB   => d_bwe(2),
       SSRB  => '0' 
     );
 
@@ -229,7 +223,7 @@ begin
       DIA   => ( X"00" ),
       DOA   => loc_i_dat( 15 downto  8),
 
-      CLKA  => NOT clk,
+      CLKA  => "NOT"(clk),
       ENA   => '1', 
       WEA   => '0',
       SSRA  => '0', 
@@ -238,9 +232,9 @@ begin
       DIB   => loc_wdat(15 downto  8),
       DOB   => loc_rdat(15 downto  8),
 
-      CLKB  => NOT clk,
+      CLKB  => "NOT"(clk),
       ENB   => d_en, 
-      WEB   => d_we1,
+      WEB   => d_bwe(1),
       SSRB  => '0' 
     );
 
@@ -279,7 +273,7 @@ begin
       DIA   => ( X"00" ),
       DOA   => loc_i_dat( 7 downto  0),
 
-      CLKA  => NOT clk,
+      CLKA  => "NOT"(clk),
       ENA   => '1', 
       WEA   => '0',
       SSRA  => '0', 
@@ -288,9 +282,9 @@ begin
       DIB   => loc_wdat( 7 downto  0),
       DOB   => loc_rdat( 7 downto  0),
 
-      CLKB  => NOT clk,
+      CLKB  => "NOT"(clk),
       ENB   => d_en, 
-      WEB   => d_we0,
+      WEB   => d_bwe(0),
       SSRB  => '0' 
     );
 

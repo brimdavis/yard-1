@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2015  Brian Davis
+-- (C) COPYRIGHT 2000-2015,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -76,8 +76,8 @@ architecture evb1 of evb is
   --
   -- instruction bus
   --
-  signal i_en_l      : std_logic;   
-  signal i_rd_l      : std_logic;   
+  signal i_en        : std_logic;   
+  signal i_rd        : std_logic;   
                    
   signal i_addr      : std_logic_vector(PC_MSB downto 0);
   signal i_dat       : std_logic_vector(I_DAT_MSB downto 0);
@@ -85,10 +85,10 @@ architecture evb1 of evb is
   --
   -- data bus
   --
-  signal d_en_l      : std_logic;   
-  signal d_rd_l      : std_logic;   
-  signal d_wr_l      : std_logic;   
-  signal d_wr_en_l   : std_logic_vector(3 downto 0);  
+  signal d_en        : std_logic;   
+  signal d_rd        : std_logic;   
+  signal d_wr        : std_logic;   
+  signal d_bwe       : std_logic_vector(3 downto 0);  
   
   signal d_addr      : std_logic_vector(ADDR_MSB downto 0);
   signal d_rdat      : std_logic_vector(D_DAT_MSB downto 0);
@@ -107,7 +107,7 @@ architecture evb1 of evb is
   --
   -- local decodes
   --
-  signal ram_cs_l         : std_logic;   
+  signal ram_cs           : std_logic;   
 
   signal dcd_uart         : std_logic;   
   signal dcd_uart_wr      : std_logic;   
@@ -173,7 +173,7 @@ begin
   I_evb_core: entity work.y1a_core
     generic map
       ( 
-        CFG         => BIG_Y1A_CONFIG
+        CFG         => DEFAULT_Y1A_CONFIG
       )
 
     port map
@@ -185,16 +185,16 @@ begin
 
         in_flags   => in_flags,
 
-        i_en_l     => i_en_l,
-        i_rd_l     => i_rd_l,
+        i_en       => i_en,
+        i_rd       => i_rd,
 
         i_addr     => i_addr,
         i_dat      => i_dat ,
 
-        d_en_l     => d_en_l,
-        d_rd_l     => d_rd_l,
-        d_wr_l     => d_wr_l,
-        d_wr_en_l  => d_wr_en_l,
+        d_en       => d_en,
+        d_rd       => d_rd,
+        d_wr       => d_wr,
+        d_bwe      => d_bwe,
 
         d_stall    => d_stall,
 
@@ -218,10 +218,10 @@ begin
       (
         clk       => clk,
 
-        d_cs_l    => ram_cs_l,
-        d_rd_l    => d_rd_l,
-        d_wr_l    => d_wr_l,
-        d_wr_en_l => d_wr_en_l,
+        d_cs      => ram_cs,
+        d_rd      => d_rd,
+        d_wr      => d_wr,
+        d_bwe     => d_bwe,
 
         d_addr    => d_addr(12 downto 2),
         d_rdat    => blkram_rdat,
@@ -234,13 +234,13 @@ begin
   --
   -- chip select decode
   --
-  ram_cs_l <= d_addr(ADDR_MSB);
+  ram_cs <= NOT d_addr(ADDR_MSB);
 
 
   --
   -- blockram data bus mux
   --
-  d_rdat  <=   blkram_rdat when  ( ( d_rd_l = '0' ) AND ( ram_cs_l = '0' ) )
+  d_rdat  <=   blkram_rdat when  ( ( d_rd = '1' ) AND ( ram_cs = '1' ) )
               else uart_rdat;
 
   ---------------------------------------------------------------
@@ -272,13 +272,13 @@ begin
   --
   -- note, UART decode signals are all active high
   --
-  dcd_uart     <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
+  dcd_uart     <=   '1'  when ( (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
               else  '0';
 
-  dcd_uart_wr  <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
+  dcd_uart_wr  <=   '1'  when (dcd_uart = '1') AND ( d_wr = '1' ) 
               else  '0';
 
-  dcd_uart_rd  <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' )
+  dcd_uart_rd  <=   '1'  when (dcd_uart = '1') AND ( d_rd = '1' )
               else  '0';
 
   --
@@ -345,13 +345,13 @@ begin
 
       elsif rising_edge(clk) then
 
-        if (d_wr_l = '0') AND (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
+        if (d_wr = '1') AND (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
 
-          if d_wr_en_l(3) = '0' then
+          if d_bwe(3) = '1' then
             out_reg1(15 downto 8) <= d_wdat(31 downto 24);
           end if;
 
-          if d_wr_en_l(2) = '0' then
+          if d_bwe(2) = '1' then
             out_reg1( 7 downto 0) <= d_wdat(23 downto 16);
           end if;
   
@@ -402,12 +402,12 @@ begin
   --  31:16 : output register readback
   --  15:00 : input register read
   --
-  P_in_port : process( d_addr, d_en_l, d_rd_l, in_reg1, spare_rdat, out_reg1 )
+  P_in_port : process( d_addr, d_en, d_rd, in_reg1, spare_rdat, out_reg1 )
     begin
  
-      if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
+      if (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
 
-        if d_rd_l = '0' then
+        if d_rd = '1' then
           io_rdat <= out_reg1 & in_reg1;
 
         else

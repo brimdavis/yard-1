@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2013  Brian Davis
+-- (C) COPYRIGHT 2000-2013,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -42,10 +42,10 @@ entity dbus_ctl is
 
       ea_lsbs   : in  std_logic_vector(1 downto 0);
 
-      d_en_l    : out std_logic; 
-      d_rd_l    : out std_logic; 
-      d_wr_l    : out std_logic;
-      d_wr_en_l : out std_logic_vector(3 downto 0)
+      d_en      : out std_logic; 
+      d_rd      : out std_logic; 
+      d_wr      : out std_logic;
+      d_bwe     : out std_logic_vector(3 downto 0)
     );
 
 end dbus_ctl;
@@ -110,24 +110,24 @@ begin
   --
 
 
-  d_en_l   <=  '0'   when (
-                                (   inst_fld = OPM_LD ) 
-                            OR  (   inst_fld = OPM_LDI )
-                            OR  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
-                          )
-                          AND ( ex_null = '0' )
-          else '1';
+  d_en   <=  '1'   when (
+                              (   inst_fld = OPM_LD ) 
+                          OR  (   inst_fld = OPM_LDI )
+                          OR  ( ( inst_fld = OPM_ST ) AND (lea_bit = '0') ) 
+                        )
+                        AND ( ex_null = '0' )
+        else '0';
 
 
-  d_wr_l   <=  NOT valid_wr;
+  d_wr   <=  valid_wr;
 
   
-  d_rd_l   <=  '0'   when (
-                                ( inst_fld = OPM_LD ) 
-                            OR  ( inst_fld = OPM_LDI )
-                          )
-                          AND ( ex_null = '0' )
-          else '1';
+  d_rd   <=  '1'   when (
+                              ( inst_fld = OPM_LD ) 
+                          OR  ( inst_fld = OPM_LDI )
+                        )
+                        AND ( ex_null = '0' )
+        else '0';
 
   --
   -- byte enables
@@ -137,19 +137,19 @@ begin
 
       -- added byte write enable gating so memories can look at just byte write enables
 
-        d_wr_en_l 
-            <=   B"0000"  when ( mem_size = MEM_32_SP ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
-           else  B"0000"  when ( mem_size = MEM_32    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
+        d_bwe     
+            <=   B"1111"  when ( mem_size = MEM_32_SP ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
+           else  B"1111"  when ( mem_size = MEM_32    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )
 
-           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
-           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
+           else  B"1100"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
+           else  B"0011"  when ( mem_size = MEM_16    ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
 
-           else  B"0111"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
-           else  B"1011"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "01" ) AND ( valid_wr = '1' )    
-           else  B"1101"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
-           else  B"1110"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "11" ) AND ( valid_wr = '1' )    
+           else  B"1000"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "00" ) AND ( valid_wr = '1' )    
+           else  B"0100"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "01" ) AND ( valid_wr = '1' )    
+           else  B"0010"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "10" ) AND ( valid_wr = '1' )    
+           else  B"0001"  when ( mem_size = MEM_8     ) AND ( ea_lsbs(1 downto 0) = "11" ) AND ( valid_wr = '1' )    
   
-           else  B"1111" ;
+           else  B"0000" ;
   
     end generate gen_wen32;
  

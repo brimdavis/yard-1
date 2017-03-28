@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2008-2012  Brian Davis
+-- (C) COPYRIGHT 2008-2012,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -38,10 +38,10 @@ entity rtl_mem is
     (   
       clk       : in std_logic;
 
-      d_cs_l    : in  std_logic;    
-      d_rd_l    : in  std_logic;    
-      d_wr_l    : in  std_logic;
-      d_wr_en_l : in  std_logic_vector(3 downto 0); 
+      d_cs      : in  std_logic;    
+      d_rd      : in  std_logic;    
+      d_wr      : in  std_logic;
+      d_bwe     : in  std_logic_vector(3 downto 0); 
 
       d_addr    : in  std_logic_vector;
       d_rdat    : out std_logic_vector(D_DAT_MSB downto 0);
@@ -62,7 +62,6 @@ architecture arch1 of rtl_mem is
   signal loc_rdat, loc_wdat : std_logic_vector (ALU_MSB downto 0);
   signal loc_i_dat          : std_logic_vector (31 downto 0);
 
-  signal d_we3,d_we2,d_we1,d_we0 : std_logic;
   signal d_en   : std_logic;
 
   signal  din3,  din2,  din1,  din0 : std_logic_vector(7 downto 0);
@@ -117,12 +116,8 @@ begin
   --
   loc_wdat <= d_wdat;
 
-  d_en  <= NOT d_cs_l;
+  d_en  <= d_cs;
 
-  d_we3 <= NOT d_wr_en_l(3);
-  d_we2 <= NOT d_wr_en_l(2);
-  d_we1 <= NOT d_wr_en_l(1);
-  d_we0 <= NOT d_wr_en_l(0);
 
   --
   -- infer byte lane 3 dual port
@@ -131,7 +126,7 @@ begin
     begin
       if falling_edge(clk) AND ( d_en = '1' ) then
 
-        if d_we3 = '1' then
+        if d_bwe(3) = '1' then
           ram_b3_D(to_integer(unsigned(d_addr))) <= din3;
           ram_b3_I(to_integer(unsigned(d_addr))) <= din3;
         end if;
@@ -155,7 +150,7 @@ begin
     begin
       if falling_edge(clk) AND ( d_en = '1' ) then
 
-        if d_we2 = '1' then
+        if d_bwe(2) = '1' then
           ram_b2_D(to_integer(unsigned(d_addr))) <= din2;
           ram_b2_I(to_integer(unsigned(d_addr))) <= din2;
         end if;
@@ -179,7 +174,7 @@ begin
     begin
       if falling_edge(clk) AND ( d_en = '1' ) then
 
-        if d_we1 = '1' then
+        if d_bwe(1) = '1' then
           ram_b1_D(to_integer(unsigned(d_addr))) <= din1;
           ram_b1_I(to_integer(unsigned(d_addr))) <= din1;
         end if;
@@ -203,7 +198,7 @@ begin
     begin
       if falling_edge(clk) AND ( d_en = '1' ) then
 
-        if d_we0 = '1' then
+        if d_bwe(0) = '1' then
           ram_b0_D(to_integer(unsigned(d_addr))) <= din0;
           ram_b0_I(to_integer(unsigned(d_addr))) <= din0;
         end if;

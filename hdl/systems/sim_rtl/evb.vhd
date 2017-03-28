@@ -4,7 +4,7 @@
 
 ---------------------------------------------------------------
 --
--- (C) COPYRIGHT 2000-2011  Brian Davis
+-- (C) COPYRIGHT 2000-2011,2017  Brian Davis
 --
 -- Code released under the terms of the BSD 2-clause license
 -- see license/bsd_2-clause.txt
@@ -64,8 +64,8 @@ architecture evb1 of evb is
 
   signal sync_rst    : std_logic; 
 
-  signal i_en_l      : std_logic;
-  signal i_rd_l      : std_logic;
+  signal i_en        : std_logic;
+  signal i_rd        : std_logic;
   
   signal i_addr      : std_logic_vector(PC_MSB downto 0);
   signal i_dat       : std_logic_vector(I_DAT_MSB downto 0);
@@ -73,10 +73,10 @@ architecture evb1 of evb is
   signal d_stall     : std_logic;    
   signal d_stall_p1  : std_logic;    
   
-  signal d_en_l      : std_logic;   
-  signal d_rd_l      : std_logic;   
-  signal d_wr_l      : std_logic;   
-  signal d_wr_en_l   : std_logic_vector(3 downto 0);  
+  signal d_en        : std_logic;   
+  signal d_rd        : std_logic;   
+  signal d_wr        : std_logic;   
+  signal d_bwe       : std_logic_vector(3 downto 0);  
   
   signal d_addr      : std_logic_vector(ADDR_MSB downto 0);
   signal d_rdat      : std_logic_vector(D_DAT_MSB downto 0);
@@ -94,7 +94,7 @@ architecture evb1 of evb is
   --
   -- local decodes
   --
-  signal ram_cs_l    : std_logic;   
+  signal ram_cs      : std_logic;   
 
   signal dcd_uart    : std_logic;   
   signal dcd_uart_wr : std_logic;   
@@ -132,16 +132,16 @@ begin
   
         in_flags  =>  X"55AA",
   
-        i_en_l    =>  i_en_l,
-        i_rd_l    =>  i_rd_l,
+        i_en      =>  i_en,
+        i_rd      =>  i_rd,
   
         i_addr    =>  i_addr,
         i_dat     =>  i_dat,
   
-        d_en_l    =>  d_en_l,
-        d_rd_l    =>  d_rd_l,
-        d_wr_l    =>  d_wr_l,
-        d_wr_en_l =>  d_wr_en_l,
+        d_en      =>  d_en,
+        d_rd      =>  d_rd,
+        d_wr      =>  d_wr,
+        d_bwe     =>  d_bwe,
   
         d_stall   =>  d_stall,
         d_addr    =>  d_addr,
@@ -157,10 +157,10 @@ begin
   d_stall <= '0';
 
   -- stall for all loads
-  --d_stall <= (NOT d_en_l) AND (NOT d_rd_l) AND (NOT d_stall_p1);
+  --d_stall <= d_en AND d_rd AND (NOT d_stall_p1);
   
   -- stall for RAM decode
-  --d_stall <= (NOT ram_cs_l) AND (NOT d_rd_l) AND (NOT d_stall_p1);
+  --d_stall <= ram_cs AND d_rd AND (NOT d_stall_p1);
 
   P_dstall_dly : process (clk, rst_l)
     begin
@@ -178,18 +178,18 @@ begin
   -- shared memory spaces using dual port block RAM
   -- d_addr is currently hardcoded for 32 bit processor
   --
-  ram_cs_l <= '0'  when (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"0" )
-         else '1';
+  ram_cs <= '1'  when (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"0" )
+         else '0';
 
   I_blk_mem : entity work.rtl_mem
     port map 
       (
         clk       => clk,
 
-        d_cs_l    => ram_cs_l,
-        d_rd_l    => d_rd_l,
-        d_wr_l    => d_wr_l,
-        d_wr_en_l => d_wr_en_l,
+        d_cs      => ram_cs,
+        d_rd      => d_rd,
+        d_wr      => d_wr,
+        d_bwe     => d_bwe,
 
         d_addr    => d_addr(12 downto 2),
         d_rdat    => blkram_rdat,
@@ -200,19 +200,19 @@ begin
       );
 
   -- blockram data bus tristate
-  d_rdat  <=   blkram_rdat when  ( ( d_rd_l = '0' ) AND ( ram_cs_l = '0' ) )
+  d_rdat  <=   blkram_rdat when  ( ( d_rd = '1' ) AND ( ram_cs = '1' ) )
               else (others => 'Z');
 
   --
   -- note, UART decode signals are all active high
   --
-  dcd_uart <=   '1'  when ( (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
+  dcd_uart <=   '1'  when ( (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"C" ) )
            else '0';
 
-  dcd_uart_wr <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '0' ) 
+  dcd_uart_wr <=   '1'  when (dcd_uart = '1') AND ( d_wr = '1' ) 
               else '0';
 
-  dcd_uart_rd <=   '1'  when (dcd_uart = '1') AND ( d_wr_l = '1' )
+  dcd_uart_rd <=   '1'  when (dcd_uart = '1') AND ( d_rd = '1' )
               else '0';
 
   d_rdat <=   (ALU_MSB downto 8 => '0') & rx_dat  when ( dcd_uart_rd = '1' ) 
@@ -272,7 +272,7 @@ begin
  
       elsif rising_edge(clk) then
  
-        if (d_wr_l = '0') AND (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
+        if (d_wr = '1') AND (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
           out_reg1 <= d_wdat(7 downto 0);
         end if;
  
@@ -302,12 +302,12 @@ begin
   --
   -- 8 bit input port
   --
-  P_in_port: process ( d_addr, d_rdat, d_en_l, d_rd_l, in_reg1 )
+  P_in_port: process ( d_addr, d_rdat, d_en, d_rd, in_reg1 )
     begin
  
-      if (d_en_l = '0') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
+      if (d_en = '1') AND ( d_addr(ADDR_MSB downto ADDR_MSB-3) = X"8" ) then
  
-        if d_rd_l = '0' then
+        if d_rd = '1' then
           d_rdat <= (ALU_MSB downto 8 => '0') & in_reg1(7 downto 0);
  
         else
@@ -392,17 +392,17 @@ begin
         write( L, string'("  d_stall="));
         write(L, d_stall  );
 
-        write( L, string'("  d_en*="));
-        write(L, d_en_l  );
+        write( L, string'("  d_en="));
+        write(L, d_en  );
   
-        write( L, string'(" d_rd*="));
-        write(L, d_rd_l );
+        write( L, string'(" d_rd="));
+        write(L, d_rd );
   
-        write( L, string'(" d_wr*="));
-        write(L, d_wr_l );
+        write( L, string'(" d_wr="));
+        write(L, d_wr );
   
-        write( L, string'(" d_wen*="));
-        write(L,  d_wr_en_l  );
+        write( L, string'(" d_bwe="));
+        write(L,  d_bwe  );
   
         writeline( OUTPUT, L);
   
@@ -432,8 +432,8 @@ begin
         write( L, string'(" i_dat="));
         hwrite(L,  i_dat );
   
-        write( L, string'(" i_rd*="));
-        write(L, i_rd_l  );
+        write( L, string'(" i_rd="));
+        write(L, i_rd  );
   
         writeline( OUTPUT, L);
   

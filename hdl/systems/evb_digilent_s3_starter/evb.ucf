@@ -229,14 +229,12 @@ INST "I_evb_core/B_rstack.I_stack" AREA_GROUP = "AG_I_evb_core/B_rstack.I_stack"
 AREA_GROUP "AG_I_evb_core/B_rstack.I_stack" RANGE = SLICE_X0Y47:SLICE_X1Y30 ;
 
 INST "I_evb_core/B_rstack.I_rstack_dcd" AREA_GROUP = "AG_I_evb_core/B_rstack.I_rstack_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_rstack.I_rstack_dcd" RANGE = SLICE_X0Y29:SLICE_X1Y26 ;
+AREA_GROUP "AG_I_evb_core/B_rstack.I_rstack_dcd" RANGE = SLICE_X0Y47:SLICE_X1Y26 ;
 
 
-INST "I_evb_core/B_pcr.I_pcr_calc" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc" ;
-AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
+INST "I_evb_core/B_rstack.I_pcr_calc" AREA_GROUP = "AG_I_evb_core/B_rstack.I_pcr_calc" ;
+AREA_GROUP "AG_I_evb_core/B_rstack.I_pcr_calc" RANGE = SLICE_X2Y47:SLICE_X3Y30 ;
 
-INST "I_evb_core/B_pcr.I_pcr_calc_dcd" AREA_GROUP = "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" ;
-AREA_GROUP "AG_I_evb_core/B_pcr.I_pcr_calc_dcd" RANGE = SLICE_X2Y29:SLICE_X3Y26 ;
 
 INST "I_evb_core/B_state_ctl.I_state_ctl" AREA_GROUP = "AG_I_evb_core/B_state_ctl.I_state_ctl" ;
 AREA_GROUP "AG_I_evb_core/B_state_ctl.I_state_ctl" RANGE = SLICE_X4Y47:SLICE_X7Y26 ;
@@ -405,10 +403,10 @@ INST "I_evb_core/B_reg_extend.I_reg_extend_dcd" AREA_GROUP = "AG_I_evb_core/B_re
 AREA_GROUP "AG_I_evb_core/B_reg_extend.I_reg_extend_dcd" RANGE = SLICE_X28Y29:SLICE_X29Y26 ;
 
 
-INST "I_evb_core/GF_barrel.I_shift_dcd" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_dcd" ;
+INST "I_evb_core/B_sr.I_shift_dcd" AREA_GROUP = "AG_I_evb_core/B_sr.I_shift_dcd" ;
 AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_dcd" RANGE = SLICE_X30Y29:SLICE_X31Y26 ;
 
-INST "I_evb_core/GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/GF_barrel.I_shift_one" ;
+INST "I_evb_core/B_sr.GF_barrel.I_shift_one" AREA_GROUP = "AG_I_evb_core/B_sr.GF_barrel.I_shift_one" ;
 AREA_GROUP "AG_I_evb_core/GF_barrel.I_shift_one" RANGE = SLICE_X30Y47:SLICE_X31Y30 ;
 
 

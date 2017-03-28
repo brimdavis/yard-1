@@ -1345,7 +1345,7 @@ sub ps_ds_b
     {
       printf $LST_F ("  %08X           %s\n", $address, $raw_line );
 
-      # new object file address starts *after* common block
+      # new object file address starts *after* block
       printf $OBJ_F ("@%X\n", $next_address);   
     }
 
