@@ -4,7 +4,7 @@
 #
 # YARD-1 Assembler
 #
-# Modifications for YARD-1 COPYRIGHT (C) 2000-2016  B. Davis
+# Modifications for YARD-1 COPYRIGHT (C) 2000-2018  B. Davis
 #
 #   under the same license terms as the original risc8_asm (see below)
 #
@@ -85,7 +85,7 @@ my $help_notes = <<END_NOTES;
   - simple two-pass absolute assembler
 
   - current implementation is missing many features
-     - no constant expression parser
+     - simple constant expression parser ( arithmetic +,-,*,/ logical &,|,^ )
      - no macros
 
   - not much error checking yet
@@ -142,7 +142,7 @@ my $help_syntax=<<END_SYNTAX;
 
   - underscores are allowed in constants 
 
-  - numerical constant radix: leading "\$" for hex ,"%" for binary, otherwise  decimal
+  - numerical constant radix: leading "\$" or "0x" for hex ,"%" for binary, otherwise  decimal
        mov r0, #$8000_0000
        mov r0, #%1000_0000_0000_0000_0000_0000_0000_0000
        mov r0, #-2_147_483_648
@@ -155,11 +155,14 @@ my $help_syntax=<<END_SYNTAX;
       enclose dc.s strings within " " 
        dc.s "hello"
 
-  - simple constant expression parser supports only + and - 
+  - simple constant expression parser 
+      - arithmetic +,-,*,/ 
+      - logical &,|,^ 
+      - leading - for first term of expression is allowed, treated as 0 - value
 
-    FIXME: verify previous limitations are gone:
-       - kludge for bra targets allows @+offset or @-offset (for bra/bsr only)
-       - unary minus works only for decimal constants
+      - not supported yet:
+          unary -, unary NOT
+          parentheses
 
 END_SYNTAX
 #"
@@ -191,10 +194,6 @@ END_BUGS
 #
 #  - implement all opcodes
 #
-#  - inline constant tables for LDI
-#
-#  - IMM built-in macro for constants
-#
 #  - automatic constants 
 #      - generate two word prefixed sequences when needed:
 #
@@ -210,17 +209,16 @@ END_BUGS
 #
 #     - prefix bubble for skip of an automatically prefixed instruction
 #
-#
 #  - synthetic address modes ( PCR, ABSOLUTE ) using IMM/PC as base register
 #
-#  - label syntax (make colon optional, :: for globals?)
+#  - label syntax (make colon optional?, :: for globals?)
 #
 #  - clean up unneeded parsing on pass 1 
 #
+#  - remove convert-commas-to-spaces operand parsing hack to allow spaces in operand field expressions
+#
 #  - other immediate constant improvements
-#     - add unary "-" for hex, binary 
-#         ( that "-" works for decimal is a fluke, extract_word thinks it's a label)
-#      - add a constant expression parser { +, -, *, /, %, &, |, ^, ~, <<, >> }
+#      - add a full constant expression parser { +, -, *, /, &, |, ^, ~, <<, >> } with parentheses
 #
 #  - add simple preprocessor support (include, define, ifdef)
 #
@@ -360,8 +358,6 @@ sub flush_imms
       $imm_entries_used[$imm_table_num] = 0;
       $imms[$imm_table_num] = {};
     }
-
-    if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
     return;
   }
@@ -746,24 +742,12 @@ sub extract_word
   if (D1) { print $JNK_F ("extract_word input = $tmp\n");  }
 
   #
-  # leading $ for hex
+  # leading $ or 0x for hex (using non-capturing alternation to match either prefix)
   #
-  if ($tmp =~ /^\$(.+)$/)   
+  if ($tmp =~ /^(?:\$|0x)(.+)$/)   
     {
       $tmp = $1;
-      $tmp =~ s/_//g; # strip underscores
-      $tmp = oct ("0x" . $tmp);  
-      if (D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
-      if (D1) { print  $JNK_F ("extract_word hex, native = $tmp\n" ); } 
-      return (0, $tmp);
-    }
-
-  #
-  # alternate leading 0x for hex
-  #
-  elsif ($tmp =~ /^0x(.+)$/)   
-    {
-      $tmp = $1;
+      if (D1) { printf $JNK_F ("extract_word hex string= %s\n", $tmp); }
       $tmp =~ s/_//g; # strip underscores
       $tmp = oct ("0x" . $tmp);  
       if (D1) { printf $JNK_F ("extract_word hex = 0x%lx\n", $tmp); }
@@ -803,7 +787,6 @@ sub extract_word
   #
   elsif ($tmp =~ /^([0-9_\-]+)$/)  
     {
-      # check for leading '-' here, set sign flag
       $tmp = $1;
       $tmp =~ s/_//g;  # strip underscores
       if (D1) { printf $JNK_F ("extract_word dec = 0x%lx\n", $tmp);  }
@@ -831,9 +814,75 @@ sub extract_word
 }
 
 #
-# rudimentary expression parser:  a {+/- b} {+/- c} ...
+# evaluate any multiplicative operators *,/,&,^
+#  factor {*|/|&|^ factor}
 #
-# splits input string on +/-, calling extract_word for each argument
+sub eval_term
+{
+  my ($exp) = @_; 
+
+  my $code;
+  my $value;
+
+  my $op      = '*';
+  my $product = 1;
+
+  my @args;
+
+  if (D1) { printf $JNK_F ("term: $exp\n"); }
+
+  @args = split(/(\*|&|\/|\^)/, $exp); 
+
+  foreach my $arg (@args)
+    {
+      if ( ($arg eq '*') || ( $arg eq '/' ) || ( $arg eq '&' ) || ( $arg eq '^' ) )
+        {
+          $op = $arg;
+          if (D1) { printf $JNK_F ("term.op: $arg\n"); }
+        }
+
+      elsif ( $arg ne '' )
+        {
+          ($code, $value) = extract_word($arg);
+
+          if (D1) { printf $JNK_F ("term.dat  :$arg :$code :$value\n"); }
+
+          if ( $code == 0 )
+            {
+              if ( $op eq '*' )
+                {
+                  $product = $product * $value;
+                }
+              elsif ( $op eq '/' )
+                {
+                  $product = $product / $value;
+                }
+              elsif ( $op eq '&' )
+                {
+                  $product = $product & $value;
+                }
+              elsif ( $op eq '^' )
+                {
+                  $product = $product ^ $value;
+                }
+            }
+          else
+            {
+              return($code,$value);  # return unknown label
+            }
+        }
+    }
+
+  if (D1) { printf $JNK_F ("term.product  :$product :$code\n"); }
+  return($code,$product);
+}
+
+#
+# rudimentary expression parser:  a {+/-/| b} {+/-/| c} ...
+#
+# splits input string on +/-/|, calling eval_term for each argument
+#
+# unary minus not allowed, except for a leading '-' for the first term
 #
 # returns 
 #   ( 0, integer )      for fully defined expression
@@ -842,6 +891,7 @@ sub extract_word
 sub parse_expression
 {
   my ($exp) = @_; 
+
   my $code;
   my $value;
 
@@ -856,11 +906,11 @@ sub parse_expression
   # split pattern returns alternating array of ( {match}, value, match, value )
   # if leading operator, then match will be first
   #
-  @args   = split(/(\+|-)/, $exp); 
+  @args = split(/(\+|-|\|)/, $exp); 
 
   foreach my $arg (@args)
     {
-      if ( ($arg eq '-') || ( $arg eq '+' ) )
+      if ( ($arg eq '-') || ( $arg eq '+' ) || ( $arg eq '|' ) )
         {
           $op = $arg;
           if (D1) { printf $JNK_F ("exp.op: $arg\n"); }
@@ -868,7 +918,7 @@ sub parse_expression
 
       elsif ( $arg ne '' )
         {
-          ($code, $value) = extract_word($arg);
+          ($code, $value) = eval_term($arg);
 
           if (D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
 
@@ -881,6 +931,10 @@ sub parse_expression
               elsif ( $op eq '-' )
                 {
                   $sum = $sum - $value;
+                }
+              elsif ( $op eq '|' )
+                {
+                  $sum = $sum | $value;
                 }
             }
           else
@@ -1066,7 +1120,6 @@ sub do_align
   if ($pass == 2)
     {
       printf $OBJ_F ("@%X\n", $address);
-      printf $LST_F ("  %08X           %s\n", $address, $raw_line );
     }
 }
 
@@ -1090,6 +1143,8 @@ sub ps_align
     }
 
   do_align($align);
+
+  if ($pass == 2) { printf $LST_F ("  %08X           %s\n", $address, $raw_line ); }
 
 }
 
@@ -1162,8 +1217,7 @@ sub ps_end
   # flush any remaining imms
   flush_imms();
 
-  # removed, directive line is printed in flush_imms()
-  #  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   last;
 }
@@ -1201,6 +1255,8 @@ sub ps_imm_table
 
   my $arg;
   my $status;
+
+  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
 
   flush_imms();
 }
@@ -2066,16 +2122,9 @@ while( $pass <= 2 )
 
   } # end while( pass )
 
-#
-##
-## FIXME: temporary code
-##        dump automatic imm table
-#
-#printf $LST_F ( "\n\nIMM table (by value):\n\n"); 
-# FIXME: now also need to loop over $imm_table_num
-#foreach my $label ( sort { $imms[$i]{$a}{value} <=> $imms[$i]{$b}{value}  or  lc($a) cmp lc($b) } keys(%imms[$i]) )
-#  { printf $LST_F ( "  %s: %08X\n", $label, $imms[$i]{$label}{value} ) }; 
-#
+# flush any pending immediate table entries (in case there wasn't an 'end' directive)
+flush_imms();
+
 
 #
 # dump symbol table by name
