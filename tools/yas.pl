@@ -194,6 +194,10 @@ END_BUGS
 #
 #  - implement all opcodes
 #
+#  - remove convert-commas-to-spaces operand parsing hack to allow spaces in operand field expressions
+#
+#  - synthetic address modes ( PCR, ABSOLUTE ) using IMM/PC as base register
+#
 #  - automatic constants 
 #      - generate two word prefixed sequences when needed:
 #
@@ -209,13 +213,9 @@ END_BUGS
 #
 #     - prefix bubble for skip of an automatically prefixed instruction
 #
-#  - synthetic address modes ( PCR, ABSOLUTE ) using IMM/PC as base register
-#
 #  - label syntax (make colon optional?, :: for globals?)
 #
 #  - clean up unneeded parsing on pass 1 
-#
-#  - remove convert-commas-to-spaces operand parsing hack to allow spaces in operand field expressions
 #
 #  - other immediate constant improvements
 #      - add a full constant expression parser { +, -, *, /, &, |, ^, ~, <<, >> } with parentheses
@@ -814,8 +814,8 @@ sub extract_word
 }
 
 #
-# evaluate any multiplicative operators *,/,&,^
-#  factor {*|/|&|^ factor}
+# evaluate terms with multiplicative operators *,/,&,^
+# term := factor {*|/|&|^ factor}
 #
 sub eval_term
 {
@@ -827,6 +827,8 @@ sub eval_term
   my $op      = '*';
   my $product = 1;
 
+  my $expect_operand = 1;
+
   my @args;
 
   if (D1) { printf $JNK_F ("term: $exp\n"); }
@@ -834,51 +836,79 @@ sub eval_term
   @args = split(/(\*|&|\/|\^)/, $exp); 
 
   foreach my $arg (@args)
+  {
+    if (D1) { printf $JNK_F ("arg: $arg\n"); }
+
+    if ( ($arg eq '*') || ( $arg eq '/' ) || ( $arg eq '&' ) || ( $arg eq '^' ) )
+    # found an operator
     {
-      if ( ($arg eq '*') || ( $arg eq '/' ) || ( $arg eq '&' ) || ( $arg eq '^' ) )
-        {
-          $op = $arg;
-          if (D1) { printf $JNK_F ("term.op: $arg\n"); }
-        }
+      if ($expect_operand) 
+      { 
+        do_error("Illegal expression - expecting operand, found operator ($arg)");
+        return(1,$product); 
+      }  
 
-      elsif ( $arg ne '' )
-        {
-          ($code, $value) = extract_word($arg);
+      $expect_operand = !$expect_operand;
 
-          if (D1) { printf $JNK_F ("term.dat  :$arg :$code :$value\n"); }
-
-          if ( $code == 0 )
-            {
-              if ( $op eq '*' )
-                {
-                  $product = $product * $value;
-                }
-              elsif ( $op eq '/' )
-                {
-                  $product = $product / $value;
-                }
-              elsif ( $op eq '&' )
-                {
-                  $product = $product & $value;
-                }
-              elsif ( $op eq '^' )
-                {
-                  $product = $product ^ $value;
-                }
-            }
-          else
-            {
-              return($code,$value);  # return unknown label
-            }
-        }
+      $op = $arg;
+      if (D1) { printf $JNK_F ("term.op: $arg\n"); }
     }
+
+    elsif ( $arg ne '' )
+    # got something that's not an operator
+    {
+      if ( !$expect_operand ) 
+      { 
+        do_error("Illegal expression - expecting operator, found operand ($arg)");
+        return(1,$product); 
+      }  
+
+      $expect_operand = !$expect_operand;
+
+      ($code, $value) = extract_word($arg);
+
+      if (D1) { printf $JNK_F ("term.dat  :$arg :$code :$value\n"); }
+
+      if ( $code == 0 )
+      {
+        if ( $op eq '*' )
+          {
+            $product = $product * $value;
+          }
+        elsif ( $op eq '/' )
+          {
+            $product = int($product / $value);
+          }
+        elsif ( $op eq '&' )
+          {
+            $product = $product & $value;
+          }
+        elsif ( $op eq '^' )
+          {
+            $product = $product ^ $value;
+          }
+      }
+      else
+      {
+        return($code,$value);  # return unknown label
+      }
+    }
+  }
+
+  # catch any dangling operators at end of @args
+  if ($expect_operand) 
+  { 
+    do_error("Illegal expression - dangling operator");
+    return(1,$product); 
+  }  
 
   if (D1) { printf $JNK_F ("term.product  :$product :$code\n"); }
   return($code,$product);
 }
 
 #
-# rudimentary expression parser:  a {+/-/| b} {+/-/| c} ...
+# rudimentary expression parser:  
+#   expression := term {+/-/| term}
 #
 # splits input string on +/-/|, calling eval_term for each argument
 #
@@ -886,6 +916,7 @@ sub eval_term
 #
 # returns 
 #   ( 0, integer )      for fully defined expression
+#   ( 1, integer )      for an illegal expression
 #   ( 2, name_string )  if undefined label encountered
 #
 sub parse_expression
@@ -898,51 +929,86 @@ sub parse_expression
   my $op  = '+';
   my $sum = 0;
 
+  my $expect_operand = 1;
+
   my @args;
 
   if (D1) { printf $JNK_F ("exp: $exp\n"); }
 
   #
+  # set flag to treat leading '-' as 0 - value
+  # done here with substr because split below returns leading empty field when matching a leading '-'
+  #
+  if ( substr( $exp, 0, 1 ) eq '-' ) { $expect_operand = 0; }
+
+  #
   # split pattern returns alternating array of ( {match}, value, match, value )
-  # if leading operator, then match will be first
+  # if leading operator, then match will be the first non-null element
   #
   @args = split(/(\+|-|\|)/, $exp); 
-
+  
   foreach my $arg (@args)
+  {
+    if (D1) { printf $JNK_F ("arg: $arg\n"); }
+
+    if ( ($arg eq '-') || ( $arg eq '+' ) || ( $arg eq '|' ) )
+    # found an operator
     {
-      if ( ($arg eq '-') || ( $arg eq '+' ) || ( $arg eq '|' ) )
+      if ($expect_operand) 
+      { 
+        do_error("Illegal expression - expecting operand, found operator ($arg)");
+        return(1,$sum); 
+      }  
+
+      $expect_operand = !$expect_operand;
+
+      $op = $arg;
+      if (D1) { printf $JNK_F ("exp.op: $arg\n"); }
+    }
+
+    elsif ( $arg ne '' )
+    # got something that's not an operator
+    {
+      if ( !$expect_operand ) 
+      { 
+        do_error("Illegal expression - expecting operator, found operand ($arg)");
+        return(1,$sum); 
+      }  
+
+      $expect_operand = !$expect_operand;
+
+      ($code, $value) = eval_term($arg);
+
+      if (D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
+
+      if ( $code == 0 )
         {
-          $op = $arg;
-          if (D1) { printf $JNK_F ("exp.op: $arg\n"); }
+          if ( $op eq '+' )
+            {
+              $sum = $sum + $value;
+            }
+          elsif ( $op eq '-' )
+            {
+              $sum = $sum - $value;
+            }
+          elsif ( $op eq '|' )
+            {
+              $sum = $sum | $value;
+            }
         }
-
-      elsif ( $arg ne '' )
+      else
         {
-          ($code, $value) = eval_term($arg);
-
-          if (D1) { printf $JNK_F ("exp.dat  :$arg :$code :$value\n"); }
-
-          if ( $code == 0 )
-            {
-              if ( $op eq '+' )
-                {
-                  $sum = $sum + $value;
-                }
-              elsif ( $op eq '-' )
-                {
-                  $sum = $sum - $value;
-                }
-              elsif ( $op eq '|' )
-                {
-                  $sum = $sum | $value;
-                }
-            }
-          else
-            {
-              return($code,$value);  # return unknown label
-            }
+          return($code,$value);  # return unknown label
         }
     }
+  }
+
+  # catch any dangling operators at end of @args
+  if ($expect_operand) 
+  { 
+    do_error("Illegal expression - dangling operator");
+    return(1,$sum); 
+  }  
 
   if (D1) { printf $JNK_F ("exp.sum  :$sum :$code\n"); }
   return($code,$sum);
@@ -1054,6 +1120,8 @@ my %directive_defs =
 
   'equ'        =>  { type => 'DIRECTIVE' , ps => \&ps_equ,       name => "EQUate",     blab => "equate symbol = value"  },
   '.equ'       =>  { type => 'DIRECTIVE' , ps => \&ps_equ,       name => ".EQUate",    blab => "equate symbol = value"  },
+
+  '.expect'    =>  { type => 'DIRECTIVE' , ps => \&ps_expect,    name => ".EXPECT",    blab => "{ symbol,value } : assembly time check that symbol == value"  },
 
   '.imm_table' =>  { type => 'DIRECTIVE' , ps => \&ps_imm_table, name => ".IMM_TABLE", blab => "generate immediate table"  },
 
@@ -1234,7 +1302,8 @@ sub ps_equ
 
   check_argument_count($#operands, 1);
 
-  ($status, $val ) = extract_word($operands[0]);
+#  ($status, $val ) = extract_word($operands[0]);
+  ($status, $val ) = parse_expression($operands[0]);
 
   if (D1) { printf $JNK_F ("equate  %s = %x\n", $label, $val ); } 
 
@@ -1244,6 +1313,36 @@ sub ps_equ
     {
       printf $LST_F ("  %s           %s\n", mask_val_str(label_value($label)), $raw_line );
     }
+}
+
+#
+# assembly time check of symbol value, used for assembler testing
+#
+sub ps_expect
+{
+  my ( $pass      ) = shift;
+  my ( $label     ) = shift;
+  my ( $operation ) = shift;
+  my ( @operands  ) = @_;
+
+  my $symbol;
+  my $expected;
+  my $status;
+  my $actual;
+
+  check_argument_count($#operands, 2);
+
+  $symbol = $operands[0];
+  ($status, $expected ) = parse_expression($operands[1]);
+
+  $actual = label_value($symbol);
+
+  if (D1) { printf $JNK_F ("expect  %s = %x\n", $symbol, $actual ); } 
+
+  if ( $expected != $actual ) { do_error("Expected value error ($expected,$actual)") };
+
+  if ($pass==2) { printf $LST_F ("                     %s\n", $raw_line ); }
+
 }
 
 sub ps_imm_table
