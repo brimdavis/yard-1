@@ -1,6 +1,15 @@
- YARD-1 Design Files copyright (c)  2000-2013, Brian Davis
- All rights reserved.
+YARD-1 Design Files copyright (c)  2000-2020, Brian Davis
+All rights reserved.
 
+ - The YARD-1 VHDL code and most support files are released 
+   under the BSD 2-clause license (below)
+
+ - The main cross assembler file, <yas.pl>, is based on other free
+   Perl cross assemblers, and uses the original free license terms
+
+   See the header of tools/yas.pl
+
+==================
 
  Redistribution and use in source and binary forms, with or without
  modification, are permitted provided that the following conditions are met:
