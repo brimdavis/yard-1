@@ -12,46 +12,14 @@ FPGA Development Environment:
 
 FPGA Software:
 
- The required FPGA tools are free (as in free beer)
+   The required FPGA tools are the free (as in free beer) versions 
+ available from Xilinx/Lattice.
 
-   Currently using Webpack 9.2 SP4 for the Xilinx Spartan3 demo 
- project, and Lattice Diamond 2.2 for the Lattice XP2 demo project.
+   Originally had download links listed here, which rapidly become outdated.
  
-   Later S/W versions will likely work, but will probably require 
- changes to the project and constraint files due to differences in 
- the FPGA development tools.
+   Will try to add a note in each of the systems evb_xxx subdirectories instead,
+ giving the latest version that code was built with.
 
-
- Xilinx Webpack: 
-
-  - Xilinx WebPack 9.2 with SP4
-  
-    Xilinx site registration is required for download.
-
-    The following files are needed for installation:
-      WebPACK_SFD_92i.zip      9.2i Webpack single file download 
-      9_2_04i_win.exe          Service Pack 4
-
-    As of August 2011, the files can be found here:
-
-    http://www.xilinx.com/support/download/index.htm
-
-      - click "archive" on the left version list
-
-      - expand the "+9.2", look for "ISE Foundation WebPACK - 9.2i Full Product Installation"
-
-      - expand the "+9.2 SP4", look for "ISE Foundation - 9.2i Service Pack 4"
-
-
- Lattice Diamond: 
-
-    Lattice Diamond 2.2
-
-    Site registration required.
-
-    Free license supports many Lattice device families.
-    
-    http://www.latticesemi.com/en/Products/DesignSoftwareAndIP/FPGAandLDS/LatticeDiamond.aspx
 
 ================================================================
 
